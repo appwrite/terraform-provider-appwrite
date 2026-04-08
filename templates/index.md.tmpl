@@ -1,0 +1,21 @@
+---
+page_title: "Appwrite Provider"
+description: |-
+  The Appwrite provider is used to manage Appwrite Cloud and Community Edition resources.
+---
+
+# Appwrite Provider
+
+The Appwrite provider is used to manage resources on [Appwrite](https://appwrite.io). It supports both Appwrite Cloud and self-hosted Community Edition instances.
+
+## Authentication
+
+The provider requires an API key with appropriate scopes for the resources you want to manage. You can configure credentials directly in the provider block or via environment variables.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}}"
+description: |-
+  {{.Description}}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
