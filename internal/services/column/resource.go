@@ -65,23 +65,23 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Description: "Manages a column in an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description: "The database ID.",
-				Required:    true,
+				Description:   "The database ID.",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"table_id": schema.StringAttribute{
-				Description: "The table ID.",
-				Required:    true,
+				Description:   "The table ID.",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"key": schema.StringAttribute{
-				Description: "The column key (name).",
-				Required:    true,
+				Description:   "The column key (name).",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
-				Description: "The column type. One of: " + allColumnTypes + ".",
-				Required:    true,
+				Description:   "The column type. One of: " + allColumnTypes + ".",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"required": schema.BoolAttribute{
@@ -132,13 +132,13 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Default:     booldefault.StaticBool(false),
 			},
 			"related_table_id": schema.StringAttribute{
-				Description: "The ID of the related table. Required for relationship type.",
-				Optional:    true,
+				Description:   "The ID of the related table. Required for relationship type.",
+				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"relationship_type": schema.StringAttribute{
-				Description: "The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type.",
-				Optional:    true,
+				Description:   "The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type.",
+				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"two_way": schema.BoolAttribute{

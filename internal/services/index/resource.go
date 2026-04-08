@@ -50,29 +50,29 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Description: "Manages an index on an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description: "The database ID.",
-				Required:    true,
+				Description:   "The database ID.",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"table_id": schema.StringAttribute{
-				Description: "The table ID.",
-				Required:    true,
+				Description:   "The table ID.",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"key": schema.StringAttribute{
-				Description: "The index key (name).",
-				Required:    true,
+				Description:   "The index key (name).",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
-				Description: "Index type: key, unique, or fulltext.",
-				Required:    true,
+				Description:   "Index type: key, unique, or fulltext.",
+				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"columns": schema.ListAttribute{
-				Description: "Array of column keys to index.",
-				Required:    true,
-				ElementType: types.StringType,
+				Description:   "Array of column keys to index.",
+				Required:      true,
+				ElementType:   types.StringType,
 				PlanModifiers: []planmodifier.List{},
 			},
 			"orders": schema.ListAttribute{

@@ -14,25 +14,11 @@ The provider requires an API key with appropriate scopes for the resources you w
 
 ## Example Usage
 
-`Appwrite Cloud`
-
 ```terraform
 provider "appwrite" {
   endpoint   = "https://cloud.appwrite.io/v1"
   project_id = "project-id"
   api_key    = "api-key"
-}
-```
-
-`Appwrite Community Edition`
-
-```terraform
-
-provider "appwrite" {
-  endpoint    = "https://appwrite-instance.com/v1"
-  project_id  = "project-id"
-  api_key     = "api-key"
-  self_signed = true
 }
 ```
 
