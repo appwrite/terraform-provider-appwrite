@@ -1,0 +1,1 @@
+terraform import appwrite_topic.announcements announcements
