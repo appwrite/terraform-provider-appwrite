@@ -6,7 +6,7 @@ resource "appwrite_database" "main" {
 resource "appwrite_table" "users" {
   database_id = appwrite_database.main.id
   id          = "users"
-  name        = "Users"
+  name        = "users"
 }
 
 resource "appwrite_column" "name" {

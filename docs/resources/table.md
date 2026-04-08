@@ -14,13 +14,13 @@ Manages an Appwrite table within a database.
 resource "appwrite_table" "users" {
   database_id = appwrite_database.main.id
   id          = "users"
-  name        = "Users"
+  name        = "users"
 }
 
 resource "appwrite_table" "posts" {
   database_id  = appwrite_database.main.id
   id           = "posts"
-  name         = "Posts"
+  name         = "posts"
   row_security = true
 }
 ```
