@@ -13,12 +13,12 @@ Manages an Appwrite database.
 ```terraform
 resource "appwrite_database" "main" {
   id   = "main"
-  name = "Main"
+  name = "main"
 }
 
 resource "appwrite_database" "staging" {
   id      = "staging"
-  name    = "Staging"
+  name    = "staging"
   enabled = false
 }
 ```

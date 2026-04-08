@@ -1,0 +1,1 @@
+terraform import appwrite_bucket.uploads uploads

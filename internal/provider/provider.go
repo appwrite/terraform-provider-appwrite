@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -114,6 +115,7 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 
 	clients := &common.AppwriteClients{
 		TablesDB: appwrite.NewTablesDB(c),
+		Storage:  appwrite.NewStorage(c),
 	}
 
 	resp.DataSourceData = clients
@@ -126,6 +128,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		table.NewTableResource,
 		column.NewColumnResource,
 		index.NewIndexResource,
+		bucket.NewBucketResource,
 	}
 }
 
