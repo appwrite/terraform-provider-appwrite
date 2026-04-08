@@ -1,22 +1,22 @@
 ---
-page_title: "appwrite_topic Resource"
+page_title: "appwrite_messaging_topic Resource"
 description: |-
   Manages an Appwrite messaging topic.
 ---
 
-# appwrite_topic (Resource)
+# appwrite_messaging_topic (Resource)
 
 Manages an Appwrite messaging topic.
 
 ## Example Usage
 
 ```terraform
-resource "appwrite_topic" "announcements" {
+resource "appwrite_messaging_topic" "announcements" {
   id   = "announcements"
   name = "announcements"
 }
 
-resource "appwrite_topic" "alerts" {
+resource "appwrite_messaging_topic" "alerts" {
   id        = "alerts"
   name      = "alerts"
   subscribe = ["users"]
@@ -45,5 +45,5 @@ resource "appwrite_topic" "alerts" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_topic.announcements announcements
+terraform import appwrite_messaging_topic.announcements announcements
 ```

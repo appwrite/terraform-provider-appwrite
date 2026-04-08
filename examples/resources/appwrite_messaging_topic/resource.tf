@@ -1,9 +1,9 @@
-resource "appwrite_topic" "announcements" {
+resource "appwrite_messaging_topic" "announcements" {
   id   = "announcements"
   name = "announcements"
 }
 
-resource "appwrite_topic" "alerts" {
+resource "appwrite_messaging_topic" "alerts" {
   id        = "alerts"
   name      = "alerts"
   subscribe = ["users"]

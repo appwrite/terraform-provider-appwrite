@@ -1,4 +1,4 @@
-resource "appwrite_topic" "announcements" {
+resource "appwrite_messaging_topic" "announcements" {
   id   = "announcements"
   name = "announcements"
 }

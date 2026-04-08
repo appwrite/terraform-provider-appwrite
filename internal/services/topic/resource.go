@@ -37,7 +37,7 @@ func NewTopicResource() resource.Resource {
 }
 
 func (r *topicResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_topic"
+	resp.TypeName = req.ProviderTypeName + "_messaging_topic"
 }
 
 func (r *topicResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
