@@ -1,7 +1,8 @@
 version: 2
 
 builds:
-  - env:
+  - binary: "{{ .ProjectName }}_v{{ .Version }}"
+    env:
       - CGO_ENABLED=0
     mod_timestamp: "{{ .CommitTimestamp }}"
     flags:
@@ -41,7 +42,14 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 
+extra_files:
+  - glob: terraform-registry-manifest.json
+    name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
+
 release:
+  extra_files:
+    - glob: terraform-registry-manifest.json
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
   draft: false
 
 changelog:
