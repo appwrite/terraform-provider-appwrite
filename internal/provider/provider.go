@@ -17,7 +17,9 @@ import (
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
+	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
 )
 
 var _ provider.Provider = &appwriteProvider{}
@@ -114,8 +116,9 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 	c := appwrite.NewClient(opts...)
 
 	clients := &common.AppwriteClients{
-		TablesDB: appwrite.NewTablesDB(c),
-		Storage:  appwrite.NewStorage(c),
+		TablesDB:  appwrite.NewTablesDB(c),
+		Storage:   appwrite.NewStorage(c),
+		Messaging: appwrite.NewMessaging(c),
 	}
 
 	resp.DataSourceData = clients
@@ -129,6 +132,8 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		column.NewColumnResource,
 		index.NewIndexResource,
 		bucket.NewBucketResource,
+		topic.NewTopicResource,
+		messagingprovider.NewProviderResource,
 	}
 }
 

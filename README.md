@@ -22,17 +22,6 @@ provider "appwrite" {
 }
 ```
 
-Appwrite Community Edition:
-
-```hcl
-provider "appwrite" {
-  endpoint    = "https://appwrite-instance.com/v1"
-  project_id  = "project-id"
-  api_key     = "api-key"
-  self_signed = true
-}
-```
-
 All provider attributes can also be set via environment variables:
 
 ```bash
@@ -54,31 +43,34 @@ If an environment variable is provided, then the option does not need to be set 
 
 ## Resources
 
-| Resource            | Description             |
-|---------------------|-------------------------|
-| `appwrite_database` | Database                |
-| `appwrite_table`    | Table within a database |
-| `appwrite_column`   | Column within a table   |
-| `appwrite_index`    | Table index             |
+| Resource                      | Description        |
+|-------------------------------|--------------------|
+| `appwrite_database`           | Database           |
+| `appwrite_table`              | Database table     |
+| `appwrite_column`             | Table column       |
+| `appwrite_index`              | Table index        |
+| `appwrite_bucket`             | Storage bucket     |
+| `appwrite_messaging_provider` | Messaging provider |
+| `appwrite_messaging_topic`    | Messaging topic    |
 
 ## Data Sources
 
-| Data Source         | Description              |
-|---------------------|--------------------------|
-| `appwrite_database` | Look up a database by ID |
+| Data Source         | Description                     |
+|---------------------|---------------------------------|
+| `appwrite_database` | Look up a database by identifier |
 
 ## Example
 
 ```hcl
 resource "appwrite_database" "main" {
   id   = "main"
-  name = "Main"
+  name = "main"
 }
 
 resource "appwrite_table" "users" {
   database_id = appwrite_database.main.id
   id          = "users"
-  name        = "Users"
+  name        = "users"
 }
 
 resource "appwrite_column" "name" {
@@ -90,54 +82,22 @@ resource "appwrite_column" "name" {
   required    = true
 }
 
-resource "appwrite_column" "email" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "email"
-  type        = "email"
-  required    = true
+resource "appwrite_bucket" "images" {
+  id                     = "images"
+  name                   = "images"
+  maximum_file_size       = 10485760
+  allowed_file_extensions = ["jpg", "png", "webp", "gif"]
+  compression            = "gzip"
+  transformations        = true
 }
 
-resource "appwrite_column" "age" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "age"
-  type        = "integer"
-  min         = 0
-  max         = 150
-}
-
-resource "appwrite_column" "role" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "role"
-  type        = "enum"
-  elements    = ["admin", "editor", "viewer"]
-  default     = "viewer"
-}
-
-resource "appwrite_column" "tags" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "tags"
-  type        = "varchar"
-  size        = 64
-  array       = true
-}
-
-resource "appwrite_column" "location" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "location"
-  type        = "point"
-}
-
-resource "appwrite_index" "email_unique" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
-  key         = "email_unique"
-  type        = "unique"
-  columns     = [appwrite_column.email.key]
+resource "appwrite_messaging_provider" "sendgrid" {
+  id         = "sendgrid"
+  name       = "sendgrid"
+  type       = "sendgrid"
+  api_key    = "SG.test"
+  from_email = "noreply@example.com"
+  from_name  = "application"
 }
 ```
 
