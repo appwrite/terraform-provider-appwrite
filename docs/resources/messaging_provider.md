@@ -18,7 +18,7 @@ resource "appwrite_messaging_provider" "sendgrid" {
   type       = "sendgrid"
   api_key    = var.sendgrid_api_key
   from_email = "noreply@example.com"
-  from_name  = "My App"
+  from_name  = "application"
 }
 
 # SMTP email provider
