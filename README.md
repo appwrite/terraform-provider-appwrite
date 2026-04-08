@@ -67,32 +67,6 @@ If an environment variable is provided, then the option does not need to be set 
 |---------------------|--------------------------|
 | `appwrite_database` | Look up a database by ID |
 
-## Column Types
-
-The `appwrite_column` resource supports all Appwrite column types via the `type` attribute:
-
-| Type         | Description                  | Type-Specific Attributes              |
-|--------------|------------------------------|---------------------------------------|
-| `varchar`    | Variable-length string       | `size` (required), `encrypt`          |
-| `string`     | Deprecated, use `varchar`    | `size` (required), `encrypt`          |
-| `text`       | Unlimited text               | `encrypt`                             |
-| `longtext`   | Long text                    | `encrypt`                             |
-| `mediumtext` | Medium text                  | `encrypt`                             |
-| `integer`    | Integer number               | `min`, `max`                          |
-| `float`      | Floating-point number        | `float_min`, `float_max`              |
-| `boolean`    | True or false                | —                                     |
-| `enum`       | Predefined set of values     | `elements` (required)                 |
-| `email`      | Email address                | —                                     |
-| `datetime`   | ISO 8601 datetime            | —                                     |
-| `url`        | URL                          | —                                     |
-| `ip`         | IP address                   | —                                     |
-| `point`      | Geographic point             | —                                     |
-| `line`       | Geographic line              | —                                     |
-| `polygon`    | Geographic polygon           | —                                     |
-| `relationship` | Relationship to another table | `related_table_id`, `relationship_type` (required), `two_way`, `two_way_key`, `on_delete` |
-
-All column types share these common attributes: `required`, `array`, `default`.
-
 ## Example
 
 ```hcl
