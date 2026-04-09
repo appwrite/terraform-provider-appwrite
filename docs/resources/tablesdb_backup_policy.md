@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_database_backup_policy Resource"
+page_title: "appwrite_tablesdb_backup_policy Resource"
 description: |-
   Manages an Appwrite database backup policy.
 ---
 
-# appwrite_database_backup_policy (Resource)
+# appwrite_tablesdb_backup_policy (Resource)
 
 Manages an Appwrite database backup policy.
 
@@ -12,8 +12,7 @@ Manages an Appwrite database backup policy.
 
 ```terraform
 # Daily database backup with 7 day retention
-resource "appwrite_database_backup_policy" "daily" {
-  id        = "daily-db-backup"
+resource "appwrite_tablesdb_backup_policy" "daily" {
   name      = "Daily Database Backup"
   services  = ["databases"]
   retention = 7
@@ -21,11 +20,10 @@ resource "appwrite_database_backup_policy" "daily" {
 }
 
 # Backup a specific database
-resource "appwrite_database_backup_policy" "production" {
-  id          = "production-backup"
+resource "appwrite_tablesdb_backup_policy" "production" {
   name        = "Production Database Backup"
   services    = ["databases"]
-  resource_id = appwrite_database.main.id
+  resource_id = appwrite_tablesdb.main.id
   retention   = 14
   schedule    = "0 */6 * * *"
 }
@@ -36,7 +34,6 @@ resource "appwrite_database_backup_policy" "production" {
 
 ### Required
 
-- `id` (String) The backup policy ID.
 - `retention` (Number) How many days to keep the backup before automatic deletion.
 - `schedule` (String) Backup schedule in CRON format.
 - `services` (List of String) The services to back up. For example: databases.
@@ -44,6 +41,7 @@ resource "appwrite_database_backup_policy" "production" {
 ### Optional
 
 - `enabled` (Boolean) Whether the policy is enabled. Defaults to true.
+- `id` (String) The backup policy ID.
 - `name` (String) The backup policy name.
 - `resource_id` (String) The resource ID to back up. Set to back up a single database instead of all databases.
 
@@ -57,5 +55,5 @@ resource "appwrite_database_backup_policy" "production" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_database_backup_policy.daily daily-db-backup
+terraform import appwrite_tablesdb_backup_policy.daily <policy-id>
 ```

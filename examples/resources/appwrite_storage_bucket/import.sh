@@ -1,1 +1,1 @@
-terraform import appwrite_bucket.uploads uploads
+terraform import appwrite_storage_bucket.uploads <bucket-id>

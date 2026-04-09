@@ -1,6 +1,5 @@
 # Daily database backup with 7 day retention
-resource "appwrite_database_backup_policy" "daily" {
-  id        = "daily-db-backup"
+resource "appwrite_tablesdb_backup_policy" "daily" {
   name      = "Daily Database Backup"
   services  = ["databases"]
   retention = 7
@@ -8,11 +7,10 @@ resource "appwrite_database_backup_policy" "daily" {
 }
 
 # Backup a specific database
-resource "appwrite_database_backup_policy" "production" {
-  id          = "production-backup"
+resource "appwrite_tablesdb_backup_policy" "production" {
   name        = "Production Database Backup"
   services    = ["databases"]
-  resource_id = appwrite_database.main.id
+  resource_id = appwrite_tablesdb.main.id
   retention   = 14
   schedule    = "0 */6 * * *"
 }

@@ -1,6 +1,6 @@
 # Varchar column with max length
 resource "appwrite_column" "name" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "name"
   type        = "varchar"
@@ -10,7 +10,7 @@ resource "appwrite_column" "name" {
 
 # Email column
 resource "appwrite_column" "email" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "email"
   type        = "email"
@@ -19,7 +19,7 @@ resource "appwrite_column" "email" {
 
 # Integer column with min/max
 resource "appwrite_column" "age" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "age"
   type        = "integer"
@@ -29,7 +29,7 @@ resource "appwrite_column" "age" {
 
 # Boolean column with default
 resource "appwrite_column" "active" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "active"
   type        = "boolean"
@@ -38,7 +38,7 @@ resource "appwrite_column" "active" {
 
 # Float column with min/max
 resource "appwrite_column" "score" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "score"
   type        = "float"
@@ -48,7 +48,7 @@ resource "appwrite_column" "score" {
 
 # Enum column with allowed values
 resource "appwrite_column" "role" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "role"
   type        = "enum"
@@ -58,7 +58,7 @@ resource "appwrite_column" "role" {
 
 # Datetime column
 resource "appwrite_column" "joined_at" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "joined_at"
   type        = "datetime"
@@ -66,7 +66,7 @@ resource "appwrite_column" "joined_at" {
 
 # Array column
 resource "appwrite_column" "tags" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "tags"
   type        = "varchar"
@@ -76,7 +76,7 @@ resource "appwrite_column" "tags" {
 
 # Geographic point column
 resource "appwrite_column" "location" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "location"
   type        = "point"
@@ -84,7 +84,7 @@ resource "appwrite_column" "location" {
 
 # Relationship column
 resource "appwrite_column" "author" {
-  database_id       = appwrite_database.main.id
+  database_id       = appwrite_tablesdb.main.id
   table_id          = appwrite_table.posts.id
   related_table_id  = appwrite_table.users.id
   type              = "relationship"

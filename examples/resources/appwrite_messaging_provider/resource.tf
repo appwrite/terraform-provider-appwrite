@@ -1,6 +1,5 @@
 # Sendgrid email provider
 resource "appwrite_messaging_provider" "sendgrid" {
-  id         = "sendgrid"
   name       = "sendgrid"
   type       = "sendgrid"
   api_key    = var.sendgrid_api_key
@@ -10,7 +9,6 @@ resource "appwrite_messaging_provider" "sendgrid" {
 
 # SMTP email provider
 resource "appwrite_messaging_provider" "smtp" {
-  id         = "smtp"
   name       = "smtp"
   type       = "smtp"
   host       = "smtp.example.com"
@@ -23,7 +21,6 @@ resource "appwrite_messaging_provider" "smtp" {
 
 # Twilio SMS provider
 resource "appwrite_messaging_provider" "twilio" {
-  id          = "twilio"
   name        = "twilio"
   type        = "twilio"
   account_sid = var.twilio_account_sid
@@ -33,7 +30,6 @@ resource "appwrite_messaging_provider" "twilio" {
 
 # FCM push notification provider
 resource "appwrite_messaging_provider" "fcm" {
-  id                   = "fcm"
   name                 = "fcm"
   type                 = "fcm"
   service_account_json = file("firebase-service-account.json")

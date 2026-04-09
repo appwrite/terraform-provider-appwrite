@@ -33,7 +33,7 @@ func NewDatabaseDataSource() datasource.DataSource {
 }
 
 func (d *databaseDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_database"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb"
 }
 
 func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {

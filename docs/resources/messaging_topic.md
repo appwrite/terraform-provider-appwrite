@@ -12,12 +12,10 @@ Manages an Appwrite messaging topic.
 
 ```terraform
 resource "appwrite_messaging_topic" "announcements" {
-  id   = "announcements"
   name = "announcements"
 }
 
 resource "appwrite_messaging_topic" "alerts" {
-  id        = "alerts"
   name      = "alerts"
   subscribe = ["users"]
 }
@@ -28,11 +26,11 @@ resource "appwrite_messaging_topic" "alerts" {
 
 ### Required
 
-- `id` (String) The topic ID.
 - `name` (String) The topic name.
 
 ### Optional
 
+- `id` (String) The topic ID.
 - `subscribe` (List of String) Subscribe permissions.
 
 ### Read-Only
@@ -45,5 +43,5 @@ resource "appwrite_messaging_topic" "alerts" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_messaging_topic.announcements announcements
+terraform import appwrite_messaging_topic.announcements <topic-id>
 ```

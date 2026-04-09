@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_database_table Resource"
+page_title: "appwrite_tablesdb_table Resource"
 description: |-
   Manages an Appwrite table within a database.
 ---
 
-# appwrite_database_table (Resource)
+# appwrite_tablesdb_table (Resource)
 
 Manages an Appwrite table within a database.
 
@@ -12,14 +12,12 @@ Manages an Appwrite table within a database.
 
 ```terraform
 resource "appwrite_table" "users" {
-  database_id = appwrite_database.main.id
-  id          = "users"
+  database_id = appwrite_tablesdb.main.id
   name        = "users"
 }
 
 resource "appwrite_table" "posts" {
-  database_id  = appwrite_database.main.id
-  id           = "posts"
+  database_id  = appwrite_tablesdb.main.id
   name         = "posts"
   row_security = true
 }
@@ -31,12 +29,12 @@ resource "appwrite_table" "posts" {
 ### Required
 
 - `database_id` (String) The ID of the database this table belongs to.
-- `id` (String) The table ID. Must be unique within the database.
 - `name` (String) The table name.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the table is enabled. When disabled, the table is inaccessible to users but remains accessible via API keys. Defaults to true.
+- `id` (String) The table ID. Must be unique within the database.
 - `permissions` (List of String) Table-level permissions.
 - `row_security` (Boolean) Whether row-level permissions are enabled. Defaults to false.
 
@@ -51,5 +49,5 @@ Import is supported using the following syntax:
 
 ```shell
 # Import using database_id/table_id format
-terraform import appwrite_table.users main/users
+terraform import appwrite_tablesdb_table.users <database-id>/<table-id>
 ```

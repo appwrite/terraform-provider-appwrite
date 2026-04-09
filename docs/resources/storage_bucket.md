@@ -12,12 +12,10 @@ Manages an Appwrite storage bucket.
 
 ```terraform
 resource "appwrite_bucket" "uploads" {
-  id   = "uploads"
   name = "uploads"
 }
 
 resource "appwrite_bucket" "images" {
-  id                     = "images"
   name                   = "images"
   maximum_file_size       = 10485760
   allowed_file_extensions = ["jpg", "png", "webp", "gif"]
@@ -26,7 +24,6 @@ resource "appwrite_bucket" "images" {
 }
 
 resource "appwrite_bucket" "documents" {
-  id           = "documents"
   name         = "documents"
   file_security = true
   encryption   = true
@@ -39,7 +36,6 @@ resource "appwrite_bucket" "documents" {
 
 ### Required
 
-- `id` (String) The bucket ID. Must be unique within the project.
 - `name` (String) The bucket name.
 
 ### Optional
@@ -50,6 +46,7 @@ resource "appwrite_bucket" "documents" {
 - `enabled` (Boolean) Whether the bucket is enabled. Defaults to true.
 - `encryption` (Boolean) Whether bucket encryption is enabled. Defaults to true.
 - `file_security` (Boolean) Whether file-level security is enabled. When enabled, users can access files for which they have been granted permissions. Defaults to false.
+- `id` (String) The bucket ID. Must be unique within the project.
 - `maximum_file_size` (Number) Maximum file size in bytes.
 - `permissions` (List of String) Bucket-level permissions.
 - `transformations` (Boolean) Whether image transformations are enabled. Defaults to false.
@@ -64,5 +61,5 @@ resource "appwrite_bucket" "documents" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_bucket.uploads uploads
+terraform import appwrite_storage_bucket.uploads <bucket-id>
 ```

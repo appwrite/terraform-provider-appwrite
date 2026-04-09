@@ -1,22 +1,22 @@
 ---
-page_title: "appwrite_database Data Source"
+page_title: "appwrite_tablesdb Data Source"
 description: |-
   Fetches an Appwrite database by ID.
 ---
 
-# appwrite_database (Data Source)
+# appwrite_tablesdb (Data Source)
 
 Fetches an Appwrite database by ID.
 
 ## Example Usage
 
 ```terraform
-data "appwrite_database" "main" {
+data "appwrite_tablesdb" "main" {
   id = "main"
 }
 
 output "database_name" {
-  value = data.appwrite_database.main.name
+  value = data.appwrite_tablesdb.main.name
 }
 ```
 

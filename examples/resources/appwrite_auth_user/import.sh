@@ -1,1 +1,1 @@
-terraform import appwrite_user.john john
+terraform import appwrite_auth_user.john <user-id>

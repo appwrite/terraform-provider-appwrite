@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/appwrite/sdk-for-go/v2/backups"
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -44,7 +45,7 @@ func NewPolicyResource() resource.Resource {
 }
 
 func (r *policyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_database_backup_policy"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb_backup_policy"
 }
 
 func (r *policyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -53,7 +54,8 @@ func (r *policyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The backup policy ID.",
-				Required:      true,
+				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"name": schema.StringAttribute{
@@ -131,8 +133,13 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 		opts = append(opts, r.backups.WithCreatePolicyEnabled(plan.Enabled.ValueBool()))
 	}
 
+	policyID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		policyID = id.Unique()
+	}
+
 	policy, err := r.backups.CreatePolicy(
-		plan.ID.ValueString(),
+		policyID,
 		services,
 		int(plan.Retention.ValueInt64()),
 		plan.Schedule.ValueString(),

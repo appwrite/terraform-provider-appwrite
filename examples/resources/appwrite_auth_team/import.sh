@@ -1,1 +1,1 @@
-terraform import appwrite_team.engineering engineering
+terraform import appwrite_auth_team.engineering <team-id>

@@ -45,11 +45,11 @@ If an environment variable is provided, then the option does not need to be set 
 
 | Resource                          | Description            |
 |-----------------------------------|------------------------|
-| `appwrite_database`               | Database               |
-| `appwrite_database_table`         | Database table         |
-| `appwrite_database_column`        | Table column           |
-| `appwrite_database_index`         | Table index            |
-| `appwrite_database_backup_policy` | Database backup policy |
+| `appwrite_tablesdb`               | Database               |
+| `appwrite_tablesdb_table`         | Database table         |
+| `appwrite_tablesdb_column`        | Table column           |
+| `appwrite_tablesdb_index`         | Table index            |
+| `appwrite_tablesdb_backup_policy` | Database backup policy |
 | `appwrite_storage_bucket`         | Storage bucket         |
 | `appwrite_messaging_provider`     | Messaging provider     |
 | `appwrite_messaging_topic`        | Messaging topic        |
@@ -61,26 +61,25 @@ If an environment variable is provided, then the option does not need to be set 
 
 | Data Source         | Description                      |
 |---------------------|----------------------------------|
-| `appwrite_database` | Look up a database by identifier |
-| `appwrite_health`   | Appwrite server health status    |
+| `appwrite_tablesdb` | Look up a tablesdb by identifier |
 
 ## Example
 
 ```hcl
-resource "appwrite_database" "main" {
+resource "appwrite_tablesdb" "main" {
   id   = "main"
   name = "main"
 }
 
-resource "appwrite_database_table" "users" {
-  database_id = appwrite_database.main.id
+resource "appwrite_tablesdb_table" "users" {
+  database_id = appwrite_tablesdb.main.id
   id          = "users"
   name        = "users"
 }
 
-resource "appwrite_database_column" "name" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_database_table.users.id
+resource "appwrite_tablesdb_column" "name" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "name"
   type        = "varchar"
   size        = 255

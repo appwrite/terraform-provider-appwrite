@@ -12,12 +12,10 @@ Manages an Appwrite team.
 
 ```terraform
 resource "appwrite_team" "engineering" {
-  id   = "engineering"
   name = "Engineering"
 }
 
 resource "appwrite_team" "marketing" {
-  id    = "marketing"
   name  = "Marketing"
   roles = ["owner", "editor"]
 }
@@ -28,11 +26,11 @@ resource "appwrite_team" "marketing" {
 
 ### Required
 
-- `id` (String) The team ID.
 - `name` (String) The team name.
 
 ### Optional
 
+- `id` (String) The team ID.
 - `roles` (List of String) Roles for new team members. Defaults to ["owner"].
 
 ### Read-Only
@@ -45,5 +43,5 @@ resource "appwrite_team" "marketing" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_team.engineering engineering
+terraform import appwrite_auth_team.engineering <team-id>
 ```

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -42,7 +43,7 @@ func NewIndexResource() resource.Resource {
 }
 
 func (r *indexResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_database_index"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb_index"
 }
 
 func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -61,7 +62,8 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"key": schema.StringAttribute{
 				Description:   "The index key (name).",
-				Required:      true,
+				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
@@ -129,10 +131,15 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	indexKey := plan.Key.ValueString()
+	if plan.Key.IsNull() || plan.Key.IsUnknown() {
+		indexKey = id.Unique()
+	}
+
 	idx, err := r.tablesdb.CreateIndex(
 		databaseId,
 		tableId,
-		plan.Key.ValueString(),
+		indexKey,
 		plan.Type.ValueString(),
 		columns,
 		opts...,

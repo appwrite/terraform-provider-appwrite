@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_database_index Resource"
+page_title: "appwrite_tablesdb_index Resource"
 description: |-
   Manages an index on an Appwrite table.
 ---
 
-# appwrite_database_index (Resource)
+# appwrite_tablesdb_index (Resource)
 
 Manages an index on an Appwrite table.
 
@@ -13,7 +13,7 @@ Manages an index on an Appwrite table.
 ```terraform
 # Unique index
 resource "appwrite_index" "email_unique" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "email_unique"
   type        = "unique"
@@ -22,7 +22,7 @@ resource "appwrite_index" "email_unique" {
 
 # Key index with sort order
 resource "appwrite_index" "name_index" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "name_index"
   type        = "key"
@@ -38,12 +38,12 @@ resource "appwrite_index" "name_index" {
 
 - `columns` (List of String) Array of column keys to index.
 - `database_id` (String) The database ID.
-- `key` (String) The index key (name).
 - `table_id` (String) The table ID.
 - `type` (String) Index type: key, unique, or fulltext.
 
 ### Optional
 
+- `key` (String) The index key (name).
 - `orders` (List of String) Array of index orders (asc or desc) for each column.
 
 ### Read-Only
@@ -57,5 +57,5 @@ Import is supported using the following syntax:
 
 ```shell
 # Import using database_id/table_id/key format
-terraform import appwrite_index.email_unique main/users/email_unique
+terraform import appwrite_tablesdb_index.email_unique <database-id>/<table-id>/<index-key>
 ```

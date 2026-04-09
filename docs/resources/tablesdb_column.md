@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_database_column Resource"
+page_title: "appwrite_tablesdb_column Resource"
 description: |-
   Manages a column in an Appwrite table.
 ---
 
-# appwrite_database_column (Resource)
+# appwrite_tablesdb_column (Resource)
 
 Manages a column in an Appwrite table.
 
@@ -13,7 +13,7 @@ Manages a column in an Appwrite table.
 ```terraform
 # Varchar column with max length
 resource "appwrite_column" "name" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "name"
   type        = "varchar"
@@ -23,7 +23,7 @@ resource "appwrite_column" "name" {
 
 # Email column
 resource "appwrite_column" "email" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "email"
   type        = "email"
@@ -32,7 +32,7 @@ resource "appwrite_column" "email" {
 
 # Integer column with min/max
 resource "appwrite_column" "age" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "age"
   type        = "integer"
@@ -42,7 +42,7 @@ resource "appwrite_column" "age" {
 
 # Boolean column with default
 resource "appwrite_column" "active" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "active"
   type        = "boolean"
@@ -51,7 +51,7 @@ resource "appwrite_column" "active" {
 
 # Float column with min/max
 resource "appwrite_column" "score" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "score"
   type        = "float"
@@ -61,7 +61,7 @@ resource "appwrite_column" "score" {
 
 # Enum column with allowed values
 resource "appwrite_column" "role" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "role"
   type        = "enum"
@@ -71,7 +71,7 @@ resource "appwrite_column" "role" {
 
 # Datetime column
 resource "appwrite_column" "joined_at" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "joined_at"
   type        = "datetime"
@@ -79,7 +79,7 @@ resource "appwrite_column" "joined_at" {
 
 # Array column
 resource "appwrite_column" "tags" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "tags"
   type        = "varchar"
@@ -89,7 +89,7 @@ resource "appwrite_column" "tags" {
 
 # Geographic point column
 resource "appwrite_column" "location" {
-  database_id = appwrite_database.main.id
+  database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_table.users.id
   key         = "location"
   type        = "point"
@@ -97,7 +97,7 @@ resource "appwrite_column" "location" {
 
 # Relationship column
 resource "appwrite_column" "author" {
-  database_id       = appwrite_database.main.id
+  database_id       = appwrite_tablesdb.main.id
   table_id          = appwrite_table.posts.id
   related_table_id  = appwrite_table.users.id
   type              = "relationship"
@@ -114,7 +114,6 @@ resource "appwrite_column" "author" {
 ### Required
 
 - `database_id` (String) The database ID.
-- `key` (String) The column key (name).
 - `table_id` (String) The table ID.
 - `type` (String) The column type. One of: varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string.
 
@@ -126,6 +125,7 @@ resource "appwrite_column" "author" {
 - `encrypt` (Boolean) Whether the column is encrypted. Applies to string, varchar, text, longtext, mediumtext types.
 - `float_max` (Number) Maximum value. Applies to float type.
 - `float_min` (Number) Minimum value. Applies to float type.
+- `key` (String) The column key (name).
 - `max` (Number) Maximum value. Applies to integer type.
 - `min` (Number) Minimum value. Applies to integer type.
 - `on_delete` (String) Behavior when the parent document is deleted: restrict, cascade, setNull. Applies to relationship type.
@@ -147,5 +147,5 @@ Import is supported using the following syntax:
 
 ```shell
 # Import using database_id/table_id/key format
-terraform import appwrite_column.name main/users/name
+terraform import appwrite_tablesdb_column.name <database-id>/<table-id>/<column-key>
 ```

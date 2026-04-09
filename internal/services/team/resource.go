@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/teams"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -46,7 +47,8 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The team ID.",
-				Required:      true,
+				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"name": schema.StringAttribute{
@@ -99,7 +101,12 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		opts = append(opts, r.teams.WithCreateRoles(roles))
 	}
 
-	team, err := r.teams.Create(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
+	teamID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		teamID = id.Unique()
+	}
+
+	team, err := r.teams.Create(teamID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating team", common.FormatError(err))
 		return

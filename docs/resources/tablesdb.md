@@ -1,23 +1,21 @@
 ---
-page_title: "appwrite_database Resource"
+page_title: "appwrite_tablesdb Resource"
 description: |-
   Manages an Appwrite database.
 ---
 
-# appwrite_database (Resource)
+# appwrite_tablesdb (Resource)
 
 Manages an Appwrite database.
 
 ## Example Usage
 
 ```terraform
-resource "appwrite_database" "main" {
-  id   = "main"
+resource "appwrite_tablesdb" "main" {
   name = "main"
 }
 
-resource "appwrite_database" "staging" {
-  id      = "staging"
+resource "appwrite_tablesdb" "staging" {
   name    = "staging"
   enabled = false
 }
@@ -28,12 +26,12 @@ resource "appwrite_database" "staging" {
 
 ### Required
 
-- `id` (String) The database ID. Must be unique within the project.
 - `name` (String) The database name.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the database is enabled. Defaults to true.
+- `id` (String) The database ID. Must be unique within the project.
 
 ### Read-Only
 
@@ -45,5 +43,5 @@ resource "appwrite_database" "staging" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_database.main main
+terraform import appwrite_tablesdb.main <database-id>
 ```
