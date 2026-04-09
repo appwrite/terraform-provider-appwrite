@@ -52,6 +52,8 @@ If an environment variable is provided, then the option does not need to be set 
 | `appwrite_bucket`             | Storage bucket     |
 | `appwrite_messaging_provider` | Messaging provider |
 | `appwrite_messaging_topic`    | Messaging topic    |
+| `appwrite_user`               | User               |
+| `appwrite_team`               | Team               |
 
 ## Data Sources
 
