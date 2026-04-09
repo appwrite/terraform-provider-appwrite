@@ -10,6 +10,8 @@ import (
 	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/sdk-for-go/v2/storage"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
+	"github.com/appwrite/sdk-for-go/v2/teams"
+	"github.com/appwrite/sdk-for-go/v2/users"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
@@ -19,6 +21,8 @@ type AppwriteClients struct {
 	TablesDB  *tablesdb.TablesDB
 	Storage   *storage.Storage
 	Messaging *messaging.Messaging
+	Users     *users.Users
+	Teams     *teams.Teams
 }
 
 // IsNotFoundError checks if an Appwrite SDK error is a 404.
