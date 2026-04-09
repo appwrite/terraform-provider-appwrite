@@ -1,3 +1,7 @@
+resource "appwrite_auth_team" "engineering" {
+  name = "Engineering"
+}
+
 resource "appwrite_auth_user" "john" {
   name     = "John Doe"
   email    = "john@example.com"

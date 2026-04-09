@@ -34,3 +34,8 @@ resource "appwrite_messaging_provider" "fcm" {
   type                 = "fcm"
   service_account_json = file("firebase-service-account.json")
 }
+
+# Topic using the provider
+resource "appwrite_messaging_topic" "announcements" {
+  name = "announcements"
+}

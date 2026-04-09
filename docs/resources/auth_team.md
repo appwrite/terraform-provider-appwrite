@@ -11,6 +11,12 @@ Manages an Appwrite team.
 ## Example Usage
 
 ```terraform
+resource "appwrite_auth_user" "john" {
+  name     = "John Doe"
+  email    = "john@example.com"
+  password = var.user_password
+}
+
 resource "appwrite_auth_team" "engineering" {
   name = "Engineering"
 }
@@ -49,3 +55,4 @@ terraform import appwrite_auth_team.engineering <team-id>
 ## See Also
 
 - [appwrite_auth_user](auth_user.md) - Manage users
+- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics with team subscriptions

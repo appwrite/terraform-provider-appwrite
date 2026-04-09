@@ -11,13 +11,18 @@ Manages an Appwrite messaging topic.
 ## Example Usage
 
 ```terraform
+resource "appwrite_auth_team" "engineering" {
+  name = "Engineering"
+}
+
 resource "appwrite_messaging_topic" "announcements" {
   name = "announcements"
 }
 
-resource "appwrite_messaging_topic" "alerts" {
-  name      = "alerts"
-  subscribe = ["users"]
+# Topic restricted to a specific team
+resource "appwrite_messaging_topic" "engineering_alerts" {
+  name      = "engineering-alerts"
+  subscribe = ["team:${appwrite_auth_team.engineering.id}"]
 }
 ```
 
@@ -49,3 +54,5 @@ terraform import appwrite_messaging_topic.announcements <topic-id>
 ## See Also
 
 - [appwrite_messaging_provider](messaging_provider.md) - Manage messaging providers
+- [appwrite_auth_user](auth_user.md) - Manage users for topic subscriptions
+- [appwrite_auth_team](auth_team.md) - Manage teams for topic subscriptions
