@@ -45,3 +45,7 @@ Import is supported using the following syntax:
 ```shell
 terraform import appwrite_messaging_topic.announcements <topic-id>
 ```
+
+## See Also
+
+- [appwrite_messaging_provider](messaging_provider.md) - Manage messaging providers

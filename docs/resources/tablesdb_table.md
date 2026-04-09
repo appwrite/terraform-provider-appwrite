@@ -11,12 +11,16 @@ Manages an Appwrite table within a database.
 ## Example Usage
 
 ```terraform
-resource "appwrite_table" "users" {
+resource "appwrite_tablesdb" "main" {
+  name = "main"
+}
+
+resource "appwrite_tablesdb_table" "users" {
   database_id = appwrite_tablesdb.main.id
   name        = "users"
 }
 
-resource "appwrite_table" "posts" {
+resource "appwrite_tablesdb_table" "posts" {
   database_id  = appwrite_tablesdb.main.id
   name         = "posts"
   row_security = true
@@ -51,3 +55,10 @@ Import is supported using the following syntax:
 # Import using database_id/table_id format
 terraform import appwrite_tablesdb_table.users <database-id>/<table-id>
 ```
+
+## See Also
+
+- [appwrite_tablesdb](tablesdb.md) - Manage databases
+- [appwrite_tablesdb_column](tablesdb_column.md) - Manage columns within a table
+- [appwrite_tablesdb_index](tablesdb_index.md) - Manage indexes within a table
+- [appwrite_tablesdb_row](tablesdb_row.md) - Manage rows within a table

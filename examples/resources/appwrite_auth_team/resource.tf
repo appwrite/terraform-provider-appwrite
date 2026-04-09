@@ -1,8 +1,8 @@
-resource "appwrite_team" "engineering" {
+resource "appwrite_auth_team" "engineering" {
   name = "Engineering"
 }
 
-resource "appwrite_team" "marketing" {
+resource "appwrite_auth_team" "marketing" {
   name  = "Marketing"
   roles = ["owner", "editor"]
 }

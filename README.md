@@ -49,8 +49,9 @@ If an environment variable is provided, then the option does not need to be set 
 | `appwrite_tablesdb_table`         | Database table         |
 | `appwrite_tablesdb_column`        | Table column           |
 | `appwrite_tablesdb_index`         | Table index            |
-| `appwrite_tablesdb_backup_policy` | Database backup policy |
+| `appwrite_tablesdb_row`           | Table row              |
 | `appwrite_storage_bucket`         | Storage bucket         |
+| `appwrite_backup_policy`          | Backup policy          |
 | `appwrite_messaging_provider`     | Messaging provider     |
 | `appwrite_messaging_topic`        | Messaging topic        |
 | `appwrite_auth_user`              | User                   |

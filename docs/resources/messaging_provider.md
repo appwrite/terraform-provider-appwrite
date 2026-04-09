@@ -100,3 +100,7 @@ Import is supported using the following syntax:
 ```shell
 terraform import appwrite_messaging_provider.sendgrid <provider-id>
 ```
+
+## See Also
+
+- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics

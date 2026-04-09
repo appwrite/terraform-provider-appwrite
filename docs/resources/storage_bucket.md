@@ -11,11 +11,11 @@ Manages an Appwrite storage bucket.
 ## Example Usage
 
 ```terraform
-resource "appwrite_bucket" "uploads" {
+resource "appwrite_storage_bucket" "uploads" {
   name = "uploads"
 }
 
-resource "appwrite_bucket" "images" {
+resource "appwrite_storage_bucket" "images" {
   name                   = "images"
   maximum_file_size       = 10485760
   allowed_file_extensions = ["jpg", "png", "webp", "gif"]
@@ -23,7 +23,7 @@ resource "appwrite_bucket" "images" {
   transformations        = true
 }
 
-resource "appwrite_bucket" "documents" {
+resource "appwrite_storage_bucket" "documents" {
   name         = "documents"
   file_security = true
   encryption   = true

@@ -19,6 +19,7 @@ import (
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
 	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/row"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/team"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
@@ -143,6 +144,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		user.NewUserResource,
 		team.NewTeamResource,
 		backup.NewPolicyResource,
+		row.NewRowResource,
 	}
 }
 

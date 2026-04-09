@@ -1,7 +1,21 @@
-# Varchar column with max length
-resource "appwrite_column" "name" {
+resource "appwrite_tablesdb" "main" {
+  name = "main"
+}
+
+resource "appwrite_tablesdb_table" "users" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  name        = "users"
+}
+
+resource "appwrite_tablesdb_table" "posts" {
+  database_id = appwrite_tablesdb.main.id
+  name        = "posts"
+}
+
+# Varchar column with max length
+resource "appwrite_tablesdb_column" "name" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "name"
   type        = "varchar"
   size        = 255
@@ -9,18 +23,18 @@ resource "appwrite_column" "name" {
 }
 
 # Email column
-resource "appwrite_column" "email" {
+resource "appwrite_tablesdb_column" "email" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "email"
   type        = "email"
   required    = true
 }
 
 # Integer column with min/max
-resource "appwrite_column" "age" {
+resource "appwrite_tablesdb_column" "age" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "age"
   type        = "integer"
   min         = 0
@@ -28,18 +42,18 @@ resource "appwrite_column" "age" {
 }
 
 # Boolean column with default
-resource "appwrite_column" "active" {
+resource "appwrite_tablesdb_column" "active" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "active"
   type        = "boolean"
   default     = "true"
 }
 
 # Float column with min/max
-resource "appwrite_column" "score" {
+resource "appwrite_tablesdb_column" "score" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "score"
   type        = "float"
   float_min   = 0.0
@@ -47,9 +61,9 @@ resource "appwrite_column" "score" {
 }
 
 # Enum column with allowed values
-resource "appwrite_column" "role" {
+resource "appwrite_tablesdb_column" "role" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "role"
   type        = "enum"
   elements    = ["admin", "editor", "viewer"]
@@ -57,17 +71,17 @@ resource "appwrite_column" "role" {
 }
 
 # Datetime column
-resource "appwrite_column" "joined_at" {
+resource "appwrite_tablesdb_column" "joined_at" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "joined_at"
   type        = "datetime"
 }
 
 # Array column
-resource "appwrite_column" "tags" {
+resource "appwrite_tablesdb_column" "tags" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "tags"
   type        = "varchar"
   size        = 64
@@ -75,18 +89,18 @@ resource "appwrite_column" "tags" {
 }
 
 # Geographic point column
-resource "appwrite_column" "location" {
+resource "appwrite_tablesdb_column" "location" {
   database_id = appwrite_tablesdb.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "location"
   type        = "point"
 }
 
 # Relationship column
-resource "appwrite_column" "author" {
+resource "appwrite_tablesdb_column" "author" {
   database_id       = appwrite_tablesdb.main.id
-  table_id          = appwrite_table.posts.id
-  related_table_id  = appwrite_table.users.id
+  table_id          = appwrite_tablesdb_table.posts.id
+  related_table_id  = appwrite_tablesdb_table.users.id
   type              = "relationship"
   relationship_type = "manyToOne"
   two_way           = true

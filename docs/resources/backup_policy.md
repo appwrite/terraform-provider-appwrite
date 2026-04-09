@@ -1,18 +1,18 @@
 ---
-page_title: "appwrite_tablesdb_backup_policy Resource"
+page_title: "appwrite_backup_policy Resource"
 description: |-
-  Manages an Appwrite database backup policy.
+  Manages an Appwrite backup policy.
 ---
 
-# appwrite_tablesdb_backup_policy (Resource)
+# appwrite_backup_policy (Resource)
 
-Manages an Appwrite database backup policy.
+Manages an Appwrite backup policy.
 
 ## Example Usage
 
 ```terraform
-# Daily database backup with 7 day retention
-resource "appwrite_tablesdb_backup_policy" "daily" {
+# Daily backup of all databases with 7 day retention
+resource "appwrite_backup_policy" "daily" {
   name      = "Daily Database Backup"
   services  = ["databases"]
   retention = 7
@@ -20,7 +20,11 @@ resource "appwrite_tablesdb_backup_policy" "daily" {
 }
 
 # Backup a specific database
-resource "appwrite_tablesdb_backup_policy" "production" {
+resource "appwrite_tablesdb" "main" {
+  name = "main"
+}
+
+resource "appwrite_backup_policy" "production" {
   name        = "Production Database Backup"
   services    = ["databases"]
   resource_id = appwrite_tablesdb.main.id
@@ -55,5 +59,9 @@ resource "appwrite_tablesdb_backup_policy" "production" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_tablesdb_backup_policy.daily <policy-id>
+terraform import appwrite_backup_policy.daily <policy-id>
 ```
+
+## See Also
+
+- [appwrite_tablesdb](tablesdb.md) - Manage databases

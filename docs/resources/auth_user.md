@@ -11,13 +11,13 @@ Manages an Appwrite user.
 ## Example Usage
 
 ```terraform
-resource "appwrite_user" "john" {
+resource "appwrite_auth_user" "john" {
   name     = "John Doe"
   email    = "john@example.com"
   password = var.user_password
 }
 
-resource "appwrite_user" "admin" {
+resource "appwrite_auth_user" "admin" {
   name     = "Admin"
   email    = "admin@example.com"
   password = var.admin_password
@@ -52,3 +52,7 @@ Import is supported using the following syntax:
 ```shell
 terraform import appwrite_auth_user.john <user-id>
 ```
+
+## See Also
+
+- [appwrite_auth_team](auth_team.md) - Manage teams

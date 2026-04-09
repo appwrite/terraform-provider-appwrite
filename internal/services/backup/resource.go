@@ -45,12 +45,12 @@ func NewPolicyResource() resource.Resource {
 }
 
 func (r *policyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_tablesdb_backup_policy"
+	resp.TypeName = req.ProviderTypeName + "_backup_policy"
 }
 
 func (r *policyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages an Appwrite database backup policy.",
+		Description: "Manages an Appwrite backup policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The backup policy ID.",
