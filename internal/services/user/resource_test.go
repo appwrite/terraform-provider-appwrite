@@ -16,15 +16,15 @@ func TestAccUserResource_basic(t *testing.T) {
 			{
 				Config: testAccUserConfig("test-user", "Test User", "test@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_user.test", "id", "test-user"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "name", "Test User"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "email", "test@example.com"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "status", "true"),
-					resource.TestCheckResourceAttrSet("appwrite_user.test", "created_at"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "id", "test-user"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "name", "Test User"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "email", "test@example.com"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "status", "true"),
+					resource.TestCheckResourceAttrSet("appwrite_auth_user.test", "created_at"),
 				),
 			},
 			{
-				ResourceName:            "appwrite_user.test",
+				ResourceName:            "appwrite_auth_user.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password"},
@@ -32,8 +32,8 @@ func TestAccUserResource_basic(t *testing.T) {
 			{
 				Config: testAccUserConfig("test-user", "Updated User", "updated@example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_user.test", "name", "Updated User"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "email", "updated@example.com"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "name", "Updated User"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "email", "updated@example.com"),
 				),
 			},
 		},
@@ -47,7 +47,7 @@ func TestAccUserResource_with_labels(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-resource "appwrite_user" "test" {
+resource "appwrite_auth_user" "test" {
   id       = "admin-user"
   name     = "Admin"
   email    = "admin@example.com"
@@ -56,9 +56,9 @@ resource "appwrite_user" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_user.test", "labels.#", "2"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "labels.0", "admin"),
-					resource.TestCheckResourceAttr("appwrite_user.test", "labels.1", "staff"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "labels.#", "2"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "labels.0", "admin"),
+					resource.TestCheckResourceAttr("appwrite_auth_user.test", "labels.1", "staff"),
 				),
 			},
 		},
@@ -67,7 +67,7 @@ resource "appwrite_user" "test" {
 
 func testAccUserConfig(id, name, email string) string {
 	return fmt.Sprintf(`
-resource "appwrite_user" "test" {
+resource "appwrite_auth_user" "test" {
   id       = %q
   name     = %q
   email    = %q

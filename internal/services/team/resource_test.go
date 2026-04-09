@@ -16,20 +16,20 @@ func TestAccTeamResource_basic(t *testing.T) {
 			{
 				Config: testAccTeamConfig("engineering", "Engineering"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_team.test", "id", "engineering"),
-					resource.TestCheckResourceAttr("appwrite_team.test", "name", "Engineering"),
-					resource.TestCheckResourceAttrSet("appwrite_team.test", "created_at"),
+					resource.TestCheckResourceAttr("appwrite_auth_team.test", "id", "engineering"),
+					resource.TestCheckResourceAttr("appwrite_auth_team.test", "name", "Engineering"),
+					resource.TestCheckResourceAttrSet("appwrite_auth_team.test", "created_at"),
 				),
 			},
 			{
-				ResourceName:      "appwrite_team.test",
+				ResourceName:      "appwrite_auth_team.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				Config: testAccTeamConfig("engineering", "Engineering Team"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_team.test", "name", "Engineering Team"),
+					resource.TestCheckResourceAttr("appwrite_auth_team.test", "name", "Engineering Team"),
 				),
 			},
 		},
@@ -38,7 +38,7 @@ func TestAccTeamResource_basic(t *testing.T) {
 
 func testAccTeamConfig(id, name string) string {
 	return fmt.Sprintf(`
-resource "appwrite_team" "test" {
+resource "appwrite_auth_team" "test" {
   id   = %q
   name = %q
 }

@@ -13,11 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/backup"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
 	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/row"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/team"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
@@ -123,6 +125,7 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		Messaging: appwrite.NewMessaging(c),
 		Users:     appwrite.NewUsers(c),
 		Teams:     appwrite.NewTeams(c),
+		Backups:   appwrite.NewBackups(c),
 	}
 
 	resp.DataSourceData = clients
@@ -140,6 +143,8 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		messagingprovider.NewProviderResource,
 		user.NewUserResource,
 		team.NewTeamResource,
+		backup.NewPolicyResource,
+		row.NewRowResource,
 	}
 }
 

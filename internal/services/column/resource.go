@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -57,7 +58,7 @@ func NewColumnResource() resource.Resource {
 }
 
 func (r *columnResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_column"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb_column"
 }
 
 func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -76,7 +77,8 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"key": schema.StringAttribute{
 				Description:   "The column key (name).",
-				Required:      true,
+				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
@@ -187,6 +189,9 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
 	key := plan.Key.ValueString()
+	if plan.Key.IsNull() || plan.Key.IsUnknown() {
+		key = id.Unique()
+	}
 	required := plan.Required.ValueBool()
 	columnType := plan.Type.ValueString()
 	array := plan.Array.ValueBool()

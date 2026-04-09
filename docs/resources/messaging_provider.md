@@ -13,7 +13,6 @@ Manages an Appwrite messaging provider.
 ```terraform
 # Sendgrid email provider
 resource "appwrite_messaging_provider" "sendgrid" {
-  id         = "sendgrid"
   name       = "sendgrid"
   type       = "sendgrid"
   api_key    = var.sendgrid_api_key
@@ -23,7 +22,6 @@ resource "appwrite_messaging_provider" "sendgrid" {
 
 # SMTP email provider
 resource "appwrite_messaging_provider" "smtp" {
-  id         = "smtp"
   name       = "smtp"
   type       = "smtp"
   host       = "smtp.example.com"
@@ -36,7 +34,6 @@ resource "appwrite_messaging_provider" "smtp" {
 
 # Twilio SMS provider
 resource "appwrite_messaging_provider" "twilio" {
-  id          = "twilio"
   name        = "twilio"
   type        = "twilio"
   account_sid = var.twilio_account_sid
@@ -46,10 +43,14 @@ resource "appwrite_messaging_provider" "twilio" {
 
 # FCM push notification provider
 resource "appwrite_messaging_provider" "fcm" {
-  id                   = "fcm"
   name                 = "fcm"
   type                 = "fcm"
   service_account_json = file("firebase-service-account.json")
+}
+
+# Topic using the provider
+resource "appwrite_messaging_topic" "announcements" {
+  name = "announcements"
 }
 ```
 
@@ -58,7 +59,6 @@ resource "appwrite_messaging_provider" "fcm" {
 
 ### Required
 
-- `id` (String) The provider ID.
 - `name` (String) The provider name.
 - `type` (String) The provider type. One of: sendgrid, mailgun, smtp, resend, twilio, vonage, msg91, telesign, textmagic, apns, fcm.
 
@@ -80,6 +80,7 @@ resource "appwrite_messaging_provider" "fcm" {
 - `from_email` (String) Sender email address. Applies to email providers.
 - `from_name` (String) Sender name. Applies to email providers.
 - `host` (String) SMTP host. Required for smtp type.
+- `id` (String) The provider ID.
 - `is_eu_region` (Boolean) Whether to use EU region. Applies to mailgun type.
 - `password` (String, Sensitive) Password. Applies to smtp type.
 - `port` (Number) SMTP port. Applies to smtp type.
@@ -102,5 +103,9 @@ resource "appwrite_messaging_provider" "fcm" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_messaging_provider.sendgrid sendgrid
+terraform import appwrite_messaging_provider.sendgrid <provider-id>
 ```
+
+## See Also
+
+- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics

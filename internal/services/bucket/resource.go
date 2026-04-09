@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/storage"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -49,7 +50,7 @@ func NewBucketResource() resource.Resource {
 }
 
 func (r *bucketResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_bucket"
+	resp.TypeName = req.ProviderTypeName + "_storage_bucket"
 }
 
 func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -58,7 +59,8 @@ func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The bucket ID. Must be unique within the project.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -190,7 +192,12 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		opts = append(opts, r.storage.WithCreateBucketTransformations(plan.Transformations.ValueBool()))
 	}
 
-	bucket, err := r.storage.CreateBucket(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
+	bucketID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		bucketID = id.Unique()
+	}
+
+	bucket, err := r.storage.CreateBucket(bucketID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating bucket", common.FormatError(err))
 		return

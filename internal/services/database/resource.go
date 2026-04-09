@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -38,7 +39,7 @@ func NewDatabaseResource() resource.Resource {
 }
 
 func (r *databaseResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_database"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb"
 }
 
 func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -47,7 +48,8 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The database ID. Must be unique within the project.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -96,12 +98,17 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	dbID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		dbID = id.Unique()
+	}
+
 	var opts []tablesdb.CreateOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		opts = append(opts, r.tablesdb.WithCreateEnabled(plan.Enabled.ValueBool()))
 	}
 
-	db, err := r.tablesdb.Create(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
+	db, err := r.tablesdb.Create(dbID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating database", common.FormatError(err))
 		return

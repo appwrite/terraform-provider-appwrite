@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -75,7 +76,8 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The provider ID.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -247,7 +249,10 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	id := plan.ID.ValueString()
+	provID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		provID = id.Unique()
+	}
 	name := plan.Name.ValueString()
 	providerType := plan.Type.ValueString()
 
@@ -275,7 +280,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateSendgridProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateSendgridProvider(id, name, opts...)
+		prov, err = r.messaging.CreateSendgridProvider(provID, name, opts...)
 
 	case "mailgun":
 		var opts []messaging.CreateMailgunProviderOption
@@ -303,7 +308,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateMailgunProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateMailgunProvider(id, name, opts...)
+		prov, err = r.messaging.CreateMailgunProvider(provID, name, opts...)
 
 	case "smtp":
 		if plan.Host.IsNull() {
@@ -341,7 +346,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateSmtpProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateSmtpProvider(id, name, plan.Host.ValueString(), opts...)
+		prov, err = r.messaging.CreateSmtpProvider(provID, name, plan.Host.ValueString(), opts...)
 
 	case "resend":
 		var opts []messaging.CreateResendProviderOption
@@ -363,7 +368,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateResendProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateResendProvider(id, name, opts...)
+		prov, err = r.messaging.CreateResendProvider(provID, name, opts...)
 
 	case "twilio":
 		var opts []messaging.CreateTwilioProviderOption
@@ -379,7 +384,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateTwilioProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateTwilioProvider(id, name, opts...)
+		prov, err = r.messaging.CreateTwilioProvider(provID, name, opts...)
 
 	case "vonage":
 		var opts []messaging.CreateVonageProviderOption
@@ -395,7 +400,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateVonageProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateVonageProvider(id, name, opts...)
+		prov, err = r.messaging.CreateVonageProvider(provID, name, opts...)
 
 	case "msg91":
 		var opts []messaging.CreateMsg91ProviderOption
@@ -411,7 +416,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateMsg91ProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateMsg91Provider(id, name, opts...)
+		prov, err = r.messaging.CreateMsg91Provider(provID, name, opts...)
 
 	case "telesign":
 		var opts []messaging.CreateTelesignProviderOption
@@ -427,7 +432,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateTelesignProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateTelesignProvider(id, name, opts...)
+		prov, err = r.messaging.CreateTelesignProvider(provID, name, opts...)
 
 	case "textmagic":
 		var opts []messaging.CreateTextmagicProviderOption
@@ -443,7 +448,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateTextmagicProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateTextmagicProvider(id, name, opts...)
+		prov, err = r.messaging.CreateTextmagicProvider(provID, name, opts...)
 
 	case "apns":
 		var opts []messaging.CreateApnsProviderOption
@@ -465,7 +470,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateApnsProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateApnsProvider(id, name, opts...)
+		prov, err = r.messaging.CreateApnsProvider(provID, name, opts...)
 
 	case "fcm":
 		var opts []messaging.CreateFcmProviderOption
@@ -475,7 +480,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
 			opts = append(opts, r.messaging.WithCreateFcmProviderEnabled(v.ValueBool()))
 		}
-		prov, err = r.messaging.CreateFcmProvider(id, name, opts...)
+		prov, err = r.messaging.CreateFcmProvider(provID, name, opts...)
 
 	default:
 		resp.Diagnostics.AddError("Unsupported provider type", fmt.Sprintf("Provider type %q is not supported.", providerType))

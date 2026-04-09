@@ -1,3 +1,3 @@
-data "appwrite_database" "main" {
-  id = appwrite_database.main.id
+data "appwrite_tablesdb" "main" {
+  id = appwrite_tablesdb.main.id
 }

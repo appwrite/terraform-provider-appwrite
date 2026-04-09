@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -43,7 +44,7 @@ func NewTableResource() resource.Resource {
 }
 
 func (r *tableResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_table"
+	resp.TypeName = req.ProviderTypeName + "_tablesdb_table"
 }
 
 func (r *tableResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -52,7 +53,8 @@ func (r *tableResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The table ID. Must be unique within the database.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -139,9 +141,14 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 		opts = append(opts, r.tablesdb.WithCreateTablePermissions(perms))
 	}
 
+	tableID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		tableID = id.Unique()
+	}
+
 	table, err := r.tablesdb.CreateTable(
 		plan.DatabaseID.ValueString(),
-		plan.ID.ValueString(),
+		tableID,
 		plan.Name.ValueString(),
 		opts...,
 	)

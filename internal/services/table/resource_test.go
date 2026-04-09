@@ -16,16 +16,16 @@ func TestAccTableResource_basic(t *testing.T) {
 			{
 				Config: testAccTableConfig("ecommerce", "products", "Products"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_table.test", "id", "products"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "name", "Products"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "database_id", "ecommerce"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "row_security", "false"),
-					resource.TestCheckResourceAttrSet("appwrite_table.test", "created_at"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "id", "products"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "name", "Products"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "database_id", "ecommerce"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "row_security", "false"),
+					resource.TestCheckResourceAttrSet("appwrite_tablesdb_table.test", "created_at"),
 				),
 			},
 			{
-				ResourceName:      "appwrite_table.test",
+				ResourceName:      "appwrite_tablesdb_table.test",
 				ImportState:       true,
 				ImportStateId:     "ecommerce/products",
 				ImportStateVerify: true,
@@ -33,7 +33,7 @@ func TestAccTableResource_basic(t *testing.T) {
 			{
 				Config: testAccTableConfig("ecommerce", "products", "All Products"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_table.test", "name", "All Products"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_table.test", "name", "All Products"),
 				),
 			},
 		},
@@ -42,13 +42,13 @@ func TestAccTableResource_basic(t *testing.T) {
 
 func testAccTableConfig(databaseId, tableId, name string) string {
 	return fmt.Sprintf(`
-resource "appwrite_database" "test" {
+resource "appwrite_tablesdb" "test" {
   id   = %q
   name = "E-Commerce"
 }
 
-resource "appwrite_table" "test" {
-  database_id = appwrite_database.test.id
+resource "appwrite_tablesdb_table" "test" {
+  database_id = appwrite_tablesdb.test.id
   id          = %q
   name        = %q
 }

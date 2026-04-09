@@ -1,1 +1,1 @@
-terraform import appwrite_messaging_provider.sendgrid sendgrid
+terraform import appwrite_messaging_provider.sendgrid <provider-id>

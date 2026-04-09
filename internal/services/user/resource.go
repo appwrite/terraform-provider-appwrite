@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/users"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -46,7 +47,7 @@ func NewUserResource() resource.Resource {
 }
 
 func (r *userResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_user"
+	resp.TypeName = req.ProviderTypeName + "_auth_user"
 }
 
 func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -55,7 +56,8 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The user ID.",
-				Required:      true,
+				Optional:      true,
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"name": schema.StringAttribute{
@@ -144,16 +146,21 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		opts = append(opts, r.users.WithCreateName(plan.Name.ValueString()))
 	}
 
-	user, err := r.users.Create(plan.ID.ValueString(), opts...)
+	userID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		userID = id.Unique()
+	}
+
+	user, err := r.users.Create(userID, opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating user", common.FormatError(err))
 		return
 	}
 
-	id := plan.ID.ValueString()
+	userID = user.Id
 
 	if !plan.Status.IsNull() && !plan.Status.IsUnknown() && !plan.Status.ValueBool() {
-		user, err = r.users.UpdateStatus(id, false)
+		user, err = r.users.UpdateStatus(userID, false)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user status", common.FormatError(err))
 			return
@@ -165,21 +172,21 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		user, err = r.users.UpdateLabels(id, labels)
+		user, err = r.users.UpdateLabels(userID, labels)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user labels", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.EmailVerification.IsNull() && !plan.EmailVerification.IsUnknown() && plan.EmailVerification.ValueBool() {
-		user, err = r.users.UpdateEmailVerification(id, true)
+		user, err = r.users.UpdateEmailVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting email verification", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.PhoneVerification.IsNull() && !plan.PhoneVerification.IsUnknown() && plan.PhoneVerification.ValueBool() {
-		user, err = r.users.UpdatePhoneVerification(id, true)
+		user, err = r.users.UpdatePhoneVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting phone verification", common.FormatError(err))
 			return
@@ -187,7 +194,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// Read final state after all updates
-	user, err = r.users.Get(id)
+	user, err = r.users.Get(userID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading user after create", common.FormatError(err))
 		return

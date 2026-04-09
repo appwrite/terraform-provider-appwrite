@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -46,7 +47,8 @@ func (r *topicResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The topic ID.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -102,7 +104,12 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 		opts = append(opts, r.messaging.WithCreateTopicSubscribe(subscribe))
 	}
 
-	topic, err := r.messaging.CreateTopic(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
+	topicID := plan.ID.ValueString()
+	if plan.ID.IsNull() || plan.ID.IsUnknown() {
+		topicID = id.Unique()
+	}
+
+	topic, err := r.messaging.CreateTopic(topicID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating topic", common.FormatError(err))
 		return

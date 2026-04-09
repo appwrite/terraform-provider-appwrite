@@ -43,48 +43,51 @@ If an environment variable is provided, then the option does not need to be set 
 
 ## Resources
 
-| Resource                      | Description        |
-|-------------------------------|--------------------|
-| `appwrite_database`           | Database           |
-| `appwrite_table`              | Database table     |
-| `appwrite_column`             | Table column       |
-| `appwrite_index`              | Table index        |
-| `appwrite_bucket`             | Storage bucket     |
-| `appwrite_messaging_provider` | Messaging provider |
-| `appwrite_messaging_topic`    | Messaging topic    |
-| `appwrite_user`               | User               |
-| `appwrite_team`               | Team               |
+| Resource                          | Description            |
+|-----------------------------------|------------------------|
+| `appwrite_tablesdb`               | Database               |
+| `appwrite_tablesdb_table`         | Database table         |
+| `appwrite_tablesdb_column`        | Table column           |
+| `appwrite_tablesdb_index`         | Table index            |
+| `appwrite_tablesdb_row`           | Table row              |
+| `appwrite_storage_bucket`         | Storage bucket         |
+| `appwrite_backup_policy`          | Backup policy          |
+| `appwrite_messaging_provider`     | Messaging provider     |
+| `appwrite_messaging_topic`        | Messaging topic        |
+| `appwrite_auth_user`              | User                   |
+| `appwrite_auth_team`              | Team                   |
+
 
 ## Data Sources
 
-| Data Source         | Description                     |
-|---------------------|---------------------------------|
-| `appwrite_database` | Look up a database by identifier |
+| Data Source         | Description                      |
+|---------------------|----------------------------------|
+| `appwrite_tablesdb` | Look up a tablesdb by identifier |
 
 ## Example
 
 ```hcl
-resource "appwrite_database" "main" {
+resource "appwrite_tablesdb" "main" {
   id   = "main"
   name = "main"
 }
 
-resource "appwrite_table" "users" {
-  database_id = appwrite_database.main.id
+resource "appwrite_tablesdb_table" "users" {
+  database_id = appwrite_tablesdb.main.id
   id          = "users"
   name        = "users"
 }
 
-resource "appwrite_column" "name" {
-  database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
+resource "appwrite_tablesdb_column" "name" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
   key         = "name"
   type        = "varchar"
   size        = 255
   required    = true
 }
 
-resource "appwrite_bucket" "images" {
+resource "appwrite_storage_bucket" "images" {
   id                     = "images"
   name                   = "images"
   maximum_file_size       = 10485760

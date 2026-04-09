@@ -1,3 +1,3 @@
 output "database_name" {
-  value = data.appwrite_database.main.name
+  value = data.appwrite_tablesdb.main.name
 }
