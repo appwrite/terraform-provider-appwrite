@@ -13,9 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/backup"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	appwritehealth "github.com/appwrite/terraform-provider-appwrite/internal/services/health"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
 	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
@@ -123,6 +125,8 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		Messaging: appwrite.NewMessaging(c),
 		Users:     appwrite.NewUsers(c),
 		Teams:     appwrite.NewTeams(c),
+		Backups:   appwrite.NewBackups(c),
+		Health:    appwrite.NewHealth(c),
 	}
 
 	resp.DataSourceData = clients
@@ -140,12 +144,14 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		messagingprovider.NewProviderResource,
 		user.NewUserResource,
 		team.NewTeamResource,
+		backup.NewPolicyResource,
 	}
 }
 
 func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		database.NewDatabaseDataSource,
+		appwritehealth.NewHealthDataSource,
 	}
 }
 

@@ -1,0 +1,1 @@
+terraform import appwrite_database_backup_policy.daily daily-db-backup

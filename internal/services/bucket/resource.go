@@ -49,7 +49,7 @@ func NewBucketResource() resource.Resource {
 }
 
 func (r *bucketResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_bucket"
+	resp.TypeName = req.ProviderTypeName + "_storage_bucket"
 }
 
 func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

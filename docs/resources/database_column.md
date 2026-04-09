@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_column Resource"
+page_title: "appwrite_database_column Resource"
 description: |-
   Manages a column in an Appwrite table.
 ---
 
-# appwrite_column (Resource)
+# appwrite_database_column (Resource)
 
 Manages a column in an Appwrite table.
 

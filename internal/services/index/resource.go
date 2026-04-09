@@ -42,7 +42,7 @@ func NewIndexResource() resource.Resource {
 }
 
 func (r *indexResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_index"
+	resp.TypeName = req.ProviderTypeName + "_database_index"
 }
 
 func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

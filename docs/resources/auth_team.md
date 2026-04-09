@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_team Resource"
+page_title: "appwrite_auth_team Resource"
 description: |-
   Manages an Appwrite team.
 ---
 
-# appwrite_team (Resource)
+# appwrite_auth_team (Resource)
 
 Manages an Appwrite team.
 

@@ -57,7 +57,7 @@ func NewColumnResource() resource.Resource {
 }
 
 func (r *columnResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_column"
+	resp.TypeName = req.ProviderTypeName + "_database_column"
 }
 
 func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

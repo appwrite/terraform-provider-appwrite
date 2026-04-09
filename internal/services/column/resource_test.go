@@ -13,7 +13,7 @@ resource "appwrite_database" "test" {
   name = "Blog"
 }
 
-resource "appwrite_table" "test" {
+resource "appwrite_database_table" "test" {
   database_id = appwrite_database.test.id
   id          = "articles"
   name        = "Articles"
@@ -27,9 +27,9 @@ func TestAccColumnResource_varchar(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "title"
   type        = "varchar"
   size        = 256
@@ -37,15 +37,15 @@ resource "appwrite_column" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "title"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "varchar"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "size", "256"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "required", "true"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "array", "false"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "title"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "varchar"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "size", "256"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "required", "true"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "array", "false"),
 				),
 			},
 			{
-				ResourceName:      "appwrite_column.test",
+				ResourceName:      "appwrite_database_column.test",
 				ImportState:       true,
 				ImportStateId:     "blog/articles/title",
 				ImportStateVerify: true,
@@ -61,9 +61,9 @@ func TestAccColumnResource_integer(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "word_count"
   type        = "integer"
   min         = 0
@@ -71,11 +71,11 @@ resource "appwrite_column" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "word_count"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "integer"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "min", "0"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "max", "100000"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "required", "false"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "word_count"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "integer"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "min", "0"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "max", "100000"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "required", "false"),
 				),
 			},
 		},
@@ -89,9 +89,9 @@ func TestAccColumnResource_float(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "reading_time_minutes"
   type        = "float"
   float_min   = 0.5
@@ -99,8 +99,8 @@ resource "appwrite_column" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "reading_time_minutes"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "float"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "reading_time_minutes"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "float"),
 				),
 			},
 		},
@@ -114,18 +114,18 @@ func TestAccColumnResource_boolean(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "published"
   type        = "boolean"
   default     = "false"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "published"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "boolean"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "required", "false"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "published"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "boolean"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "required", "false"),
 				),
 			},
 		},
@@ -139,9 +139,9 @@ func TestAccColumnResource_enum(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "category"
   type        = "enum"
   elements    = ["technology", "science", "design", "business"]
@@ -149,10 +149,10 @@ resource "appwrite_column" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "category"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "enum"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "elements.#", "4"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "default", "technology"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "category"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "enum"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "elements.#", "4"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "default", "technology"),
 				),
 			},
 		},
@@ -166,18 +166,18 @@ func TestAccColumnResource_email(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "author_email"
   type        = "email"
   required    = true
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "author_email"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "email"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "required", "true"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "author_email"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "email"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "required", "true"),
 				),
 			},
 		},
@@ -191,17 +191,17 @@ func TestAccColumnResource_datetime(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccColumnBaseConfig + `
-resource "appwrite_column" "test" {
+resource "appwrite_database_column" "test" {
   database_id = appwrite_database.test.id
-  table_id    = appwrite_table.test.id
+  table_id    = appwrite_database_table.test.id
   key         = "published_at"
   type        = "datetime"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_column.test", "key", "published_at"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "type", "datetime"),
-					resource.TestCheckResourceAttr("appwrite_column.test", "required", "false"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "key", "published_at"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "type", "datetime"),
+					resource.TestCheckResourceAttr("appwrite_database_column.test", "required", "false"),
 				),
 			},
 		},

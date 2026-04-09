@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/backups"
 	"github.com/appwrite/sdk-for-go/v2/client"
+	"github.com/appwrite/sdk-for-go/v2/health"
 	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/sdk-for-go/v2/storage"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
@@ -23,6 +25,8 @@ type AppwriteClients struct {
 	Messaging *messaging.Messaging
 	Users     *users.Users
 	Teams     *teams.Teams
+	Backups   *backups.Backups
+	Health    *health.Health
 }
 
 // IsNotFoundError checks if an Appwrite SDK error is a 404.

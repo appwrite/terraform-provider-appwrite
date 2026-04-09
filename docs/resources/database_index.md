@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_index Resource"
+page_title: "appwrite_database_index Resource"
 description: |-
   Manages an index on an Appwrite table.
 ---
 
-# appwrite_index (Resource)
+# appwrite_database_index (Resource)
 
 Manages an index on an Appwrite table.
 

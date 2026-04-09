@@ -37,7 +37,7 @@ func NewTeamResource() resource.Resource {
 }
 
 func (r *teamResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_team"
+	resp.TypeName = req.ProviderTypeName + "_auth_team"
 }
 
 func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

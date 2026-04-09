@@ -43,23 +43,26 @@ If an environment variable is provided, then the option does not need to be set 
 
 ## Resources
 
-| Resource                      | Description        |
-|-------------------------------|--------------------|
-| `appwrite_database`           | Database           |
-| `appwrite_table`              | Database table     |
-| `appwrite_column`             | Table column       |
-| `appwrite_index`              | Table index        |
-| `appwrite_bucket`             | Storage bucket     |
-| `appwrite_messaging_provider` | Messaging provider |
-| `appwrite_messaging_topic`    | Messaging topic    |
-| `appwrite_user`               | User               |
-| `appwrite_team`               | Team               |
+| Resource                          | Description            |
+|-----------------------------------|------------------------|
+| `appwrite_database`               | Database               |
+| `appwrite_database_table`         | Database table         |
+| `appwrite_database_column`        | Table column           |
+| `appwrite_database_index`         | Table index            |
+| `appwrite_database_backup_policy` | Database backup policy |
+| `appwrite_storage_bucket`         | Storage bucket         |
+| `appwrite_messaging_provider`     | Messaging provider     |
+| `appwrite_messaging_topic`        | Messaging topic        |
+| `appwrite_auth_user`              | User                   |
+| `appwrite_auth_team`              | Team                   |
+
 
 ## Data Sources
 
-| Data Source         | Description                     |
-|---------------------|---------------------------------|
+| Data Source         | Description                      |
+|---------------------|----------------------------------|
 | `appwrite_database` | Look up a database by identifier |
+| `appwrite_health`   | Appwrite server health status    |
 
 ## Example
 
@@ -69,22 +72,22 @@ resource "appwrite_database" "main" {
   name = "main"
 }
 
-resource "appwrite_table" "users" {
+resource "appwrite_database_table" "users" {
   database_id = appwrite_database.main.id
   id          = "users"
   name        = "users"
 }
 
-resource "appwrite_column" "name" {
+resource "appwrite_database_column" "name" {
   database_id = appwrite_database.main.id
-  table_id    = appwrite_table.users.id
+  table_id    = appwrite_database_table.users.id
   key         = "name"
   type        = "varchar"
   size        = 255
   required    = true
 }
 
-resource "appwrite_bucket" "images" {
+resource "appwrite_storage_bucket" "images" {
   id                     = "images"
   name                   = "images"
   maximum_file_size       = 10485760

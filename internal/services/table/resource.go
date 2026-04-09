@@ -43,7 +43,7 @@ func NewTableResource() resource.Resource {
 }
 
 func (r *tableResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_table"
+	resp.TypeName = req.ProviderTypeName + "_database_table"
 }
 
 func (r *tableResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

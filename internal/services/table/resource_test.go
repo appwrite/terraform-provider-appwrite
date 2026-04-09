@@ -16,16 +16,16 @@ func TestAccTableResource_basic(t *testing.T) {
 			{
 				Config: testAccTableConfig("ecommerce", "products", "Products"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_table.test", "id", "products"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "name", "Products"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "database_id", "ecommerce"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("appwrite_table.test", "row_security", "false"),
-					resource.TestCheckResourceAttrSet("appwrite_table.test", "created_at"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "id", "products"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "name", "Products"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "database_id", "ecommerce"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "row_security", "false"),
+					resource.TestCheckResourceAttrSet("appwrite_database_table.test", "created_at"),
 				),
 			},
 			{
-				ResourceName:      "appwrite_table.test",
+				ResourceName:      "appwrite_database_table.test",
 				ImportState:       true,
 				ImportStateId:     "ecommerce/products",
 				ImportStateVerify: true,
@@ -33,7 +33,7 @@ func TestAccTableResource_basic(t *testing.T) {
 			{
 				Config: testAccTableConfig("ecommerce", "products", "All Products"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_table.test", "name", "All Products"),
+					resource.TestCheckResourceAttr("appwrite_database_table.test", "name", "All Products"),
 				),
 			},
 		},
@@ -47,7 +47,7 @@ resource "appwrite_database" "test" {
   name = "E-Commerce"
 }
 
-resource "appwrite_table" "test" {
+resource "appwrite_database_table" "test" {
   database_id = appwrite_database.test.id
   id          = %q
   name        = %q
