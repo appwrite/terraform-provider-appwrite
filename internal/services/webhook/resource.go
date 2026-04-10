@@ -58,7 +58,7 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Description:   "The webhook ID.",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
 				Description: "The webhook name.",

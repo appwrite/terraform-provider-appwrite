@@ -56,7 +56,7 @@ func (r *policyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description:   "The backup policy ID.",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
 				Description: "The backup policy name.",

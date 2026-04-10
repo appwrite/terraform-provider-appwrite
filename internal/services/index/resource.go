@@ -64,7 +64,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description:   "The index key (name).",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"type": schema.StringAttribute{
 				Description:   "Index type: key, unique, or fulltext.",

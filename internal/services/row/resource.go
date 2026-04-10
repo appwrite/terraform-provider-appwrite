@@ -55,7 +55,7 @@ func (r *rowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description:   "The row ID.",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
 				Description:   "The database ID.",
