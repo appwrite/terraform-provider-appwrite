@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_messaging_topic Resource"
+page_title: "Resource: appwrite_messaging_topic"
 description: |-
   Manages an Appwrite messaging topic.
 ---
 
-# appwrite_messaging_topic (Resource)
+# Resource: appwrite_messaging_topic
 
 Manages an Appwrite messaging topic.
 

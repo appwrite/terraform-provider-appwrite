@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_messaging_subscriber Resource"
+page_title: "Resource: appwrite_messaging_subscriber"
 description: |-
   Manages a subscriber to an Appwrite messaging topic.
 ---
 
-# appwrite_messaging_subscriber (Resource)
+# Resource: appwrite_messaging_subscriber
 
 Manages a subscriber to an Appwrite messaging topic.
 

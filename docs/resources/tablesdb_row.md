@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_tablesdb_row Resource"
+page_title: "Resource: appwrite_tablesdb_row"
 description: |-
   Manages a row in an Appwrite tablesdb table.
 ---
 
-# appwrite_tablesdb_row (Resource)
+# Resource: appwrite_tablesdb_row
 
 Manages a row in an Appwrite tablesdb table.
 

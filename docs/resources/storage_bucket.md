@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_storage_bucket Resource"
+page_title: "Resource: appwrite_storage_bucket"
 description: |-
   Manages an Appwrite storage bucket.
 ---
 
-# appwrite_storage_bucket (Resource)
+# Resource: appwrite_storage_bucket
 
 Manages an Appwrite storage bucket.
 

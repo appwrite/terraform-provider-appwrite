@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_webhook Resource"
+page_title: "Resource: appwrite_webhook"
 description: |-
   Manages an Appwrite webhook.
 ---
 
-# appwrite_webhook (Resource)
+# Resource: appwrite_webhook
 
 Manages an Appwrite webhook.
 

@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_auth_user Resource"
+page_title: "Resource: appwrite_auth_user"
 description: |-
   Manages an Appwrite user.
 ---
 
-# appwrite_auth_user (Resource)
+# Resource: appwrite_auth_user
 
 Manages an Appwrite user.
 

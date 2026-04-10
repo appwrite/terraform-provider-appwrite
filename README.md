@@ -51,7 +51,7 @@ If an environment variable is provided, then the option does not need to be set 
 | `appwrite_tablesdb_index`         | Table index            |
 | `appwrite_tablesdb_row`           | Table row              |
 | `appwrite_storage_bucket`         | Storage bucket         |
-| `appwrite_storage_file`            | Storage file           |
+| `appwrite_storage_file`            | Storage file            |
 | `appwrite_backup_policy`          | Backup policy          |
 | `appwrite_messaging_provider`     | Messaging provider     |
 | `appwrite_messaging_topic`        | Messaging topic        |
