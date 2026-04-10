@@ -63,3 +63,7 @@ Import is supported using the following syntax:
 ```shell
 terraform import appwrite_storage_bucket.uploads <bucket-id>
 ```
+
+## See Also
+
+- [appwrite_storage_file](storage_file.md) - Manage files within a bucket

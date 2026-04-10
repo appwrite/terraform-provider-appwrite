@@ -9,3 +9,8 @@ resource "appwrite_messaging_provider" "sendgrid" {
   from_email = "noreply@example.com"
   from_name  = "application"
 }
+
+resource "appwrite_messaging_subscriber" "admin_announcements" {
+  topic_id  = appwrite_messaging_topic.announcements.id
+  target_id = "admin-email-target"
+}

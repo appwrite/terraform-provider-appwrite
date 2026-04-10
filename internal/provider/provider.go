@@ -17,13 +17,16 @@ import (
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	appwritefile "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
 	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/row"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/subscriber"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/team"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/user"
+	"github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
 )
 
 var _ provider.Provider = &appwriteProvider{}
@@ -126,6 +129,7 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		Users:     appwrite.NewUsers(c),
 		Teams:     appwrite.NewTeams(c),
 		Backups:   appwrite.NewBackups(c),
+		Webhooks:  appwrite.NewWebhooks(c),
 	}
 
 	resp.DataSourceData = clients
@@ -145,6 +149,9 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		team.NewTeamResource,
 		backup.NewPolicyResource,
 		row.NewRowResource,
+		webhook.NewWebhookResource,
+		subscriber.NewSubscriberResource,
+		appwritefile.NewFileResource,
 	}
 }
 
