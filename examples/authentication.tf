@@ -1,6 +1,6 @@
 resource "appwrite_auth_user" "john" {
   name     = "John Doe"
-  email    = "john@example.com"
+  email    = "john2@example.com"
   password = "securepassword123"
   labels   = ["admin"]
 }

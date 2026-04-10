@@ -257,14 +257,28 @@ func (r *rowResource) mapToState(ctx context.Context, row *models.Row, model *ro
 		return
 	}
 
-	// Remove system fields to get only user data
-	for key := range rawData {
-		if strings.HasPrefix(key, "$") {
-			delete(rawData, key)
+	// Parse the plan data to get the keys the user specified
+	var planData map[string]interface{}
+	if !model.Data.IsNull() && !model.Data.IsUnknown() {
+		if err := json.Unmarshal([]byte(model.Data.ValueString()), &planData); err != nil {
+			planData = nil
 		}
 	}
 
-	dataJSON, err := json.Marshal(rawData)
+	// Filter response to only include keys from the plan (or all non-system keys on import)
+	filtered := make(map[string]interface{})
+	for key, val := range rawData {
+		if strings.HasPrefix(key, "$") {
+			continue
+		}
+		if planData == nil {
+			filtered[key] = val
+		} else if _, exists := planData[key]; exists {
+			filtered[key] = val
+		}
+	}
+
+	dataJSON, err := json.Marshal(filtered)
 	if err != nil {
 		diagnostics.AddError("Error encoding row data", err.Error())
 		return
