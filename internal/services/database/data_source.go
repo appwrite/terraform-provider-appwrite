@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -17,8 +17,7 @@ var (
 )
 
 type databaseDataSource struct {
-	tablesdb  *tablesdb.TablesDB
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type databaseDataSourceModel struct {
@@ -83,8 +82,7 @@ func (d *databaseDataSource) Configure(_ context.Context, req datasource.Configu
 		)
 		return
 	}
-	d.tablesdb = clients.TablesDB
-	d.projectID = clients.ProjectID
+	d.clients = clients
 }
 
 func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -94,16 +92,21 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	db, err := d.tablesdb.Get(config.ID.ValueString())
+	projectID, err := common.ResolveProjectID(d.clients, config.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(d.clients.ClientForProject(projectID))
+
+	db, err := tablesdbClient.Get(config.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading database", common.FormatError(err))
 		return
 	}
 
 	config.ID = types.StringValue(db.Id)
-	if config.ProjectID.IsNull() || config.ProjectID.IsUnknown() {
-		config.ProjectID = types.StringValue(d.projectID)
-	}
+	config.ProjectID = types.StringValue(projectID)
 	config.Name = types.StringValue(db.Name)
 	config.Enabled = types.BoolValue(db.Enabled)
 	config.CreatedAt = types.StringValue(db.CreatedAt)

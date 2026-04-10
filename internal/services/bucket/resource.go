@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/storage"
@@ -26,8 +27,7 @@ var (
 )
 
 type bucketResource struct {
-	storage   *storage.Storage
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type bucketResourceModel struct {
@@ -144,8 +144,7 @@ func (r *bucketResource) Configure(_ context.Context, req resource.ConfigureRequ
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.storage = clients.Storage
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -155,15 +154,22 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
 	var opts []storage.CreateBucketOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, storageClient.WithCreateBucketEnabled(plan.Enabled.ValueBool()))
 	}
 	if !plan.FileSecurity.IsNull() && !plan.FileSecurity.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketFileSecurity(plan.FileSecurity.ValueBool()))
+		opts = append(opts, storageClient.WithCreateBucketFileSecurity(plan.FileSecurity.ValueBool()))
 	}
 	if !plan.MaximumFileSize.IsNull() && !plan.MaximumFileSize.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketMaximumFileSize(int(plan.MaximumFileSize.ValueInt64())))
+		opts = append(opts, storageClient.WithCreateBucketMaximumFileSize(int(plan.MaximumFileSize.ValueInt64())))
 	}
 	if !plan.AllowedFileExtensions.IsNull() && !plan.AllowedFileExtensions.IsUnknown() {
 		var extensions []string
@@ -171,7 +177,7 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithCreateBucketAllowedFileExtensions(extensions))
+		opts = append(opts, storageClient.WithCreateBucketAllowedFileExtensions(extensions))
 	}
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		var perms []string
@@ -179,19 +185,19 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithCreateBucketPermissions(perms))
+		opts = append(opts, storageClient.WithCreateBucketPermissions(perms))
 	}
 	if !plan.Compression.IsNull() && !plan.Compression.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketCompression(plan.Compression.ValueString()))
+		opts = append(opts, storageClient.WithCreateBucketCompression(plan.Compression.ValueString()))
 	}
 	if !plan.Encryption.IsNull() && !plan.Encryption.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketEncryption(plan.Encryption.ValueBool()))
+		opts = append(opts, storageClient.WithCreateBucketEncryption(plan.Encryption.ValueBool()))
 	}
 	if !plan.Antivirus.IsNull() && !plan.Antivirus.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketAntivirus(plan.Antivirus.ValueBool()))
+		opts = append(opts, storageClient.WithCreateBucketAntivirus(plan.Antivirus.ValueBool()))
 	}
 	if !plan.Transformations.IsNull() && !plan.Transformations.IsUnknown() {
-		opts = append(opts, r.storage.WithCreateBucketTransformations(plan.Transformations.ValueBool()))
+		opts = append(opts, storageClient.WithCreateBucketTransformations(plan.Transformations.ValueBool()))
 	}
 
 	bucketID := plan.ID.ValueString()
@@ -199,16 +205,14 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		bucketID = id.Unique()
 	}
 
-	bucket, err := r.storage.CreateBucket(bucketID, plan.Name.ValueString(), opts...)
+	bucket, err := storageClient.CreateBucket(bucketID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating bucket", common.FormatError(err))
 		return
 	}
 
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -219,7 +223,14 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	bucket, err := r.storage.GetBucket(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
+	bucket, err := storageClient.GetBucket(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -230,9 +241,7 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	mapBucketToModel(ctx, bucket, &state, &resp.Diagnostics)
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -243,15 +252,22 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
 	var opts []storage.UpdateBucketOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, storageClient.WithUpdateBucketEnabled(plan.Enabled.ValueBool()))
 	}
 	if !plan.FileSecurity.IsNull() && !plan.FileSecurity.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketFileSecurity(plan.FileSecurity.ValueBool()))
+		opts = append(opts, storageClient.WithUpdateBucketFileSecurity(plan.FileSecurity.ValueBool()))
 	}
 	if !plan.MaximumFileSize.IsNull() && !plan.MaximumFileSize.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketMaximumFileSize(int(plan.MaximumFileSize.ValueInt64())))
+		opts = append(opts, storageClient.WithUpdateBucketMaximumFileSize(int(plan.MaximumFileSize.ValueInt64())))
 	}
 	if !plan.AllowedFileExtensions.IsNull() && !plan.AllowedFileExtensions.IsUnknown() {
 		var extensions []string
@@ -259,7 +275,7 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithUpdateBucketAllowedFileExtensions(extensions))
+		opts = append(opts, storageClient.WithUpdateBucketAllowedFileExtensions(extensions))
 	}
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		var perms []string
@@ -267,22 +283,22 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithUpdateBucketPermissions(perms))
+		opts = append(opts, storageClient.WithUpdateBucketPermissions(perms))
 	}
 	if !plan.Compression.IsNull() && !plan.Compression.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketCompression(plan.Compression.ValueString()))
+		opts = append(opts, storageClient.WithUpdateBucketCompression(plan.Compression.ValueString()))
 	}
 	if !plan.Encryption.IsNull() && !plan.Encryption.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketEncryption(plan.Encryption.ValueBool()))
+		opts = append(opts, storageClient.WithUpdateBucketEncryption(plan.Encryption.ValueBool()))
 	}
 	if !plan.Antivirus.IsNull() && !plan.Antivirus.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketAntivirus(plan.Antivirus.ValueBool()))
+		opts = append(opts, storageClient.WithUpdateBucketAntivirus(plan.Antivirus.ValueBool()))
 	}
 	if !plan.Transformations.IsNull() && !plan.Transformations.IsUnknown() {
-		opts = append(opts, r.storage.WithUpdateBucketTransformations(plan.Transformations.ValueBool()))
+		opts = append(opts, storageClient.WithUpdateBucketTransformations(plan.Transformations.ValueBool()))
 	}
 
-	bucket, err := r.storage.UpdateBucket(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
+	bucket, err := storageClient.UpdateBucket(plan.ID.ValueString(), plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating bucket", common.FormatError(err))
 		return
@@ -299,7 +315,14 @@ func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	_, err := r.storage.DeleteBucket(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
+	_, err = storageClient.DeleteBucket(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting bucket", common.FormatError(err))
 	}

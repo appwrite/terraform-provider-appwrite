@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -23,8 +24,7 @@ var (
 )
 
 type databaseResource struct {
-	tablesdb  *tablesdb.TablesDB
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type databaseResourceModel struct {
@@ -89,8 +89,7 @@ func (r *databaseResource) Configure(_ context.Context, req resource.ConfigureRe
 		)
 		return
 	}
-	r.tablesdb = clients.TablesDB
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *databaseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -100,6 +99,13 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
 	dbID := plan.ID.ValueString()
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
 		dbID = id.Unique()
@@ -107,10 +113,10 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 
 	var opts []tablesdb.CreateOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.tablesdb.WithCreateEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, tablesdbClient.WithCreateEnabled(plan.Enabled.ValueBool()))
 	}
 
-	db, err := r.tablesdb.Create(dbID, plan.Name.ValueString(), opts...)
+	db, err := tablesdbClient.Create(dbID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating database", common.FormatError(err))
 		return
@@ -121,9 +127,7 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 	plan.Enabled = types.BoolValue(db.Enabled)
 	plan.CreatedAt = types.StringValue(db.CreatedAt)
 	plan.UpdatedAt = types.StringValue(db.UpdatedAt)
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -135,7 +139,14 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	db, err := r.tablesdb.Get(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	db, err := tablesdbClient.Get(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -150,10 +161,7 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 	state.Enabled = types.BoolValue(db.Enabled)
 	state.CreatedAt = types.StringValue(db.CreatedAt)
 	state.UpdatedAt = types.StringValue(db.UpdatedAt)
-
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -165,12 +173,19 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
 	opts := []tablesdb.UpdateOption{
-		r.tablesdb.WithUpdateName(plan.Name.ValueString()),
-		r.tablesdb.WithUpdateEnabled(plan.Enabled.ValueBool()),
+		tablesdbClient.WithUpdateName(plan.Name.ValueString()),
+		tablesdbClient.WithUpdateEnabled(plan.Enabled.ValueBool()),
 	}
 
-	db, err := r.tablesdb.Update(plan.ID.ValueString(), opts...)
+	db, err := tablesdbClient.Update(plan.ID.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating database", common.FormatError(err))
 		return
@@ -192,7 +207,14 @@ func (r *databaseResource) Delete(ctx context.Context, req resource.DeleteReques
 		return
 	}
 
-	_, err := r.tablesdb.Delete(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	_, err = tablesdbClient.Delete(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting database", common.FormatError(err))
 	}

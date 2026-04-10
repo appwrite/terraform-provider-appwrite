@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/webhooks"
@@ -25,8 +26,7 @@ var (
 )
 
 type webhookResource struct {
-	webhooks  *webhooks.Webhooks
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type webhookResourceModel struct {
@@ -123,8 +123,7 @@ func (r *webhookResource) Configure(_ context.Context, req resource.ConfigureReq
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.webhooks = clients.Webhooks
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -133,6 +132,13 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	webhooksClient := appwrite.NewWebhooks(r.clients.ClientForProject(projectID))
 
 	webhookID := plan.ID.ValueString()
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
@@ -147,28 +153,26 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 
 	var opts []webhooks.CreateOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.webhooks.WithCreateEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, webhooksClient.WithCreateEnabled(plan.Enabled.ValueBool()))
 	}
 	if !plan.Security.IsNull() && !plan.Security.IsUnknown() {
-		opts = append(opts, r.webhooks.WithCreateSecurity(plan.Security.ValueBool()))
+		opts = append(opts, webhooksClient.WithCreateSecurity(plan.Security.ValueBool()))
 	}
 	if !plan.HttpUser.IsNull() {
-		opts = append(opts, r.webhooks.WithCreateHttpUser(plan.HttpUser.ValueString()))
+		opts = append(opts, webhooksClient.WithCreateHttpUser(plan.HttpUser.ValueString()))
 	}
 	if !plan.HttpPass.IsNull() {
-		opts = append(opts, r.webhooks.WithCreateHttpPass(plan.HttpPass.ValueString()))
+		opts = append(opts, webhooksClient.WithCreateHttpPass(plan.HttpPass.ValueString()))
 	}
 
-	webhook, err := r.webhooks.Create(webhookID, plan.URL.ValueString(), plan.Name.ValueString(), events, opts...)
+	webhook, err := webhooksClient.Create(webhookID, plan.URL.ValueString(), plan.Name.ValueString(), events, opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating webhook", common.FormatError(err))
 		return
 	}
 
 	r.mapToState(ctx, webhook, &plan, &resp.Diagnostics)
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -179,7 +183,14 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	webhook, err := r.webhooks.Get(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	webhooksClient := appwrite.NewWebhooks(r.clients.ClientForProject(projectID))
+
+	webhook, err := webhooksClient.Get(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -190,9 +201,7 @@ func (r *webhookResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	r.mapToState(ctx, webhook, &state, &resp.Diagnostics)
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -203,6 +212,13 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	webhooksClient := appwrite.NewWebhooks(r.clients.ClientForProject(projectID))
+
 	var events []string
 	resp.Diagnostics.Append(plan.Events.ElementsAs(ctx, &events, false)...)
 	if resp.Diagnostics.HasError() {
@@ -211,19 +227,19 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	var opts []webhooks.UpdateOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.webhooks.WithUpdateEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, webhooksClient.WithUpdateEnabled(plan.Enabled.ValueBool()))
 	}
 	if !plan.Security.IsNull() && !plan.Security.IsUnknown() {
-		opts = append(opts, r.webhooks.WithUpdateSecurity(plan.Security.ValueBool()))
+		opts = append(opts, webhooksClient.WithUpdateSecurity(plan.Security.ValueBool()))
 	}
 	if !plan.HttpUser.IsNull() {
-		opts = append(opts, r.webhooks.WithUpdateHttpUser(plan.HttpUser.ValueString()))
+		opts = append(opts, webhooksClient.WithUpdateHttpUser(plan.HttpUser.ValueString()))
 	}
 	if !plan.HttpPass.IsNull() {
-		opts = append(opts, r.webhooks.WithUpdateHttpPass(plan.HttpPass.ValueString()))
+		opts = append(opts, webhooksClient.WithUpdateHttpPass(plan.HttpPass.ValueString()))
 	}
 
-	webhook, err := r.webhooks.Update(plan.ID.ValueString(), plan.Name.ValueString(), plan.URL.ValueString(), events, opts...)
+	webhook, err := webhooksClient.Update(plan.ID.ValueString(), plan.Name.ValueString(), plan.URL.ValueString(), events, opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating webhook", common.FormatError(err))
 		return
@@ -240,7 +256,14 @@ func (r *webhookResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	_, err := r.webhooks.Delete(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	webhooksClient := appwrite.NewWebhooks(r.clients.ClientForProject(projectID))
+
+	_, err = webhooksClient.Delete(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting webhook", common.FormatError(err))
 	}

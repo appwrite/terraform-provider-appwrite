@@ -118,21 +118,6 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		ProjectID:   projectID,
 	}
 
-	if projectID != "" {
-		allOpts := make([]client.ClientOption, len(baseOpts))
-		copy(allOpts, baseOpts)
-		allOpts = append(allOpts, appwrite.WithProject(projectID))
-		c := appwrite.NewClient(allOpts...)
-
-		clients.TablesDB = appwrite.NewTablesDB(c)
-		clients.Storage = appwrite.NewStorage(c)
-		clients.Messaging = appwrite.NewMessaging(c)
-		clients.Users = appwrite.NewUsers(c)
-		clients.Teams = appwrite.NewTeams(c)
-		clients.Backups = appwrite.NewBackups(c)
-		clients.Webhooks = appwrite.NewWebhooks(c)
-	}
-
 	resp.DataSourceData = clients
 	resp.ResourceData = clients
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -22,8 +23,7 @@ var (
 )
 
 type topicResource struct {
-	messaging *messaging.Messaging
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type topicResourceModel struct {
@@ -85,8 +85,7 @@ func (r *topicResource) Configure(_ context.Context, req resource.ConfigureReque
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.messaging = clients.Messaging
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -96,6 +95,13 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
 	var opts []messaging.CreateTopicOption
 	if !plan.Subscribe.IsNull() && !plan.Subscribe.IsUnknown() {
 		var subscribe []string
@@ -103,7 +109,7 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.messaging.WithCreateTopicSubscribe(subscribe))
+		opts = append(opts, messagingClient.WithCreateTopicSubscribe(subscribe))
 	}
 
 	topicID := plan.ID.ValueString()
@@ -111,7 +117,7 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 		topicID = id.Unique()
 	}
 
-	topic, err := r.messaging.CreateTopic(topicID, plan.Name.ValueString(), opts...)
+	topic, err := messagingClient.CreateTopic(topicID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating topic", common.FormatError(err))
 		return
@@ -125,9 +131,7 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(diags...)
 	plan.Subscribe = subList
 
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -138,7 +142,14 @@ func (r *topicResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	topic, err := r.messaging.GetTopic(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
+	topic, err := messagingClient.GetTopic(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -156,9 +167,7 @@ func (r *topicResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	resp.Diagnostics.Append(diags...)
 	state.Subscribe = subList
 
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -169,18 +178,25 @@ func (r *topicResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
 	var opts []messaging.UpdateTopicOption
-	opts = append(opts, r.messaging.WithUpdateTopicName(plan.Name.ValueString()))
+	opts = append(opts, messagingClient.WithUpdateTopicName(plan.Name.ValueString()))
 	if !plan.Subscribe.IsNull() && !plan.Subscribe.IsUnknown() {
 		var subscribe []string
 		resp.Diagnostics.Append(plan.Subscribe.ElementsAs(ctx, &subscribe, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.messaging.WithUpdateTopicSubscribe(subscribe))
+		opts = append(opts, messagingClient.WithUpdateTopicSubscribe(subscribe))
 	}
 
-	topic, err := r.messaging.UpdateTopic(plan.ID.ValueString(), opts...)
+	topic, err := messagingClient.UpdateTopic(plan.ID.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating topic", common.FormatError(err))
 		return
@@ -194,6 +210,7 @@ func (r *topicResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(diags...)
 	plan.Subscribe = subList
 
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -204,7 +221,14 @@ func (r *topicResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	_, err := r.messaging.DeleteTopic(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
+	_, err = messagingClient.DeleteTopic(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting topic", common.FormatError(err))
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/backups"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
@@ -25,8 +26,7 @@ var (
 )
 
 type policyResource struct {
-	backups   *backups.Backups
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type policyResourceModel struct {
@@ -109,8 +109,7 @@ func (r *policyResource) Configure(_ context.Context, req resource.ConfigureRequ
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.backups = clients.Backups
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -120,6 +119,13 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	backupsClient := appwrite.NewBackups(r.clients.ClientForProject(projectID))
+
 	var services []string
 	resp.Diagnostics.Append(plan.Services.ElementsAs(ctx, &services, false)...)
 	if resp.Diagnostics.HasError() {
@@ -128,13 +134,13 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	var opts []backups.CreatePolicyOption
 	if !plan.Name.IsNull() {
-		opts = append(opts, r.backups.WithCreatePolicyName(plan.Name.ValueString()))
+		opts = append(opts, backupsClient.WithCreatePolicyName(plan.Name.ValueString()))
 	}
 	if !plan.ResourceID.IsNull() {
-		opts = append(opts, r.backups.WithCreatePolicyResourceId(plan.ResourceID.ValueString()))
+		opts = append(opts, backupsClient.WithCreatePolicyResourceId(plan.ResourceID.ValueString()))
 	}
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.backups.WithCreatePolicyEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, backupsClient.WithCreatePolicyEnabled(plan.Enabled.ValueBool()))
 	}
 
 	policyID := plan.ID.ValueString()
@@ -142,7 +148,7 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 		policyID = id.Unique()
 	}
 
-	policy, err := r.backups.CreatePolicy(
+	policy, err := backupsClient.CreatePolicy(
 		policyID,
 		services,
 		int(plan.Retention.ValueInt64()),
@@ -155,9 +161,7 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	r.mapToState(ctx, policy, &plan, &resp.Diagnostics)
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -168,7 +172,14 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	policy, err := r.backups.GetPolicy(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	backupsClient := appwrite.NewBackups(r.clients.ClientForProject(projectID))
+
+	policy, err := backupsClient.GetPolicy(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -179,9 +190,7 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	r.mapToState(ctx, policy, &state, &resp.Diagnostics)
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -192,21 +201,28 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	backupsClient := appwrite.NewBackups(r.clients.ClientForProject(projectID))
+
 	var opts []backups.UpdatePolicyOption
 	if !plan.Name.IsNull() {
-		opts = append(opts, r.backups.WithUpdatePolicyName(plan.Name.ValueString()))
+		opts = append(opts, backupsClient.WithUpdatePolicyName(plan.Name.ValueString()))
 	}
 	if !plan.Retention.IsNull() {
-		opts = append(opts, r.backups.WithUpdatePolicyRetention(int(plan.Retention.ValueInt64())))
+		opts = append(opts, backupsClient.WithUpdatePolicyRetention(int(plan.Retention.ValueInt64())))
 	}
 	if !plan.Schedule.IsNull() {
-		opts = append(opts, r.backups.WithUpdatePolicySchedule(plan.Schedule.ValueString()))
+		opts = append(opts, backupsClient.WithUpdatePolicySchedule(plan.Schedule.ValueString()))
 	}
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.backups.WithUpdatePolicyEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, backupsClient.WithUpdatePolicyEnabled(plan.Enabled.ValueBool()))
 	}
 
-	policy, err := r.backups.UpdatePolicy(plan.ID.ValueString(), opts...)
+	policy, err := backupsClient.UpdatePolicy(plan.ID.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating backup policy", common.FormatError(err))
 		return
@@ -223,7 +239,14 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	_, err := r.backups.DeletePolicy(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	backupsClient := appwrite.NewBackups(r.clients.ClientForProject(projectID))
+
+	_, err = backupsClient.DeletePolicy(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting backup policy", common.FormatError(err))
 	}

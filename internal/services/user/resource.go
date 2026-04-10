@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/users"
@@ -25,8 +26,7 @@ var (
 )
 
 type userResource struct {
-	users     *users.Users
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type userResourceModel struct {
@@ -125,8 +125,7 @@ func (r *userResource) Configure(_ context.Context, req resource.ConfigureReques
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.users = clients.Users
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -136,18 +135,25 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	usersClient := appwrite.NewUsers(r.clients.ClientForProject(projectID))
+
 	var opts []users.CreateOption
 	if !plan.Email.IsNull() {
-		opts = append(opts, r.users.WithCreateEmail(plan.Email.ValueString()))
+		opts = append(opts, usersClient.WithCreateEmail(plan.Email.ValueString()))
 	}
 	if !plan.Phone.IsNull() {
-		opts = append(opts, r.users.WithCreatePhone(plan.Phone.ValueString()))
+		opts = append(opts, usersClient.WithCreatePhone(plan.Phone.ValueString()))
 	}
 	if !plan.Password.IsNull() {
-		opts = append(opts, r.users.WithCreatePassword(plan.Password.ValueString()))
+		opts = append(opts, usersClient.WithCreatePassword(plan.Password.ValueString()))
 	}
 	if !plan.Name.IsNull() {
-		opts = append(opts, r.users.WithCreateName(plan.Name.ValueString()))
+		opts = append(opts, usersClient.WithCreateName(plan.Name.ValueString()))
 	}
 
 	userID := plan.ID.ValueString()
@@ -155,7 +161,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		userID = id.Unique()
 	}
 
-	user, err := r.users.Create(userID, opts...)
+	user, err := usersClient.Create(userID, opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating user", common.FormatError(err))
 		return
@@ -164,7 +170,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	userID = user.Id
 
 	if !plan.Status.IsNull() && !plan.Status.IsUnknown() && !plan.Status.ValueBool() {
-		user, err = r.users.UpdateStatus(userID, false)
+		user, err = usersClient.UpdateStatus(userID, false)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user status", common.FormatError(err))
 			return
@@ -176,21 +182,21 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		user, err = r.users.UpdateLabels(userID, labels)
+		user, err = usersClient.UpdateLabels(userID, labels)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user labels", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.EmailVerification.IsNull() && !plan.EmailVerification.IsUnknown() && plan.EmailVerification.ValueBool() {
-		user, err = r.users.UpdateEmailVerification(userID, true)
+		user, err = usersClient.UpdateEmailVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting email verification", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.PhoneVerification.IsNull() && !plan.PhoneVerification.IsUnknown() && plan.PhoneVerification.ValueBool() {
-		user, err = r.users.UpdatePhoneVerification(userID, true)
+		user, err = usersClient.UpdatePhoneVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting phone verification", common.FormatError(err))
 			return
@@ -198,16 +204,14 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// Read final state after all updates
-	user, err = r.users.Get(userID)
+	user, err = usersClient.Get(userID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading user after create", common.FormatError(err))
 		return
 	}
 
 	r.mapToState(ctx, user, &plan, &resp.Diagnostics)
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -218,7 +222,14 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	user, err := r.users.Get(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	usersClient := appwrite.NewUsers(r.clients.ClientForProject(projectID))
+
+	user, err := usersClient.Get(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -229,9 +240,7 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	r.mapToState(ctx, user, &state, &resp.Diagnostics)
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -242,6 +251,13 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	usersClient := appwrite.NewUsers(r.clients.ClientForProject(projectID))
+
 	var current userResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &current)...)
 	if resp.Diagnostics.HasError() {
@@ -250,38 +266,37 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	id := plan.ID.ValueString()
 	var user *models.User
-	var err error
 
 	if !plan.Name.IsNull() && plan.Name != current.Name {
-		user, err = r.users.UpdateName(id, plan.Name.ValueString())
+		user, err = usersClient.UpdateName(id, plan.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user name", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.Email.IsNull() && plan.Email != current.Email {
-		user, err = r.users.UpdateEmail(id, plan.Email.ValueString())
+		user, err = usersClient.UpdateEmail(id, plan.Email.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user email", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.Phone.IsNull() && plan.Phone != current.Phone {
-		user, err = r.users.UpdatePhone(id, plan.Phone.ValueString())
+		user, err = usersClient.UpdatePhone(id, plan.Phone.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user phone", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.Password.IsNull() && plan.Password != current.Password {
-		user, err = r.users.UpdatePassword(id, plan.Password.ValueString())
+		user, err = usersClient.UpdatePassword(id, plan.Password.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user password", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.Status.IsNull() && plan.Status != current.Status {
-		user, err = r.users.UpdateStatus(id, plan.Status.ValueBool())
+		user, err = usersClient.UpdateStatus(id, plan.Status.ValueBool())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user status", common.FormatError(err))
 			return
@@ -293,21 +308,21 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		user, err = r.users.UpdateLabels(id, labels)
+		user, err = usersClient.UpdateLabels(id, labels)
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user labels", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.EmailVerification.IsNull() && plan.EmailVerification != current.EmailVerification {
-		user, err = r.users.UpdateEmailVerification(id, plan.EmailVerification.ValueBool())
+		user, err = usersClient.UpdateEmailVerification(id, plan.EmailVerification.ValueBool())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating email verification", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.PhoneVerification.IsNull() && plan.PhoneVerification != current.PhoneVerification {
-		user, err = r.users.UpdatePhoneVerification(id, plan.PhoneVerification.ValueBool())
+		user, err = usersClient.UpdatePhoneVerification(id, plan.PhoneVerification.ValueBool())
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating phone verification", common.FormatError(err))
 			return
@@ -315,7 +330,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if user == nil {
-		user, err = r.users.Get(id)
+		user, err = usersClient.Get(id)
 		if err != nil {
 			resp.Diagnostics.AddError("Error reading user", common.FormatError(err))
 			return
@@ -333,7 +348,14 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, err := r.users.Delete(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	usersClient := appwrite.NewUsers(r.clients.ClientForProject(projectID))
+
+	_, err = usersClient.Delete(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting user", common.FormatError(err))
 	}

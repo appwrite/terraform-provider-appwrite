@@ -7,14 +7,7 @@ import (
 	"strings"
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
-	"github.com/appwrite/sdk-for-go/v2/backups"
 	"github.com/appwrite/sdk-for-go/v2/client"
-	"github.com/appwrite/sdk-for-go/v2/messaging"
-	"github.com/appwrite/sdk-for-go/v2/storage"
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
-	"github.com/appwrite/sdk-for-go/v2/teams"
-	"github.com/appwrite/sdk-for-go/v2/users"
-	"github.com/appwrite/sdk-for-go/v2/webhooks"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -23,19 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// AppwriteClients holds the configured SDK service clients and base configuration
-// for creating per-project clients when organization-level API keys are used.
+// AppwriteClients holds the base configuration for creating SDK clients.
 type AppwriteClients struct {
-	// Pre-configured service clients using the provider-level project_id.
-	TablesDB  *tablesdb.TablesDB
-	Storage   *storage.Storage
-	Messaging *messaging.Messaging
-	Users     *users.Users
-	Teams     *teams.Teams
-	Backups   *backups.Backups
-	Webhooks  *webhooks.Webhooks
-
-	// Base configuration for creating per-project clients (no project set).
+	// BaseOptions contains the client options without a project (endpoint + key + self_signed).
 	BaseOptions []client.ClientOption
 	// ProjectID is the provider-level default project ID.
 	ProjectID string
@@ -59,97 +42,6 @@ func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) 
 		return clients.ProjectID, nil
 	}
 	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
-}
-
-// GetTablesDB returns a TablesDB client for the resolved project.
-func (ac *AppwriteClients) GetTablesDB(resourceProjectID types.String) (*tablesdb.TablesDB, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.TablesDB != nil {
-		return ac.TablesDB, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewTablesDB(c), projectID, nil
-}
-
-// GetStorage returns a Storage client for the resolved project.
-func (ac *AppwriteClients) GetStorage(resourceProjectID types.String) (*storage.Storage, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Storage != nil {
-		return ac.Storage, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewStorage(c), projectID, nil
-}
-
-// GetMessaging returns a Messaging client for the resolved project.
-func (ac *AppwriteClients) GetMessaging(resourceProjectID types.String) (*messaging.Messaging, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Messaging != nil {
-		return ac.Messaging, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewMessaging(c), projectID, nil
-}
-
-// GetUsers returns a Users client for the resolved project.
-func (ac *AppwriteClients) GetUsers(resourceProjectID types.String) (*users.Users, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Users != nil {
-		return ac.Users, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewUsers(c), projectID, nil
-}
-
-// GetTeams returns a Teams client for the resolved project.
-func (ac *AppwriteClients) GetTeams(resourceProjectID types.String) (*teams.Teams, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Teams != nil {
-		return ac.Teams, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewTeams(c), projectID, nil
-}
-
-// GetBackups returns a Backups client for the resolved project.
-func (ac *AppwriteClients) GetBackups(resourceProjectID types.String) (*backups.Backups, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Backups != nil {
-		return ac.Backups, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewBackups(c), projectID, nil
-}
-
-// GetWebhooks returns a Webhooks client for the resolved project.
-func (ac *AppwriteClients) GetWebhooks(resourceProjectID types.String) (*webhooks.Webhooks, string, error) {
-	projectID, err := ResolveProjectID(ac, resourceProjectID)
-	if err != nil {
-		return nil, "", err
-	}
-	if projectID == ac.ProjectID && ac.Webhooks != nil {
-		return ac.Webhooks, projectID, nil
-	}
-	c := ac.ClientForProject(projectID)
-	return appwrite.NewWebhooks(c), projectID, nil
 }
 
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.

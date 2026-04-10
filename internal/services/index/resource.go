@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -24,8 +25,7 @@ var (
 )
 
 type indexResource struct {
-	tablesdb  *tablesdb.TablesDB
-	projectID string
+	clients *common.AppwriteClients
 }
 
 type indexResourceModel struct {
@@ -100,8 +100,7 @@ func (r *indexResource) Configure(_ context.Context, req resource.ConfigureReque
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.tablesdb = clients.TablesDB
-	r.projectID = clients.ProjectID
+	r.clients = clients
 }
 
 func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -110,6 +109,13 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
 
 	var columns []string
 	resp.Diagnostics.Append(plan.Columns.ElementsAs(ctx, &columns, false)...)
@@ -124,13 +130,13 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.tablesdb.WithCreateIndexOrders(orders))
+		opts = append(opts, tablesdbClient.WithCreateIndexOrders(orders))
 	}
 
 	// Appwrite creates columns asynchronously. Wait for all columns to become available.
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
-	if err := r.waitForColumns(ctx, databaseId, tableId, columns); err != nil {
+	if err := r.waitForColumns(ctx, tablesdbClient, databaseId, tableId, columns); err != nil {
 		resp.Diagnostics.AddError("Error waiting for columns", err.Error())
 		return
 	}
@@ -140,7 +146,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		indexKey = id.Unique()
 	}
 
-	idx, err := r.tablesdb.CreateIndex(
+	idx, err := tablesdbClient.CreateIndex(
 		databaseId,
 		tableId,
 		indexKey,
@@ -165,9 +171,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		resp.Diagnostics.Append(diags...)
 		plan.Orders = orderList
 	}
-	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
-		plan.ProjectID = types.StringValue(r.projectID)
-	}
+	plan.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -179,7 +183,14 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	idx, err := r.tablesdb.GetIndex(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	idx, err := tablesdbClient.GetIndex(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -201,10 +212,7 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		resp.Diagnostics.Append(diags...)
 		state.Orders = orderList
 	}
-
-	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
-		state.ProjectID = types.StringValue(r.projectID)
-	}
+	state.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -221,7 +229,14 @@ func (r *indexResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	_, err := r.tablesdb.DeleteIndex(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	_, err = tablesdbClient.DeleteIndex(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting index", common.FormatError(err))
 	}
@@ -239,7 +254,7 @@ func (r *indexResource) ImportState(ctx context.Context, req resource.ImportStat
 }
 
 // waitForColumns polls each column until its status is "available" or the context is cancelled.
-func (r *indexResource) waitForColumns(ctx context.Context, databaseId, tableId string, columns []string) error {
+func (r *indexResource) waitForColumns(ctx context.Context, tablesdbClient *tablesdb.TablesDB, databaseId, tableId string, columns []string) error {
 	for _, col := range columns {
 		for {
 			select {
@@ -248,7 +263,7 @@ func (r *indexResource) waitForColumns(ctx context.Context, databaseId, tableId 
 			default:
 			}
 
-			raw, err := r.tablesdb.GetColumn(databaseId, tableId, col)
+			raw, err := tablesdbClient.GetColumn(databaseId, tableId, col)
 			if err != nil {
 				return fmt.Errorf("error checking column %q status: %w", col, err)
 			}
