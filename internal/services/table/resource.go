@@ -25,7 +25,8 @@ var (
 )
 
 type tableResource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type tableResourceModel struct {
@@ -37,6 +38,7 @@ type tableResourceModel struct {
 	Permissions types.List   `tfsdk:"permissions"`
 	CreatedAt   types.String `tfsdk:"created_at"`
 	UpdatedAt   types.String `tfsdk:"updated_at"`
+	ProjectID   types.String `tfsdk:"project_id"`
 }
 
 func NewTableResource() resource.Resource {
@@ -93,6 +95,7 @@ func (r *tableResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "The table last update timestamp.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -110,6 +113,7 @@ func (r *tableResource) Configure(_ context.Context, req resource.ConfigureReque
 		return
 	}
 	r.tablesdb = clients.TablesDB
+	r.projectID = clients.ProjectID
 }
 
 func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -161,6 +165,9 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 	permsList, diags := types.ListValueFrom(ctx, types.StringType, table.Permissions)
 	resp.Diagnostics.Append(diags...)
 	plan.Permissions = permsList
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -192,6 +199,10 @@ func (r *tableResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	permsList, diags := types.ListValueFrom(ctx, types.StringType, table.Permissions)
 	resp.Diagnostics.Append(diags...)
 	state.Permissions = permsList
+
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

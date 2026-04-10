@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/backups"
 	"github.com/appwrite/sdk-for-go/v2/client"
 	"github.com/appwrite/sdk-for-go/v2/messaging"
@@ -16,10 +17,16 @@ import (
 	"github.com/appwrite/sdk-for-go/v2/webhooks"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// AppwriteClients holds the configured SDK service clients.
+// AppwriteClients holds the configured SDK service clients and base configuration
+// for creating per-project clients when organization-level API keys are used.
 type AppwriteClients struct {
+	// Pre-configured service clients using the provider-level project_id.
 	TablesDB  *tablesdb.TablesDB
 	Storage   *storage.Storage
 	Messaging *messaging.Messaging
@@ -27,6 +34,37 @@ type AppwriteClients struct {
 	Teams     *teams.Teams
 	Backups   *backups.Backups
 	Webhooks  *webhooks.Webhooks
+
+	// Base configuration for creating per-project clients (no project set).
+	BaseOptions []client.ClientOption
+	// ProjectID is the provider-level default project ID.
+	ProjectID string
+}
+
+// ClientForProject creates a new SDK client targeting a specific project.
+func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
+	opts := make([]client.ClientOption, len(ac.BaseOptions))
+	copy(opts, ac.BaseOptions)
+	opts = append(opts, appwrite.WithProject(projectID))
+	return appwrite.NewClient(opts...)
+}
+
+// ResolveProjectID returns the resource-level project_id if set, otherwise the provider default.
+func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) string {
+	if !resourceProjectID.IsNull() && !resourceProjectID.IsUnknown() {
+		return resourceProjectID.ValueString()
+	}
+	return clients.ProjectID
+}
+
+// ProjectIDAttribute returns the shared schema attribute for project_id on resources.
+func ProjectIDAttribute() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Optional:      true,
+		Computed:      true,
+		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+	}
 }
 
 // IsNotFoundError checks if an Appwrite SDK error is a 404.

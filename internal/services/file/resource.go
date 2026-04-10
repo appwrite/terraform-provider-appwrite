@@ -26,7 +26,8 @@ var (
 )
 
 type fileResource struct {
-	storage *storage.Storage
+	storage   *storage.Storage
+	projectID string
 }
 
 type fileResourceModel struct {
@@ -37,6 +38,7 @@ type fileResourceModel struct {
 	Permissions  types.List   `tfsdk:"permissions"`
 	MimeType     types.String `tfsdk:"mime_type"`
 	SizeOriginal types.Int64  `tfsdk:"size_original"`
+	ProjectID    types.String `tfsdk:"project_id"`
 	CreatedAt    types.String `tfsdk:"created_at"`
 	UpdatedAt    types.String `tfsdk:"updated_at"`
 }
@@ -53,6 +55,7 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 	resp.Schema = schema.Schema{
 		Description: "Manages a file in an Appwrite storage bucket.",
 		Attributes: map[string]schema.Attribute{
+			"project_id": common.ProjectIDAttribute(),
 			"id": schema.StringAttribute{
 				Description:   "The file ID.",
 				Optional:      true,
@@ -110,6 +113,7 @@ func (r *fileResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 	r.storage = clients.Storage
+	r.projectID = clients.ProjectID
 }
 
 func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -147,6 +151,9 @@ func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	r.mapToState(ctx, f, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -168,6 +175,9 @@ func (r *fileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	r.mapToState(ctx, f, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

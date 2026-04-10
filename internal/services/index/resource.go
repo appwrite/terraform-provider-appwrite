@@ -24,7 +24,8 @@ var (
 )
 
 type indexResource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type indexResourceModel struct {
@@ -36,6 +37,7 @@ type indexResourceModel struct {
 	Orders     types.List   `tfsdk:"orders"`
 	CreatedAt  types.String `tfsdk:"created_at"`
 	UpdatedAt  types.String `tfsdk:"updated_at"`
+	ProjectID  types.String `tfsdk:"project_id"`
 }
 
 func NewIndexResource() resource.Resource {
@@ -84,6 +86,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"created_at": schema.StringAttribute{Computed: true},
 			"updated_at": schema.StringAttribute{Computed: true},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -98,6 +101,7 @@ func (r *indexResource) Configure(_ context.Context, req resource.ConfigureReque
 		return
 	}
 	r.tablesdb = clients.TablesDB
+	r.projectID = clients.ProjectID
 }
 
 func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -161,6 +165,9 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		resp.Diagnostics.Append(diags...)
 		plan.Orders = orderList
 	}
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -193,6 +200,10 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		orderList, diags := types.ListValueFrom(ctx, types.StringType, idx.Orders)
 		resp.Diagnostics.Append(diags...)
 		state.Orders = orderList
+	}
+
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

@@ -25,10 +25,12 @@ var (
 
 type providerResource struct {
 	messaging *messaging.Messaging
+	projectID string
 }
 
 type providerResourceModel struct {
 	ID             types.String `tfsdk:"id"`
+	ProjectID      types.String `tfsdk:"project_id"`
 	Name           types.String `tfsdk:"name"`
 	Type           types.String `tfsdk:"type"`
 	Enabled        types.Bool   `tfsdk:"enabled"`
@@ -80,6 +82,7 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
+			"project_id": common.ProjectIDAttribute(),
 			"name": schema.StringAttribute{
 				Description: "The provider name.",
 				Required:    true,
@@ -236,6 +239,7 @@ func (r *providerResource) Configure(_ context.Context, req resource.ConfigureRe
 		return
 	}
 	r.messaging = clients.Messaging
+	r.projectID = clients.ProjectID
 }
 
 func (r *providerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -489,6 +493,9 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	r.mapToState(prov, &plan)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -510,6 +517,9 @@ func (r *providerResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	r.mapToState(prov, &state)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

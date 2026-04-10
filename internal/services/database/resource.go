@@ -23,7 +23,8 @@ var (
 )
 
 type databaseResource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type databaseResourceModel struct {
@@ -32,6 +33,7 @@ type databaseResourceModel struct {
 	Enabled   types.Bool   `tfsdk:"enabled"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func NewDatabaseResource() resource.Resource {
@@ -70,6 +72,7 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Description: "The database last update timestamp.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -87,6 +90,7 @@ func (r *databaseResource) Configure(_ context.Context, req resource.ConfigureRe
 		return
 	}
 	r.tablesdb = clients.TablesDB
+	r.projectID = clients.ProjectID
 }
 
 func (r *databaseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -117,6 +121,9 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 	plan.Enabled = types.BoolValue(db.Enabled)
 	plan.CreatedAt = types.StringValue(db.CreatedAt)
 	plan.UpdatedAt = types.StringValue(db.UpdatedAt)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -143,6 +150,10 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 	state.Enabled = types.BoolValue(db.Enabled)
 	state.CreatedAt = types.StringValue(db.CreatedAt)
 	state.UpdatedAt = types.StringValue(db.UpdatedAt)
+
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

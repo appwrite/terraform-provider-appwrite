@@ -24,10 +24,12 @@ var (
 
 type subscriberResource struct {
 	messaging *messaging.Messaging
+	projectID string
 }
 
 type subscriberResourceModel struct {
 	ID        types.String `tfsdk:"id"`
+	ProjectID types.String `tfsdk:"project_id"`
 	TopicID   types.String `tfsdk:"topic_id"`
 	TargetID  types.String `tfsdk:"target_id"`
 	CreatedAt types.String `tfsdk:"created_at"`
@@ -52,6 +54,7 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
+			"project_id": common.ProjectIDAttribute(),
 			"topic_id": schema.StringAttribute{
 				Description:   "The topic ID to subscribe to.",
 				Required:      true,
@@ -84,6 +87,7 @@ func (r *subscriberResource) Configure(_ context.Context, req resource.Configure
 		return
 	}
 	r.messaging = clients.Messaging
+	r.projectID = clients.ProjectID
 }
 
 func (r *subscriberResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -113,6 +117,9 @@ func (r *subscriberResource) Create(ctx context.Context, req resource.CreateRequ
 	plan.UpdatedAt = types.StringValue(subscriber.UpdatedAt)
 	plan.TargetID = types.StringValue(subscriber.TargetId)
 
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -138,6 +145,9 @@ func (r *subscriberResource) Read(ctx context.Context, req resource.ReadRequest,
 	state.CreatedAt = types.StringValue(subscriber.CreatedAt)
 	state.UpdatedAt = types.StringValue(subscriber.UpdatedAt)
 
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

@@ -23,10 +23,12 @@ var (
 
 type topicResource struct {
 	messaging *messaging.Messaging
+	projectID string
 }
 
 type topicResourceModel struct {
 	ID        types.String `tfsdk:"id"`
+	ProjectID types.String `tfsdk:"project_id"`
 	Name      types.String `tfsdk:"name"`
 	Subscribe types.List   `tfsdk:"subscribe"`
 	CreatedAt types.String `tfsdk:"created_at"`
@@ -51,6 +53,7 @@ func (r *topicResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
+			"project_id": common.ProjectIDAttribute(),
 			"name": schema.StringAttribute{
 				Description: "The topic name.",
 				Required:    true,
@@ -83,6 +86,7 @@ func (r *topicResource) Configure(_ context.Context, req resource.ConfigureReque
 		return
 	}
 	r.messaging = clients.Messaging
+	r.projectID = clients.ProjectID
 }
 
 func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -121,6 +125,9 @@ func (r *topicResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(diags...)
 	plan.Subscribe = subList
 
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -149,6 +156,9 @@ func (r *topicResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	resp.Diagnostics.Append(diags...)
 	state.Subscribe = subList
 
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

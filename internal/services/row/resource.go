@@ -26,7 +26,8 @@ var (
 )
 
 type rowResource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type rowResourceModel struct {
@@ -37,6 +38,7 @@ type rowResourceModel struct {
 	Permissions types.List   `tfsdk:"permissions"`
 	CreatedAt   types.String `tfsdk:"created_at"`
 	UpdatedAt   types.String `tfsdk:"updated_at"`
+	ProjectID   types.String `tfsdk:"project_id"`
 }
 
 func NewRowResource() resource.Resource {
@@ -85,6 +87,7 @@ func (r *rowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description: "The row last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -99,6 +102,7 @@ func (r *rowResource) Configure(_ context.Context, req resource.ConfigureRequest
 		return
 	}
 	r.tablesdb = clients.TablesDB
+	r.projectID = clients.ProjectID
 }
 
 func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -142,6 +146,9 @@ func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	r.mapToState(ctx, row, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -167,6 +174,9 @@ func (r *rowResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	r.mapToState(ctx, row, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

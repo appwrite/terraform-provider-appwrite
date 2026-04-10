@@ -22,7 +22,8 @@ var (
 )
 
 type teamResource struct {
-	teams *teams.Teams
+	teams     *teams.Teams
+	projectID string
 }
 
 type teamResourceModel struct {
@@ -31,6 +32,7 @@ type teamResourceModel struct {
 	Roles     types.List   `tfsdk:"roles"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func NewTeamResource() resource.Resource {
@@ -68,6 +70,7 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "The team last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -82,6 +85,7 @@ func (r *teamResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 	r.teams = clients.Teams
+	r.projectID = clients.ProjectID
 }
 
 func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -117,6 +121,9 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	plan.CreatedAt = types.StringValue(team.CreatedAt)
 	plan.UpdatedAt = types.StringValue(team.UpdatedAt)
 
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -142,6 +149,9 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	state.CreatedAt = types.StringValue(team.CreatedAt)
 	state.UpdatedAt = types.StringValue(team.UpdatedAt)
 
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

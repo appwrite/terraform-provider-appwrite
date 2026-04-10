@@ -26,7 +26,8 @@ var (
 var allColumnTypes = "varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
 
 type columnResource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type columnResourceModel struct {
@@ -51,6 +52,7 @@ type columnResourceModel struct {
 	OnDelete       types.String  `tfsdk:"on_delete"`
 	CreatedAt      types.String  `tfsdk:"created_at"`
 	UpdatedAt      types.String  `tfsdk:"updated_at"`
+	ProjectID      types.String  `tfsdk:"project_id"`
 }
 
 func NewColumnResource() resource.Resource {
@@ -163,6 +165,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "The column last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -177,6 +180,7 @@ func (r *columnResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.tablesdb = clients.TablesDB
+	r.projectID = clients.ProjectID
 }
 
 func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -460,6 +464,9 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	r.readResponseIntoState(ctx, responseJSON, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -488,6 +495,9 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	responseJSON, _ := json.Marshal(generic)
 	r.readResponseIntoState(ctx, responseJSON, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

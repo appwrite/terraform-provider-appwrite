@@ -111,25 +111,29 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
-	opts := []client.ClientOption{
+	baseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
-		appwrite.WithProject(projectID),
 		appwrite.WithKey(apiKey),
 	}
 	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {
-		opts = append(opts, appwrite.WithSelfSigned(true))
+		baseOpts = append(baseOpts, appwrite.WithSelfSigned(true))
 	}
 
-	c := appwrite.NewClient(opts...)
+	allOpts := make([]client.ClientOption, len(baseOpts))
+	copy(allOpts, baseOpts)
+	allOpts = append(allOpts, appwrite.WithProject(projectID))
+	c := appwrite.NewClient(allOpts...)
 
 	clients := &common.AppwriteClients{
-		TablesDB:  appwrite.NewTablesDB(c),
-		Storage:   appwrite.NewStorage(c),
-		Messaging: appwrite.NewMessaging(c),
-		Users:     appwrite.NewUsers(c),
-		Teams:     appwrite.NewTeams(c),
-		Backups:   appwrite.NewBackups(c),
-		Webhooks:  appwrite.NewWebhooks(c),
+		TablesDB:    appwrite.NewTablesDB(c),
+		Storage:     appwrite.NewStorage(c),
+		Messaging:   appwrite.NewMessaging(c),
+		Users:       appwrite.NewUsers(c),
+		Teams:       appwrite.NewTeams(c),
+		Backups:     appwrite.NewBackups(c),
+		Webhooks:    appwrite.NewWebhooks(c),
+		BaseOptions: baseOpts,
+		ProjectID:   projectID,
 	}
 
 	resp.DataSourceData = clients

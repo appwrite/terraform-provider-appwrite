@@ -26,7 +26,8 @@ var (
 )
 
 type bucketResource struct {
-	storage *storage.Storage
+	storage   *storage.Storage
+	projectID string
 }
 
 type bucketResourceModel struct {
@@ -41,6 +42,7 @@ type bucketResourceModel struct {
 	Encryption            types.Bool   `tfsdk:"encryption"`
 	Antivirus             types.Bool   `tfsdk:"antivirus"`
 	Transformations       types.Bool   `tfsdk:"transformations"`
+	ProjectID             types.String `tfsdk:"project_id"`
 	CreatedAt             types.String `tfsdk:"created_at"`
 	UpdatedAt             types.String `tfsdk:"updated_at"`
 }
@@ -57,6 +59,7 @@ func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Description: "Manages an Appwrite storage bucket.",
 		Attributes: map[string]schema.Attribute{
+			"project_id": common.ProjectIDAttribute(),
 			"id": schema.StringAttribute{
 				Description:   "The bucket ID. Must be unique within the project.",
 				Optional:      true,
@@ -142,6 +145,7 @@ func (r *bucketResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.storage = clients.Storage
+	r.projectID = clients.ProjectID
 }
 
 func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -202,6 +206,9 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -223,6 +230,9 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	mapBucketToModel(ctx, bucket, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

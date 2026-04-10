@@ -25,7 +25,8 @@ var (
 )
 
 type policyResource struct {
-	backups *backups.Backups
+	backups   *backups.Backups
+	projectID string
 }
 
 type policyResourceModel struct {
@@ -38,6 +39,7 @@ type policyResourceModel struct {
 	Enabled    types.Bool   `tfsdk:"enabled"`
 	CreatedAt  types.String `tfsdk:"created_at"`
 	UpdatedAt  types.String `tfsdk:"updated_at"`
+	ProjectID  types.String `tfsdk:"project_id"`
 }
 
 func NewPolicyResource() resource.Resource {
@@ -93,6 +95,7 @@ func (r *policyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "The policy last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -107,6 +110,7 @@ func (r *policyResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.backups = clients.Backups
+	r.projectID = clients.ProjectID
 }
 
 func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -151,6 +155,9 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	r.mapToState(ctx, policy, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -172,6 +179,9 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	r.mapToState(ctx, policy, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

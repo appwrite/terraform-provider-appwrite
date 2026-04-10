@@ -25,7 +25,8 @@ var (
 )
 
 type userResource struct {
-	users *users.Users
+	users     *users.Users
+	projectID string
 }
 
 type userResourceModel struct {
@@ -40,6 +41,7 @@ type userResourceModel struct {
 	PhoneVerification types.Bool   `tfsdk:"phone_verification"`
 	CreatedAt         types.String `tfsdk:"created_at"`
 	UpdatedAt         types.String `tfsdk:"updated_at"`
+	ProjectID         types.String `tfsdk:"project_id"`
 }
 
 func NewUserResource() resource.Resource {
@@ -109,6 +111,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "The user last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -123,6 +126,7 @@ func (r *userResource) Configure(_ context.Context, req resource.ConfigureReques
 		return
 	}
 	r.users = clients.Users
+	r.projectID = clients.ProjectID
 }
 
 func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -201,6 +205,9 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	r.mapToState(ctx, user, &plan, &resp.Diagnostics)
+	if plan.ProjectID.IsNull() || plan.ProjectID.IsUnknown() {
+		plan.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -222,6 +229,9 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	r.mapToState(ctx, user, &state, &resp.Diagnostics)
+	if state.ProjectID.IsNull() || state.ProjectID.IsUnknown() {
+		state.ProjectID = types.StringValue(r.projectID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

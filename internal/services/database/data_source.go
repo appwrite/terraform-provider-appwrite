@@ -17,11 +17,13 @@ var (
 )
 
 type databaseDataSource struct {
-	tablesdb *tablesdb.TablesDB
+	tablesdb  *tablesdb.TablesDB
+	projectID string
 }
 
 type databaseDataSourceModel struct {
 	ID        types.String `tfsdk:"id"`
+	ProjectID types.String `tfsdk:"project_id"`
 	Name      types.String `tfsdk:"name"`
 	Enabled   types.Bool   `tfsdk:"enabled"`
 	CreatedAt types.String `tfsdk:"created_at"`
@@ -43,6 +45,11 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"id": schema.StringAttribute{
 				Description: "The database ID.",
 				Required:    true,
+			},
+			"project_id": schema.StringAttribute{
+				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"name": schema.StringAttribute{
 				Description: "The database name.",
@@ -77,6 +84,7 @@ func (d *databaseDataSource) Configure(_ context.Context, req datasource.Configu
 		return
 	}
 	d.tablesdb = clients.TablesDB
+	d.projectID = clients.ProjectID
 }
 
 func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -93,6 +101,9 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	config.ID = types.StringValue(db.Id)
+	if config.ProjectID.IsNull() || config.ProjectID.IsUnknown() {
+		config.ProjectID = types.StringValue(d.projectID)
+	}
 	config.Name = types.StringValue(db.Name)
 	config.Enabled = types.BoolValue(db.Enabled)
 	config.CreatedAt = types.StringValue(db.CreatedAt)
