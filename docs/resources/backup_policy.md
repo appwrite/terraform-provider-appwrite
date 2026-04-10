@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_backup_policy Resource"
+page_title: "Resource: appwrite_backup_policy"
 description: |-
   Manages an Appwrite backup policy.
 ---
 
-# appwrite_backup_policy (Resource)
+# Resource: appwrite_backup_policy
 
 Manages an Appwrite backup policy.
 

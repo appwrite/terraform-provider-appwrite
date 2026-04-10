@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_messaging_topic Resource"
+page_title: "Resource: appwrite_messaging_topic"
 description: |-
   Manages an Appwrite messaging topic.
 ---
 
-# appwrite_messaging_topic (Resource)
+# Resource: appwrite_messaging_topic
 
 Manages an Appwrite messaging topic.
 
@@ -56,3 +56,4 @@ terraform import appwrite_messaging_topic.announcements <topic-id>
 - [appwrite_messaging_provider](messaging_provider.md) - Manage messaging providers
 - [appwrite_auth_user](auth_user.md) - Manage users for topic subscriptions
 - [appwrite_auth_team](auth_team.md) - Manage teams for topic subscriptions
+- [appwrite_messaging_subscriber](messaging_subscriber.md) - Manage topic subscribers

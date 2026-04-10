@@ -39,7 +39,7 @@ If an environment variable is provided, then the option does not need to be set 
 | endpoint    | `APPWRITE_ENDPOINT`    | yes      | The Appwrite API endpoint                              |
 | project_id  | `APPWRITE_PROJECT_ID`  | yes      | The Appwrite project ID                                |
 | api_key     | `APPWRITE_API_KEY`     | yes      | The Appwrite API key                                   |
-| self_signed | —                      | no       | Accept self-signed certificates (for community edition)|
+| self_signed | N/A                    | no       | Accept self-signed certificates (for community edition) |
 
 ## Resources
 
@@ -51,11 +51,14 @@ If an environment variable is provided, then the option does not need to be set 
 | `appwrite_tablesdb_index`         | Table index            |
 | `appwrite_tablesdb_row`           | Table row              |
 | `appwrite_storage_bucket`         | Storage bucket         |
+| `appwrite_storage_file`            | Storage file            |
 | `appwrite_backup_policy`          | Backup policy          |
 | `appwrite_messaging_provider`     | Messaging provider     |
 | `appwrite_messaging_topic`        | Messaging topic        |
+| `appwrite_messaging_subscriber`   | Messaging subscriber   |
 | `appwrite_auth_user`              | User                   |
 | `appwrite_auth_team`              | Team                   |
+| `appwrite_webhook`                | Webhook                |
 
 
 ## Data Sources

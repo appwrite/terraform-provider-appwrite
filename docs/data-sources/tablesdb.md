@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_tablesdb Data Source"
+page_title: "Data Source: appwrite_tablesdb"
 description: |-
   Fetches an Appwrite database by ID.
 ---
 
-# appwrite_tablesdb (Data Source)
+# Data Source: appwrite_tablesdb
 
 Fetches an Appwrite database by ID.
 

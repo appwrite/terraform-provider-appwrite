@@ -46,8 +46,8 @@ resource "appwrite_tablesdb_column" "score" {
   table_id    = appwrite_tablesdb_table.users.id
   key         = "score"
   type        = "float"
-  float_min    = 0.0
-  float_max    = 100.0
+  float_min   = 0.0
+  float_max   = 100.0
   default     = "0"
 }
 
@@ -125,4 +125,24 @@ resource "appwrite_tablesdb_index" "email_unique" {
   key         = "email_unique"
   type        = "unique"
   columns     = [appwrite_tablesdb_column.email.key]
+}
+
+resource "appwrite_tablesdb_row" "alice" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name  = "Alice"
+    email = "alice@example.com"
+    age   = 30
+    active = true
+    role   = "admin"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
 }

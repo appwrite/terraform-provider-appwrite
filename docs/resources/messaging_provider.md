@@ -1,10 +1,10 @@
 ---
-page_title: "appwrite_messaging_provider Resource"
+page_title: "Resource: appwrite_messaging_provider"
 description: |-
   Manages an Appwrite messaging provider.
 ---
 
-# appwrite_messaging_provider (Resource)
+# Resource: appwrite_messaging_provider
 
 Manages an Appwrite messaging provider.
 
