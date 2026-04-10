@@ -49,6 +49,7 @@ resource "appwrite_webhook" "authenticated" {
 - `http_pass` (String, Sensitive) HTTP basic authentication password.
 - `http_user` (String) HTTP basic authentication username.
 - `id` (String) The webhook ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `security` (Boolean) Whether SSL/TLS certificate verification is enabled. Defaults to false.
 
 ### Read-Only

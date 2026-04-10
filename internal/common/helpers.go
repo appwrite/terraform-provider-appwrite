@@ -50,11 +50,106 @@ func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
 }
 
 // ResolveProjectID returns the resource-level project_id if set, otherwise the provider default.
-func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) string {
-	if !resourceProjectID.IsNull() && !resourceProjectID.IsUnknown() {
-		return resourceProjectID.ValueString()
+// Returns an error if neither is set.
+func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) (string, error) {
+	if !resourceProjectID.IsNull() && !resourceProjectID.IsUnknown() && resourceProjectID.ValueString() != "" {
+		return resourceProjectID.ValueString(), nil
 	}
-	return clients.ProjectID
+	if clients.ProjectID != "" {
+		return clients.ProjectID, nil
+	}
+	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
+}
+
+// GetTablesDB returns a TablesDB client for the resolved project.
+func (ac *AppwriteClients) GetTablesDB(resourceProjectID types.String) (*tablesdb.TablesDB, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.TablesDB != nil {
+		return ac.TablesDB, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewTablesDB(c), projectID, nil
+}
+
+// GetStorage returns a Storage client for the resolved project.
+func (ac *AppwriteClients) GetStorage(resourceProjectID types.String) (*storage.Storage, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Storage != nil {
+		return ac.Storage, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewStorage(c), projectID, nil
+}
+
+// GetMessaging returns a Messaging client for the resolved project.
+func (ac *AppwriteClients) GetMessaging(resourceProjectID types.String) (*messaging.Messaging, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Messaging != nil {
+		return ac.Messaging, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewMessaging(c), projectID, nil
+}
+
+// GetUsers returns a Users client for the resolved project.
+func (ac *AppwriteClients) GetUsers(resourceProjectID types.String) (*users.Users, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Users != nil {
+		return ac.Users, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewUsers(c), projectID, nil
+}
+
+// GetTeams returns a Teams client for the resolved project.
+func (ac *AppwriteClients) GetTeams(resourceProjectID types.String) (*teams.Teams, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Teams != nil {
+		return ac.Teams, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewTeams(c), projectID, nil
+}
+
+// GetBackups returns a Backups client for the resolved project.
+func (ac *AppwriteClients) GetBackups(resourceProjectID types.String) (*backups.Backups, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Backups != nil {
+		return ac.Backups, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewBackups(c), projectID, nil
+}
+
+// GetWebhooks returns a Webhooks client for the resolved project.
+func (ac *AppwriteClients) GetWebhooks(resourceProjectID types.String) (*webhooks.Webhooks, string, error) {
+	projectID, err := ResolveProjectID(ac, resourceProjectID)
+	if err != nil {
+		return nil, "", err
+	}
+	if projectID == ac.ProjectID && ac.Webhooks != nil {
+		return ac.Webhooks, projectID, nil
+	}
+	c := ac.ClientForProject(projectID)
+	return appwrite.NewWebhooks(c), projectID, nil
 }
 
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.

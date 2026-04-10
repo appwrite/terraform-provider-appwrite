@@ -65,6 +65,7 @@ resource "appwrite_tablesdb_row" "alice" {
 
 - `id` (String) The row ID.
 - `permissions` (List of String) Row permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 

@@ -32,6 +32,7 @@ resource "appwrite_tablesdb" "staging" {
 
 - `enabled` (Boolean) Whether the database is enabled. Defaults to true.
 - `id` (String) The database ID. Must be unique within the project.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 

@@ -71,6 +71,7 @@ resource "appwrite_tablesdb_index" "name_index" {
 
 - `key` (String) The index key (name).
 - `orders` (List of String) Array of index orders (asc or desc) for each column.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 

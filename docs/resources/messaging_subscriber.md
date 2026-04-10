@@ -32,6 +32,7 @@ resource "appwrite_messaging_subscriber" "user_email" {
 ### Optional
 
 - `id` (String) The subscriber ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 

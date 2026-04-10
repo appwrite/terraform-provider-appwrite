@@ -49,6 +49,7 @@ resource "appwrite_storage_bucket" "documents" {
 - `id` (String) The bucket ID. Must be unique within the project.
 - `maximum_file_size` (Number) Maximum file size in bytes.
 - `permissions` (List of String) Bucket-level permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `transformations` (Boolean) Whether image transformations are enabled. Defaults to false.
 
 ### Read-Only

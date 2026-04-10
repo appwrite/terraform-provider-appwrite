@@ -143,6 +143,7 @@ resource "appwrite_tablesdb_column" "author" {
 - `max` (Number) Maximum value. Applies to integer type.
 - `min` (Number) Minimum value. Applies to integer type.
 - `on_delete` (String) Behavior when the parent document is deleted: restrict, cascade, setNull. Applies to relationship type.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `related_table_id` (String) The ID of the related table. Required for relationship type.
 - `relationship_type` (String) The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type.
 - `required` (Boolean) Whether the column is required.

@@ -12,6 +12,12 @@ The Appwrite provider is used to manage resources on [Appwrite](https://appwrite
 
 The provider requires an API key with appropriate scopes for the resources you want to manage. You can configure credentials directly in the provider block or via environment variables.
 
+## Project Scoping
+
+The `project_id` can be set at the provider level as a default for all resources, or overridden on individual resources. This is useful when managing resources across multiple projects with a single provider configuration.
+
+When `project_id` is set on the provider, all resources inherit it automatically. Resources can override this value by setting their own `project_id`.
+
 ## Example Usage
 
 ```terraform
@@ -29,5 +35,5 @@ provider "appwrite" {
 
 - `api_key` (String, Sensitive) The Appwrite API key. Can also be set with the APPWRITE_API_KEY environment variable.
 - `endpoint` (String) The Appwrite API endpoint (e.g. https://cloud.appwrite.io/v1). Can also be set with the APPWRITE_ENDPOINT environment variable.
-- `project_id` (String) The Appwrite project ID. Can also be set with the APPWRITE_PROJECT_ID environment variable.
+- `project_id` (String) The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.
 - `self_signed` (Boolean) Accept self-signed SSL certificates. Useful for Appwrite Community Edition with self-signed certs. Defaults to false.

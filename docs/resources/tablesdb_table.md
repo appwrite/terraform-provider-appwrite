@@ -40,6 +40,7 @@ resource "appwrite_tablesdb_table" "posts" {
 - `enabled` (Boolean) Whether the table is enabled. When disabled, the table is inaccessible to users but remains accessible via API keys. Defaults to true.
 - `id` (String) The table ID. Must be unique within the database.
 - `permissions` (List of String) Table-level permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `row_security` (Boolean) Whether row-level permissions are enabled. Defaults to false.
 
 ### Read-Only

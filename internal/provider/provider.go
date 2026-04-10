@@ -62,7 +62,7 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 			},
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Can also be set with the APPWRITE_PROJECT_ID environment variable.",
+				Description: "The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.",
 				Optional:    true,
 			},
 			"api_key": schema.StringAttribute{
@@ -95,12 +95,6 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 			"The provider requires an endpoint to be set either in the provider configuration or via the APPWRITE_ENDPOINT environment variable.",
 		)
 	}
-	if projectID == "" {
-		resp.Diagnostics.AddError(
-			"Missing Appwrite Project ID",
-			"The provider requires a project_id to be set either in the provider configuration or via the APPWRITE_PROJECT_ID environment variable.",
-		)
-	}
 	if apiKey == "" {
 		resp.Diagnostics.AddError(
 			"Missing Appwrite API Key",
@@ -119,21 +113,24 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		baseOpts = append(baseOpts, appwrite.WithSelfSigned(true))
 	}
 
-	allOpts := make([]client.ClientOption, len(baseOpts))
-	copy(allOpts, baseOpts)
-	allOpts = append(allOpts, appwrite.WithProject(projectID))
-	c := appwrite.NewClient(allOpts...)
-
 	clients := &common.AppwriteClients{
-		TablesDB:    appwrite.NewTablesDB(c),
-		Storage:     appwrite.NewStorage(c),
-		Messaging:   appwrite.NewMessaging(c),
-		Users:       appwrite.NewUsers(c),
-		Teams:       appwrite.NewTeams(c),
-		Backups:     appwrite.NewBackups(c),
-		Webhooks:    appwrite.NewWebhooks(c),
 		BaseOptions: baseOpts,
 		ProjectID:   projectID,
+	}
+
+	if projectID != "" {
+		allOpts := make([]client.ClientOption, len(baseOpts))
+		copy(allOpts, baseOpts)
+		allOpts = append(allOpts, appwrite.WithProject(projectID))
+		c := appwrite.NewClient(allOpts...)
+
+		clients.TablesDB = appwrite.NewTablesDB(c)
+		clients.Storage = appwrite.NewStorage(c)
+		clients.Messaging = appwrite.NewMessaging(c)
+		clients.Users = appwrite.NewUsers(c)
+		clients.Teams = appwrite.NewTeams(c)
+		clients.Backups = appwrite.NewBackups(c)
+		clients.Webhooks = appwrite.NewWebhooks(c)
 	}
 
 	resp.DataSourceData = clients

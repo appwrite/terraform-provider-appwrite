@@ -36,6 +36,7 @@ resource "appwrite_messaging_topic" "engineering_alerts" {
 ### Optional
 
 - `id` (String) The topic ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `subscribe` (List of String) Subscribe permissions.
 
 ### Read-Only

@@ -42,6 +42,7 @@ resource "appwrite_auth_user" "admin" {
 - `password` (String, Sensitive) The user password. Write-only, not returned by the API.
 - `phone` (String) The user phone number in E.164 format.
 - `phone_verification` (Boolean) Whether the user phone is verified.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `status` (Boolean) Whether the user account is enabled. Defaults to true.
 
 ### Read-Only
