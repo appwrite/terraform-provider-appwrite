@@ -50,7 +50,7 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description:   "The subscriber ID.",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"topic_id": schema.StringAttribute{
 				Description:   "The topic ID to subscribe to.",

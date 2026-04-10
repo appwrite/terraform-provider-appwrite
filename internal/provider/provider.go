@@ -13,20 +13,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/backup"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/column"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/database"
-	appwritefile "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/index"
-	messagingprovider "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/row"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/subscriber"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/table"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/team"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/user"
-	"github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
+	backupsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/backup"
+	bucketsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
+	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
+	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
+	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
+	providersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
+	rowsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/row"
+	subscribersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/subscriber"
+	tablesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/table"
+	teamsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/team"
+	topicsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
+	usersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/user"
+	webhooksvc "github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
 )
 
 var _ provider.Provider = &appwriteProvider{}
@@ -138,26 +138,26 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		database.NewDatabaseResource,
-		table.NewTableResource,
-		column.NewColumnResource,
-		index.NewIndexResource,
-		bucket.NewBucketResource,
-		topic.NewTopicResource,
-		messagingprovider.NewProviderResource,
-		user.NewUserResource,
-		team.NewTeamResource,
-		backup.NewPolicyResource,
-		row.NewRowResource,
-		webhook.NewWebhookResource,
-		subscriber.NewSubscriberResource,
-		appwritefile.NewFileResource,
+		databasesvc.NewDatabaseResource,
+		tablesvc.NewTableResource,
+		columnsvc.NewColumnResource,
+		indexsvc.NewIndexResource,
+		bucketsvc.NewBucketResource,
+		topicsvc.NewTopicResource,
+		providersvc.NewProviderResource,
+		usersvc.NewUserResource,
+		teamsvc.NewTeamResource,
+		backupsvc.NewPolicyResource,
+		rowsvc.NewRowResource,
+		webhooksvc.NewWebhookResource,
+		subscribersvc.NewSubscriberResource,
+		filesvc.NewFileResource,
 	}
 }
 
 func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		database.NewDatabaseDataSource,
+		databasesvc.NewDatabaseDataSource,
 	}
 }
 

@@ -79,7 +79,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description:   "The column key (name).",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"type": schema.StringAttribute{
 				Description:   "The column type. One of: " + allColumnTypes + ".",

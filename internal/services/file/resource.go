@@ -57,7 +57,7 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description:   "The file ID.",
 				Optional:      true,
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"bucket_id": schema.StringAttribute{
 				Description:   "The bucket ID.",
