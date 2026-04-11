@@ -18,9 +18,11 @@ import (
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
+	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
 	providersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	rowsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/row"
+	sitesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/site"
 	subscribersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/subscriber"
 	tablesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/table"
 	teamsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/team"
@@ -138,6 +140,10 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		webhooksvc.NewWebhookResource,
 		subscribersvc.NewSubscriberResource,
 		filesvc.NewFileResource,
+		functionsvc.NewFunctionResource,
+		functionsvc.NewVariableResource,
+		sitesvc.NewSiteResource,
+		sitesvc.NewVariableResource,
 	}
 }
 

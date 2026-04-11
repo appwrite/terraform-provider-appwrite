@@ -1,0 +1,56 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## VCS Integration
+
+You can connect a site to a Git repository for automatic deployments. When configured, Appwrite will automatically create new deployments when you push to the connected branch.
+
+```hcl
+resource "appwrite_site" "app" {
+  name          = "app"
+  framework     = "nextjs"
+  build_runtime = "node-22"
+
+  installation_id         = "your-github-installation-id"
+  provider_repository_id  = "your-repository-id"
+  provider_branch         = "main"
+  provider_root_directory = "apps/web"
+  provider_silent_mode    = false
+}
+```
+
+The following attributes are used for VCS integration:
+
+- `installation_id` - The VCS installation ID (e.g. from a GitHub App installation).
+- `provider_repository_id` - The repository ID in your VCS provider.
+- `provider_branch` - The branch to track for automatic deployments.
+- `provider_root_directory` - The path within the repository where the site code lives.
+- `provider_silent_mode` - When enabled, Appwrite will not post comments on pull/merge requests.
+
+{{ if .HasImport -}}
+## Import
+
+Import is supported using the following syntax:
+
+{{ codefile "shell" .ImportFile }}
+{{- end }}
+
+## See Also
+
+- [appwrite_site_variable](site_variable.md) - Manage site environment variables
+- [appwrite_webhook](webhook.md) - Manage webhooks
