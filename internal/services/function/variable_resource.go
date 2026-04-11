@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
+	"github.com/appwrite/sdk-for-go/v2/functions"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -50,8 +51,8 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Description: "Manages an Appwrite function environment variable.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "The variable ID.",
-				Computed:    true,
+				Description:   "The variable ID.",
+				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"function_id": schema.StringAttribute{
@@ -112,10 +113,16 @@ func (r *variableResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	functionsClient := appwrite.NewFunctions(r.clients.ClientForProject(projectID))
 
+	var createOpts []functions.CreateVariableOption
+	if !plan.Secret.IsNull() {
+		createOpts = append(createOpts, functionsClient.WithCreateVariableSecret(plan.Secret.ValueBool()))
+	}
+
 	variable, err := functionsClient.CreateVariable(
 		plan.FunctionID.ValueString(),
 		plan.Key.ValueString(),
 		plan.Value.ValueString(),
+		createOpts...,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating function variable", common.FormatError(err))
@@ -170,11 +177,18 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	functionsClient := appwrite.NewFunctions(r.clients.ClientForProject(projectID))
 
+	updateOpts := []functions.UpdateVariableOption{
+		functionsClient.WithUpdateVariableValue(plan.Value.ValueString()),
+	}
+	if !plan.Secret.IsNull() {
+		updateOpts = append(updateOpts, functionsClient.WithUpdateVariableSecret(plan.Secret.ValueBool()))
+	}
+
 	variable, err := functionsClient.UpdateVariable(
 		plan.FunctionID.ValueString(),
 		plan.ID.ValueString(),
 		plan.Key.ValueString(),
-		functionsClient.WithUpdateVariableValue(plan.Value.ValueString()),
+		updateOpts...,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating function variable", common.FormatError(err))
@@ -221,5 +235,7 @@ func (r *variableResource) mapToState(variable *models.Variable, model *variable
 	model.Key = types.StringValue(variable.Key)
 	model.CreatedAt = types.StringValue(variable.CreatedAt)
 	model.UpdatedAt = types.StringValue(variable.UpdatedAt)
-	// Don't overwrite value - API may not return it for secret variables
+	if variable.Value != "" {
+		model.Value = types.StringValue(variable.Value)
+	}
 }

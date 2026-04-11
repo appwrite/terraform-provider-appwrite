@@ -32,8 +32,8 @@ type databaseResourceModel struct {
 	Name      types.String `tfsdk:"name"`
 	Enabled   types.Bool   `tfsdk:"enabled"`
 	CreatedAt types.String `tfsdk:"created_at"`
-	UpdatedAt   types.String `tfsdk:"updated_at"`
-	ProjectID   types.String `tfsdk:"project_id"`
+	UpdatedAt types.String `tfsdk:"updated_at"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func NewDatabaseResource() resource.Resource {

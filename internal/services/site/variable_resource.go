@@ -7,6 +7,7 @@ import (
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/models"
+	"github.com/appwrite/sdk-for-go/v2/sites"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -112,10 +113,16 @@ func (r *variableResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	sitesClient := appwrite.NewSites(r.clients.ClientForProject(projectID))
 
+	var createOpts []sites.CreateVariableOption
+	if !plan.Secret.IsNull() {
+		createOpts = append(createOpts, sitesClient.WithCreateVariableSecret(plan.Secret.ValueBool()))
+	}
+
 	variable, err := sitesClient.CreateVariable(
 		plan.SiteID.ValueString(),
 		plan.Key.ValueString(),
 		plan.Value.ValueString(),
+		createOpts...,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating site variable", common.FormatError(err))
@@ -170,11 +177,18 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	sitesClient := appwrite.NewSites(r.clients.ClientForProject(projectID))
 
+	updateOpts := []sites.UpdateVariableOption{
+		sitesClient.WithUpdateVariableValue(plan.Value.ValueString()),
+	}
+	if !plan.Secret.IsNull() {
+		updateOpts = append(updateOpts, sitesClient.WithUpdateVariableSecret(plan.Secret.ValueBool()))
+	}
+
 	variable, err := sitesClient.UpdateVariable(
 		plan.SiteID.ValueString(),
 		plan.ID.ValueString(),
 		plan.Key.ValueString(),
-		sitesClient.WithUpdateVariableValue(plan.Value.ValueString()),
+		updateOpts...,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating site variable", common.FormatError(err))
@@ -221,4 +235,7 @@ func (r *variableResource) mapToState(variable *models.Variable, model *variable
 	model.Key = types.StringValue(variable.Key)
 	model.CreatedAt = types.StringValue(variable.CreatedAt)
 	model.UpdatedAt = types.StringValue(variable.UpdatedAt)
+	if variable.Value != "" {
+		model.Value = types.StringValue(variable.Value)
+	}
 }

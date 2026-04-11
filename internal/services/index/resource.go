@@ -84,8 +84,8 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				ElementType: types.StringType,
 			},
-			"created_at":  schema.StringAttribute{Computed: true},
-			"updated_at":  schema.StringAttribute{Computed: true},
+			"created_at": schema.StringAttribute{Computed: true},
+			"updated_at": schema.StringAttribute{Computed: true},
 			"project_id": common.ProjectIDAttribute(),
 		},
 	}

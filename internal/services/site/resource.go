@@ -239,7 +239,7 @@ func (r *siteResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if !plan.OutputDirectory.IsNull() {
 		opts = append(opts, sitesClient.WithCreateOutputDirectory(plan.OutputDirectory.ValueString()))
 	}
-	if !plan.Adapter.IsNull() && !plan.Adapter.IsUnknown() {
+	if !plan.Adapter.IsNull() && !plan.Adapter.IsUnknown() && plan.Adapter.ValueString() != "" {
 		opts = append(opts, sitesClient.WithCreateAdapter(plan.Adapter.ValueString()))
 	}
 	if !plan.FallbackFile.IsNull() {
