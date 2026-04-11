@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	appwritefile "github.com/appwrite/sdk-for-go/v2/file"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
@@ -26,11 +27,12 @@ var (
 )
 
 type fileResource struct {
-	storage *storage.Storage
+	clients *common.AppwriteClients
 }
 
 type fileResourceModel struct {
 	ID           types.String `tfsdk:"id"`
+	ProjectID    types.String `tfsdk:"project_id"`
 	BucketID     types.String `tfsdk:"bucket_id"`
 	Name         types.String `tfsdk:"name"`
 	FilePath     types.String `tfsdk:"file_path"`
@@ -59,6 +61,7 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
+			"project_id": common.ProjectIDAttribute(),
 			"bucket_id": schema.StringAttribute{
 				Description:   "The bucket ID.",
 				Required:      true,
@@ -109,7 +112,7 @@ func (r *fileResource) Configure(_ context.Context, req resource.ConfigureReques
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.storage = clients.Storage
+	r.clients = clients
 }
 
 func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -118,6 +121,13 @@ func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
 
 	fileID := plan.ID.ValueString()
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
@@ -137,16 +147,17 @@ func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithCreateFilePermissions(perms))
+		opts = append(opts, storageClient.WithCreateFilePermissions(perms))
 	}
 
-	f, err := r.storage.CreateFile(plan.BucketID.ValueString(), fileID, inputFile, opts...)
+	f, err := storageClient.CreateFile(plan.BucketID.ValueString(), fileID, inputFile, opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating file", common.FormatError(err))
 		return
 	}
 
-	r.mapToState(ctx, f, &plan, &resp.Diagnostics)
+	mapFileToModel(ctx, f, &plan, &resp.Diagnostics)
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -157,7 +168,14 @@ func (r *fileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	f, err := r.storage.GetFile(state.BucketID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
+	f, err := storageClient.GetFile(state.BucketID.ValueString(), state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -167,7 +185,8 @@ func (r *fileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	r.mapToState(ctx, f, &state, &resp.Diagnostics)
+	mapFileToModel(ctx, f, &state, &resp.Diagnostics)
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -178,9 +197,16 @@ func (r *fileResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
 	var opts []storage.UpdateFileOption
 	if !plan.Name.IsNull() {
-		opts = append(opts, r.storage.WithUpdateFileName(plan.Name.ValueString()))
+		opts = append(opts, storageClient.WithUpdateFileName(plan.Name.ValueString()))
 	}
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		var perms []string
@@ -188,16 +214,16 @@ func (r *fileResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.storage.WithUpdateFilePermissions(perms))
+		opts = append(opts, storageClient.WithUpdateFilePermissions(perms))
 	}
 
-	f, err := r.storage.UpdateFile(plan.BucketID.ValueString(), plan.ID.ValueString(), opts...)
+	f, err := storageClient.UpdateFile(plan.BucketID.ValueString(), plan.ID.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating file", common.FormatError(err))
 		return
 	}
 
-	r.mapToState(ctx, f, &plan, &resp.Diagnostics)
+	mapFileToModel(ctx, f, &plan, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -208,7 +234,14 @@ func (r *fileResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, err := r.storage.DeleteFile(state.BucketID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	storageClient := appwrite.NewStorage(r.clients.ClientForProject(projectID))
+
+	_, err = storageClient.DeleteFile(state.BucketID.ValueString(), state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting file", common.FormatError(err))
 	}
@@ -225,7 +258,7 @@ func (r *fileResource) ImportState(ctx context.Context, req resource.ImportState
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
-func (r *fileResource) mapToState(ctx context.Context, f *models.File, model *fileResourceModel, diagnostics *diag.Diagnostics) {
+func mapFileToModel(ctx context.Context, f *models.File, model *fileResourceModel, diagnostics *diag.Diagnostics) {
 	model.ID = types.StringValue(f.Id)
 	model.BucketID = types.StringValue(f.BucketId)
 	model.Name = types.StringValue(f.Name)

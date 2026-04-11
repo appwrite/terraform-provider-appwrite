@@ -1,18 +1,18 @@
 resource "appwrite_webhook" "order_created" {
-  name   = "Order Created"
+  name   = "order created"
   url    = "https://api.example.com/webhooks/orders"
   events = ["databases.*.collections.*.documents.*.create"]
 }
 
 resource "appwrite_webhook" "user_events" {
-  name     = "User Events"
+  name     = "user events"
   url      = "https://api.example.com/webhooks/users"
   events   = ["users.*.create", "users.*.update", "users.*.delete"]
   security = true
 }
 
 resource "appwrite_webhook" "authenticated" {
-  name      = "Authenticated Webhook"
+  name      = "authenticated webhook"
   url       = "https://api.example.com/webhooks/secure"
   events    = ["databases.*.collections.*.documents.*.create"]
   http_user = "webhook"

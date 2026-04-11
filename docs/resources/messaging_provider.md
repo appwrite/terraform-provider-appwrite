@@ -11,16 +11,14 @@ Manages an Appwrite messaging provider.
 ## Example Usage
 
 ```terraform
-# Sendgrid email provider
 resource "appwrite_messaging_provider" "sendgrid" {
   name       = "sendgrid"
   type       = "sendgrid"
   api_key    = var.sendgrid_api_key
   from_email = "noreply@example.com"
-  from_name  = "application"
+  from_name  = "my app"
 }
 
-# SMTP email provider
 resource "appwrite_messaging_provider" "smtp" {
   name       = "smtp"
   type       = "smtp"
@@ -32,7 +30,6 @@ resource "appwrite_messaging_provider" "smtp" {
   from_email = "noreply@example.com"
 }
 
-# Twilio SMS provider
 resource "appwrite_messaging_provider" "twilio" {
   name        = "twilio"
   type        = "twilio"
@@ -41,16 +38,10 @@ resource "appwrite_messaging_provider" "twilio" {
   from        = "+1234567890"
 }
 
-# FCM push notification provider
 resource "appwrite_messaging_provider" "fcm" {
   name                 = "fcm"
   type                 = "fcm"
   service_account_json = file("firebase-service-account.json")
-}
-
-# Topic using the provider
-resource "appwrite_messaging_topic" "announcements" {
-  name = "announcements"
 }
 ```
 
@@ -84,6 +75,7 @@ resource "appwrite_messaging_topic" "announcements" {
 - `is_eu_region` (Boolean) Whether to use EU region. Applies to mailgun type.
 - `password` (String, Sensitive) Password. Applies to smtp type.
 - `port` (Number) SMTP port. Applies to smtp type.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `reply_to_email` (String) Reply-to email address. Applies to email providers.
 - `reply_to_name` (String) Reply-to name. Applies to email providers.
 - `sandbox` (Boolean) Use APNS sandbox environment. Applies to apns type.
@@ -109,3 +101,4 @@ terraform import appwrite_messaging_provider.sendgrid <provider-id>
 ## See Also
 
 - [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics
+- [appwrite_messaging_subscriber](messaging_subscriber.md) - Manage topic subscribers

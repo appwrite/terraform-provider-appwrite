@@ -32,6 +32,7 @@ resource "appwrite_messaging_subscriber" "user_email" {
 ### Optional
 
 - `id` (String) The subscriber ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 
@@ -48,6 +49,5 @@ terraform import appwrite_messaging_subscriber.user_email <topic-id>/<subscriber
 
 ## See Also
 
-- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics
+- [appwrite_messaging_topic](messaging_topic.md) - Manage the topic this subscriber belongs to
 - [appwrite_messaging_provider](messaging_provider.md) - Manage messaging providers
-- [appwrite_auth_user](auth_user.md) - Manage users

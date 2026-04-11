@@ -28,7 +28,7 @@ resource "appwrite_tablesdb_row" "alice" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
   data = jsonencode({
-    name  = "Alice"
+    name  = "alice"
     email = "alice@example.com"
   })
 

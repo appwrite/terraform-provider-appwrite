@@ -11,18 +11,12 @@ Manages an Appwrite team.
 ## Example Usage
 
 ```terraform
-resource "appwrite_auth_user" "john" {
-  name     = "John Doe"
-  email    = "john@example.com"
-  password = var.user_password
-}
-
 resource "appwrite_auth_team" "engineering" {
-  name = "Engineering"
+  name = "engineering"
 }
 
 resource "appwrite_auth_team" "marketing" {
-  name  = "Marketing"
+  name  = "marketing"
   roles = ["owner", "editor"]
 }
 ```
@@ -37,6 +31,7 @@ resource "appwrite_auth_team" "marketing" {
 ### Optional
 
 - `id` (String) The team ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `roles` (List of String) Roles for new team members. Defaults to ["owner"].
 
 ### Read-Only
@@ -55,4 +50,4 @@ terraform import appwrite_auth_team.engineering <team-id>
 ## See Also
 
 - [appwrite_auth_user](auth_user.md) - Manage users
-- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics with team subscriptions
+- [appwrite_messaging_topic](messaging_topic.md) - Restrict topic subscriptions to a team

@@ -27,6 +27,10 @@ output "database_name" {
 
 - `id` (String) The database ID.
 
+### Optional
+
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+
 ### Read-Only
 
 - `created_at` (String) The database creation timestamp.

@@ -24,7 +24,6 @@ resource "appwrite_tablesdb_column" "name" {
   required    = true
 }
 
-# Unique index
 resource "appwrite_tablesdb_index" "email_unique" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -33,7 +32,6 @@ resource "appwrite_tablesdb_index" "email_unique" {
   columns     = [appwrite_tablesdb_column.email.key]
 }
 
-# Key index with sort order
 resource "appwrite_tablesdb_index" "name_index" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id

@@ -25,7 +25,6 @@ resource "appwrite_tablesdb_table" "posts" {
   name        = "posts"
 }
 
-# Varchar column with max length
 resource "appwrite_tablesdb_column" "name" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -35,7 +34,6 @@ resource "appwrite_tablesdb_column" "name" {
   required    = true
 }
 
-# Email column
 resource "appwrite_tablesdb_column" "email" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -44,7 +42,6 @@ resource "appwrite_tablesdb_column" "email" {
   required    = true
 }
 
-# Integer column with min/max
 resource "appwrite_tablesdb_column" "age" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -54,7 +51,6 @@ resource "appwrite_tablesdb_column" "age" {
   max         = 150
 }
 
-# Boolean column with default
 resource "appwrite_tablesdb_column" "active" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -63,7 +59,6 @@ resource "appwrite_tablesdb_column" "active" {
   default     = "true"
 }
 
-# Float column with min/max
 resource "appwrite_tablesdb_column" "score" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -73,7 +68,6 @@ resource "appwrite_tablesdb_column" "score" {
   float_max   = 100.0
 }
 
-# Enum column with allowed values
 resource "appwrite_tablesdb_column" "role" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -83,7 +77,6 @@ resource "appwrite_tablesdb_column" "role" {
   default     = "viewer"
 }
 
-# Datetime column
 resource "appwrite_tablesdb_column" "joined_at" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -91,7 +84,6 @@ resource "appwrite_tablesdb_column" "joined_at" {
   type        = "datetime"
 }
 
-# Array column
 resource "appwrite_tablesdb_column" "tags" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -101,7 +93,6 @@ resource "appwrite_tablesdb_column" "tags" {
   array       = true
 }
 
-# Geographic point column
 resource "appwrite_tablesdb_column" "location" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
@@ -109,7 +100,6 @@ resource "appwrite_tablesdb_column" "location" {
   type        = "point"
 }
 
-# Relationship column
 resource "appwrite_tablesdb_column" "author" {
   database_id       = appwrite_tablesdb.main.id
   table_id          = appwrite_tablesdb_table.posts.id
@@ -143,6 +133,7 @@ resource "appwrite_tablesdb_column" "author" {
 - `max` (Number) Maximum value. Applies to integer type.
 - `min` (Number) Minimum value. Applies to integer type.
 - `on_delete` (String) Behavior when the parent document is deleted: restrict, cascade, setNull. Applies to relationship type.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `related_table_id` (String) The ID of the related table. Required for relationship type.
 - `relationship_type` (String) The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type.
 - `required` (Boolean) Whether the column is required.

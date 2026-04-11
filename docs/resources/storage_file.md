@@ -42,6 +42,7 @@ resource "appwrite_storage_file" "config" {
 - `id` (String) The file ID.
 - `name` (String) The file name.
 - `permissions` (List of String) File permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 
@@ -60,4 +61,4 @@ terraform import appwrite_storage_file.logo <bucket-id>/<file-id>
 
 ## See Also
 
-- [appwrite_storage_bucket](storage_bucket.md) - Manage storage buckets
+- [appwrite_storage_bucket](storage_bucket.md) - Manage the bucket this file belongs to

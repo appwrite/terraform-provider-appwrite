@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -25,7 +26,7 @@ var (
 )
 
 type tableResource struct {
-	tablesdb *tablesdb.TablesDB
+	clients *common.AppwriteClients
 }
 
 type tableResourceModel struct {
@@ -37,6 +38,7 @@ type tableResourceModel struct {
 	Permissions types.List   `tfsdk:"permissions"`
 	CreatedAt   types.String `tfsdk:"created_at"`
 	UpdatedAt   types.String `tfsdk:"updated_at"`
+	ProjectID   types.String `tfsdk:"project_id"`
 }
 
 func NewTableResource() resource.Resource {
@@ -93,6 +95,7 @@ func (r *tableResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "The table last update timestamp.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -109,7 +112,7 @@ func (r *tableResource) Configure(_ context.Context, req resource.ConfigureReque
 		)
 		return
 	}
-	r.tablesdb = clients.TablesDB
+	r.clients = clients
 }
 
 func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -119,12 +122,19 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
 	var opts []tablesdb.CreateTableOption
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		opts = append(opts, r.tablesdb.WithCreateTableEnabled(plan.Enabled.ValueBool()))
+		opts = append(opts, tablesdbClient.WithCreateTableEnabled(plan.Enabled.ValueBool()))
 	}
 	if !plan.RowSecurity.IsNull() && !plan.RowSecurity.IsUnknown() {
-		opts = append(opts, r.tablesdb.WithCreateTableRowSecurity(plan.RowSecurity.ValueBool()))
+		opts = append(opts, tablesdbClient.WithCreateTableRowSecurity(plan.RowSecurity.ValueBool()))
 	}
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		var perms []string
@@ -132,7 +142,7 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.tablesdb.WithCreateTablePermissions(perms))
+		opts = append(opts, tablesdbClient.WithCreateTablePermissions(perms))
 	}
 
 	tableID := plan.ID.ValueString()
@@ -140,7 +150,7 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 		tableID = id.Unique()
 	}
 
-	table, err := r.tablesdb.CreateTable(
+	table, err := tablesdbClient.CreateTable(
 		plan.DatabaseID.ValueString(),
 		tableID,
 		plan.Name.ValueString(),
@@ -161,6 +171,7 @@ func (r *tableResource) Create(ctx context.Context, req resource.CreateRequest, 
 	permsList, diags := types.ListValueFrom(ctx, types.StringType, table.Permissions)
 	resp.Diagnostics.Append(diags...)
 	plan.Permissions = permsList
+	plan.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -172,7 +183,14 @@ func (r *tableResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	table, err := r.tablesdb.GetTable(state.DatabaseID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	table, err := tablesdbClient.GetTable(state.DatabaseID.ValueString(), state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -192,6 +210,7 @@ func (r *tableResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	permsList, diags := types.ListValueFrom(ctx, types.StringType, table.Permissions)
 	resp.Diagnostics.Append(diags...)
 	state.Permissions = permsList
+	state.ProjectID = types.StringValue(projectID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -203,10 +222,17 @@ func (r *tableResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
 	opts := []tablesdb.UpdateTableOption{
-		r.tablesdb.WithUpdateTableName(plan.Name.ValueString()),
-		r.tablesdb.WithUpdateTableEnabled(plan.Enabled.ValueBool()),
-		r.tablesdb.WithUpdateTableRowSecurity(plan.RowSecurity.ValueBool()),
+		tablesdbClient.WithUpdateTableName(plan.Name.ValueString()),
+		tablesdbClient.WithUpdateTableEnabled(plan.Enabled.ValueBool()),
+		tablesdbClient.WithUpdateTableRowSecurity(plan.RowSecurity.ValueBool()),
 	}
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
@@ -215,10 +241,10 @@ func (r *tableResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.tablesdb.WithUpdateTablePermissions(perms))
+		opts = append(opts, tablesdbClient.WithUpdateTablePermissions(perms))
 	}
 
-	table, err := r.tablesdb.UpdateTable(plan.DatabaseID.ValueString(), plan.ID.ValueString(), opts...)
+	table, err := tablesdbClient.UpdateTable(plan.DatabaseID.ValueString(), plan.ID.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating table", common.FormatError(err))
 		return
@@ -245,7 +271,14 @@ func (r *tableResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	_, err := r.tablesdb.DeleteTable(state.DatabaseID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	_, err = tablesdbClient.DeleteTable(state.DatabaseID.ValueString(), state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting table", common.FormatError(err))
 	}
