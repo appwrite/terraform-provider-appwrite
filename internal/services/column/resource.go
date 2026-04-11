@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -26,7 +27,7 @@ var (
 var allColumnTypes = "varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
 
 type columnResource struct {
-	tablesdb *tablesdb.TablesDB
+	clients *common.AppwriteClients
 }
 
 type columnResourceModel struct {
@@ -51,6 +52,7 @@ type columnResourceModel struct {
 	OnDelete       types.String  `tfsdk:"on_delete"`
 	CreatedAt      types.String  `tfsdk:"created_at"`
 	UpdatedAt      types.String  `tfsdk:"updated_at"`
+	ProjectID      types.String  `tfsdk:"project_id"`
 }
 
 func NewColumnResource() resource.Resource {
@@ -163,6 +165,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "The column last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -176,7 +179,7 @@ func (r *columnResource) Configure(_ context.Context, req resource.ConfigureRequ
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.tablesdb = clients.TablesDB
+	r.clients = clients
 }
 
 func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -185,6 +188,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
 
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
@@ -197,7 +207,6 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	array := plan.Array.ValueBool()
 
 	var responseJSON []byte
-	var err error
 
 	switch columnType {
 	case "string":
@@ -207,13 +216,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		var opts []tablesdb.CreateStringColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateStringColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateStringColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateStringColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateStringColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, r.tablesdb.WithCreateStringColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateStringColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := r.tablesdb.CreateStringColumn(databaseId, tableId, key, int(plan.Size.ValueInt64()), required, opts...)
+		col, e := tablesdbClient.CreateStringColumn(databaseId, tableId, key, int(plan.Size.ValueInt64()), required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -226,13 +235,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		var opts []tablesdb.CreateVarcharColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateVarcharColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateVarcharColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateVarcharColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateVarcharColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, r.tablesdb.WithCreateVarcharColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateVarcharColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := r.tablesdb.CreateVarcharColumn(databaseId, tableId, key, int(plan.Size.ValueInt64()), required, opts...)
+		col, e := tablesdbClient.CreateVarcharColumn(databaseId, tableId, key, int(plan.Size.ValueInt64()), required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -241,13 +250,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "text":
 		var opts []tablesdb.CreateTextColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateTextColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateTextColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, r.tablesdb.WithCreateTextColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateTextColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := r.tablesdb.CreateTextColumn(databaseId, tableId, key, required, opts...)
+		col, e := tablesdbClient.CreateTextColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -256,13 +265,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "longtext":
 		var opts []tablesdb.CreateLongtextColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateLongtextColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateLongtextColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateLongtextColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateLongtextColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, r.tablesdb.WithCreateLongtextColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateLongtextColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := r.tablesdb.CreateLongtextColumn(databaseId, tableId, key, required, opts...)
+		col, e := tablesdbClient.CreateLongtextColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -271,13 +280,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "mediumtext":
 		var opts []tablesdb.CreateMediumtextColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateMediumtextColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateMediumtextColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateMediumtextColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateMediumtextColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, r.tablesdb.WithCreateMediumtextColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateMediumtextColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := r.tablesdb.CreateMediumtextColumn(databaseId, tableId, key, required, opts...)
+		col, e := tablesdbClient.CreateMediumtextColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -286,16 +295,16 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "integer":
 		var opts []tablesdb.CreateIntegerColumnOption
 		if !plan.Min.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateIntegerColumnMin(int(plan.Min.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithCreateIntegerColumnMin(int(plan.Min.ValueInt64())))
 		}
 		if !plan.Max.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateIntegerColumnMax(int(plan.Max.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithCreateIntegerColumnMax(int(plan.Max.ValueInt64())))
 		}
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateIntegerColumnDefault(parseIntDefault(plan.DefaultStr.ValueString())))
+			opts = append(opts, tablesdbClient.WithCreateIntegerColumnDefault(parseIntDefault(plan.DefaultStr.ValueString())))
 		}
-		opts = append(opts, r.tablesdb.WithCreateIntegerColumnArray(array))
-		col, e := r.tablesdb.CreateIntegerColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateIntegerColumnArray(array))
+		col, e := tablesdbClient.CreateIntegerColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -304,16 +313,16 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "float":
 		var opts []tablesdb.CreateFloatColumnOption
 		if !plan.FloatMin.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateFloatColumnMin(plan.FloatMin.ValueFloat64()))
+			opts = append(opts, tablesdbClient.WithCreateFloatColumnMin(plan.FloatMin.ValueFloat64()))
 		}
 		if !plan.FloatMax.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateFloatColumnMax(plan.FloatMax.ValueFloat64()))
+			opts = append(opts, tablesdbClient.WithCreateFloatColumnMax(plan.FloatMax.ValueFloat64()))
 		}
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateFloatColumnDefault(parseFloatDefault(plan.DefaultStr.ValueString())))
+			opts = append(opts, tablesdbClient.WithCreateFloatColumnDefault(parseFloatDefault(plan.DefaultStr.ValueString())))
 		}
-		opts = append(opts, r.tablesdb.WithCreateFloatColumnArray(array))
-		col, e := r.tablesdb.CreateFloatColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateFloatColumnArray(array))
+		col, e := tablesdbClient.CreateFloatColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -322,10 +331,10 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "boolean":
 		var opts []tablesdb.CreateBooleanColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateBooleanColumnDefault(plan.DefaultStr.ValueString() == "true"))
+			opts = append(opts, tablesdbClient.WithCreateBooleanColumnDefault(plan.DefaultStr.ValueString() == "true"))
 		}
-		opts = append(opts, r.tablesdb.WithCreateBooleanColumnArray(array))
-		col, e := r.tablesdb.CreateBooleanColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateBooleanColumnArray(array))
+		col, e := tablesdbClient.CreateBooleanColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -343,10 +352,10 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		var opts []tablesdb.CreateEnumColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateEnumColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateEnumColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateEnumColumnArray(array))
-		col, e := r.tablesdb.CreateEnumColumn(databaseId, tableId, key, elements, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateEnumColumnArray(array))
+		col, e := tablesdbClient.CreateEnumColumn(databaseId, tableId, key, elements, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -355,10 +364,10 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "email":
 		var opts []tablesdb.CreateEmailColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateEmailColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateEmailColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateEmailColumnArray(array))
-		col, e := r.tablesdb.CreateEmailColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateEmailColumnArray(array))
+		col, e := tablesdbClient.CreateEmailColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -367,10 +376,10 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "datetime":
 		var opts []tablesdb.CreateDatetimeColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateDatetimeColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateDatetimeColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateDatetimeColumnArray(array))
-		col, e := r.tablesdb.CreateDatetimeColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateDatetimeColumnArray(array))
+		col, e := tablesdbClient.CreateDatetimeColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -379,10 +388,10 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "url":
 		var opts []tablesdb.CreateUrlColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateUrlColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateUrlColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateUrlColumnArray(array))
-		col, e := r.tablesdb.CreateUrlColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateUrlColumnArray(array))
+		col, e := tablesdbClient.CreateUrlColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -391,31 +400,31 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	case "ip":
 		var opts []tablesdb.CreateIpColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateIpColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateIpColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, r.tablesdb.WithCreateIpColumnArray(array))
-		col, e := r.tablesdb.CreateIpColumn(databaseId, tableId, key, required, opts...)
+		opts = append(opts, tablesdbClient.WithCreateIpColumnArray(array))
+		col, e := tablesdbClient.CreateIpColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "point":
-		col, e := r.tablesdb.CreatePointColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.CreatePointColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "line":
-		col, e := r.tablesdb.CreateLineColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.CreateLineColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "polygon":
-		col, e := r.tablesdb.CreatePolygonColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.CreatePolygonColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -432,18 +441,18 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		var opts []tablesdb.CreateRelationshipColumnOption
 		if !plan.TwoWay.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateRelationshipColumnTwoWay(plan.TwoWay.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateRelationshipColumnTwoWay(plan.TwoWay.ValueBool()))
 		}
 		if !plan.Key.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateRelationshipColumnKey(key))
+			opts = append(opts, tablesdbClient.WithCreateRelationshipColumnKey(key))
 		}
 		if !plan.TwoWayKey.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateRelationshipColumnTwoWayKey(plan.TwoWayKey.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateRelationshipColumnTwoWayKey(plan.TwoWayKey.ValueString()))
 		}
 		if !plan.OnDelete.IsNull() {
-			opts = append(opts, r.tablesdb.WithCreateRelationshipColumnOnDelete(plan.OnDelete.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateRelationshipColumnOnDelete(plan.OnDelete.ValueString()))
 		}
-		col, e := r.tablesdb.CreateRelationshipColumn(databaseId, tableId, plan.RelatedTableID.ValueString(), plan.RelationType.ValueString(), opts...)
+		col, e := tablesdbClient.CreateRelationshipColumn(databaseId, tableId, plan.RelatedTableID.ValueString(), plan.RelationType.ValueString(), opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -460,6 +469,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	r.readResponseIntoState(ctx, responseJSON, &plan, &resp.Diagnostics)
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -470,7 +480,14 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	raw, err := r.tablesdb.GetColumn(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	raw, err := tablesdbClient.GetColumn(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -488,6 +505,7 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	responseJSON, _ := json.Marshal(generic)
 	r.readResponseIntoState(ctx, responseJSON, &state, &resp.Diagnostics)
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -497,6 +515,13 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
 
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
@@ -510,15 +535,14 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	var responseJSON []byte
-	var err error
 
 	switch columnType {
 	case "string":
 		var opts []tablesdb.UpdateStringColumnOption
 		if !plan.Size.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateStringColumnSize(int(plan.Size.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithUpdateStringColumnSize(int(plan.Size.ValueInt64())))
 		}
-		col, e := r.tablesdb.UpdateStringColumn(databaseId, tableId, key, required, defaultStr, opts...)
+		col, e := tablesdbClient.UpdateStringColumn(databaseId, tableId, key, required, defaultStr, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -527,30 +551,30 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	case "varchar":
 		var opts []tablesdb.UpdateVarcharColumnOption
 		if !plan.Size.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateVarcharColumnSize(int(plan.Size.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithUpdateVarcharColumnSize(int(plan.Size.ValueInt64())))
 		}
-		col, e := r.tablesdb.UpdateVarcharColumn(databaseId, tableId, key, required, defaultStr, opts...)
+		col, e := tablesdbClient.UpdateVarcharColumn(databaseId, tableId, key, required, defaultStr, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "text":
-		col, e := r.tablesdb.UpdateTextColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateTextColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "longtext":
-		col, e := r.tablesdb.UpdateLongtextColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateLongtextColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "mediumtext":
-		col, e := r.tablesdb.UpdateMediumtextColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateMediumtextColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -559,12 +583,12 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	case "integer":
 		var opts []tablesdb.UpdateIntegerColumnOption
 		if !plan.Min.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateIntegerColumnMin(int(plan.Min.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMin(int(plan.Min.ValueInt64())))
 		}
 		if !plan.Max.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateIntegerColumnMax(int(plan.Max.ValueInt64())))
+			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMax(int(plan.Max.ValueInt64())))
 		}
-		col, e := r.tablesdb.UpdateIntegerColumn(databaseId, tableId, key, required, parseIntDefault(defaultStr), opts...)
+		col, e := tablesdbClient.UpdateIntegerColumn(databaseId, tableId, key, required, parseIntDefault(defaultStr), opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -573,19 +597,19 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	case "float":
 		var opts []tablesdb.UpdateFloatColumnOption
 		if !plan.FloatMin.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateFloatColumnMin(plan.FloatMin.ValueFloat64()))
+			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMin(plan.FloatMin.ValueFloat64()))
 		}
 		if !plan.FloatMax.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateFloatColumnMax(plan.FloatMax.ValueFloat64()))
+			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMax(plan.FloatMax.ValueFloat64()))
 		}
-		col, e := r.tablesdb.UpdateFloatColumn(databaseId, tableId, key, required, parseFloatDefault(defaultStr), opts...)
+		col, e := tablesdbClient.UpdateFloatColumn(databaseId, tableId, key, required, parseFloatDefault(defaultStr), opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "boolean":
-		col, e := r.tablesdb.UpdateBooleanColumn(databaseId, tableId, key, required, defaultStr == "true")
+		col, e := tablesdbClient.UpdateBooleanColumn(databaseId, tableId, key, required, defaultStr == "true")
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -597,56 +621,56 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		col, e := r.tablesdb.UpdateEnumColumn(databaseId, tableId, key, elements, required, defaultStr)
+		col, e := tablesdbClient.UpdateEnumColumn(databaseId, tableId, key, elements, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "email":
-		col, e := r.tablesdb.UpdateEmailColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateEmailColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "datetime":
-		col, e := r.tablesdb.UpdateDatetimeColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateDatetimeColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "url":
-		col, e := r.tablesdb.UpdateUrlColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateUrlColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "ip":
-		col, e := r.tablesdb.UpdateIpColumn(databaseId, tableId, key, required, defaultStr)
+		col, e := tablesdbClient.UpdateIpColumn(databaseId, tableId, key, required, defaultStr)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "point":
-		col, e := r.tablesdb.UpdatePointColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.UpdatePointColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "line":
-		col, e := r.tablesdb.UpdateLineColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.UpdateLineColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
 		}
 
 	case "polygon":
-		col, e := r.tablesdb.UpdatePolygonColumn(databaseId, tableId, key, required)
+		col, e := tablesdbClient.UpdatePolygonColumn(databaseId, tableId, key, required)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -655,9 +679,9 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	case "relationship":
 		var opts []tablesdb.UpdateRelationshipColumnOption
 		if !plan.OnDelete.IsNull() {
-			opts = append(opts, r.tablesdb.WithUpdateRelationshipColumnOnDelete(plan.OnDelete.ValueString()))
+			opts = append(opts, tablesdbClient.WithUpdateRelationshipColumnOnDelete(plan.OnDelete.ValueString()))
 		}
-		col, e := r.tablesdb.UpdateRelationshipColumn(databaseId, tableId, key, opts...)
+		col, e := tablesdbClient.UpdateRelationshipColumn(databaseId, tableId, key, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -680,7 +704,14 @@ func (r *columnResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	_, err := r.tablesdb.DeleteColumn(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	_, err = tablesdbClient.DeleteColumn(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting column", common.FormatError(err))
 	}

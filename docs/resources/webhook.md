@@ -12,20 +12,20 @@ Manages an Appwrite webhook.
 
 ```terraform
 resource "appwrite_webhook" "order_created" {
-  name   = "Order Created"
+  name   = "order created"
   url    = "https://api.example.com/webhooks/orders"
   events = ["databases.*.collections.*.documents.*.create"]
 }
 
 resource "appwrite_webhook" "user_events" {
-  name     = "User Events"
+  name     = "user events"
   url      = "https://api.example.com/webhooks/users"
   events   = ["users.*.create", "users.*.update", "users.*.delete"]
   security = true
 }
 
 resource "appwrite_webhook" "authenticated" {
-  name      = "Authenticated Webhook"
+  name      = "authenticated webhook"
   url       = "https://api.example.com/webhooks/secure"
   events    = ["databases.*.collections.*.documents.*.create"]
   http_user = "webhook"
@@ -49,6 +49,7 @@ resource "appwrite_webhook" "authenticated" {
 - `http_pass` (String, Sensitive) HTTP basic authentication password.
 - `http_user` (String) HTTP basic authentication username.
 - `id` (String) The webhook ID.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `security` (Boolean) Whether SSL/TLS certificate verification is enabled. Defaults to false.
 
 ### Read-Only
@@ -64,3 +65,9 @@ Import is supported using the following syntax:
 ```shell
 terraform import appwrite_webhook.order_created <webhook-id>
 ```
+
+## See Also
+
+- [appwrite_tablesdb](tablesdb.md) - Manage databases (webhook event source)
+- [appwrite_auth_user](auth_user.md) - Manage users (webhook event source)
+- [appwrite_storage_bucket](storage_bucket.md) - Manage storage buckets (webhook event source)

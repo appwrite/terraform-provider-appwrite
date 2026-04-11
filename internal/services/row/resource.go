@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/models"
 	"github.com/appwrite/sdk-for-go/v2/tablesdb"
@@ -26,7 +27,7 @@ var (
 )
 
 type rowResource struct {
-	tablesdb *tablesdb.TablesDB
+	clients *common.AppwriteClients
 }
 
 type rowResourceModel struct {
@@ -37,6 +38,7 @@ type rowResourceModel struct {
 	Permissions types.List   `tfsdk:"permissions"`
 	CreatedAt   types.String `tfsdk:"created_at"`
 	UpdatedAt   types.String `tfsdk:"updated_at"`
+	ProjectID   types.String `tfsdk:"project_id"`
 }
 
 func NewRowResource() resource.Resource {
@@ -85,6 +87,7 @@ func (r *rowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description: "The row last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -98,7 +101,7 @@ func (r *rowResource) Configure(_ context.Context, req resource.ConfigureRequest
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.tablesdb = clients.TablesDB
+	r.clients = clients
 }
 
 func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -107,6 +110,13 @@ func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
 
 	var data map[string]interface{}
 	if err := json.Unmarshal([]byte(plan.Data.ValueString()), &data); err != nil {
@@ -126,10 +136,10 @@ func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, re
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.tablesdb.WithCreateRowPermissions(perms))
+		opts = append(opts, tablesdbClient.WithCreateRowPermissions(perms))
 	}
 
-	row, err := r.tablesdb.CreateRow(
+	row, err := tablesdbClient.CreateRow(
 		plan.DatabaseID.ValueString(),
 		plan.TableID.ValueString(),
 		rowID,
@@ -142,6 +152,7 @@ func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	r.mapToState(ctx, row, &plan, &resp.Diagnostics)
+	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -152,7 +163,14 @@ func (r *rowResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	row, err := r.tablesdb.GetRow(
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	row, err := tablesdbClient.GetRow(
 		state.DatabaseID.ValueString(),
 		state.TableID.ValueString(),
 		state.ID.ValueString(),
@@ -167,6 +185,7 @@ func (r *rowResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	r.mapToState(ctx, row, &state, &resp.Diagnostics)
+	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -177,6 +196,13 @@ func (r *rowResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
 	var opts []tablesdb.UpdateRowOption
 
 	var data map[string]interface{}
@@ -184,7 +210,7 @@ func (r *rowResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.AddError("Invalid data JSON", fmt.Sprintf("Failed to parse data: %s", err))
 		return
 	}
-	opts = append(opts, r.tablesdb.WithUpdateRowData(data))
+	opts = append(opts, tablesdbClient.WithUpdateRowData(data))
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		var perms []string
@@ -192,10 +218,10 @@ func (r *rowResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.tablesdb.WithUpdateRowPermissions(perms))
+		opts = append(opts, tablesdbClient.WithUpdateRowPermissions(perms))
 	}
 
-	row, err := r.tablesdb.UpdateRow(
+	row, err := tablesdbClient.UpdateRow(
 		plan.DatabaseID.ValueString(),
 		plan.TableID.ValueString(),
 		plan.ID.ValueString(),
@@ -217,7 +243,14 @@ func (r *rowResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	_, err := r.tablesdb.DeleteRow(
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+
+	_, err = tablesdbClient.DeleteRow(
 		state.DatabaseID.ValueString(),
 		state.TableID.ValueString(),
 		state.ID.ValueString(),

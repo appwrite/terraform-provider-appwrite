@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
-	"github.com/appwrite/sdk-for-go/v2/messaging"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -23,10 +23,11 @@ var (
 )
 
 type subscriberResource struct {
-	messaging *messaging.Messaging
+	clients *common.AppwriteClients
 }
 
 type subscriberResourceModel struct {
+	ProjectID types.String `tfsdk:"project_id"`
 	ID        types.String `tfsdk:"id"`
 	TopicID   types.String `tfsdk:"topic_id"`
 	TargetID  types.String `tfsdk:"target_id"`
@@ -46,6 +47,7 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Description: "Manages a subscriber to an Appwrite messaging topic.",
 		Attributes: map[string]schema.Attribute{
+			"project_id": common.ProjectIDAttribute(),
 			"id": schema.StringAttribute{
 				Description:   "The subscriber ID.",
 				Optional:      true,
@@ -83,7 +85,7 @@ func (r *subscriberResource) Configure(_ context.Context, req resource.Configure
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.messaging = clients.Messaging
+	r.clients = clients
 }
 
 func (r *subscriberResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -93,12 +95,19 @@ func (r *subscriberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
 	subscriberID := plan.ID.ValueString()
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
 		subscriberID = id.Unique()
 	}
 
-	subscriber, err := r.messaging.CreateSubscriber(
+	subscriber, err := messagingClient.CreateSubscriber(
 		plan.TopicID.ValueString(),
 		subscriberID,
 		plan.TargetID.ValueString(),
@@ -108,6 +117,7 @@ func (r *subscriberResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	plan.ProjectID = types.StringValue(projectID)
 	plan.ID = types.StringValue(subscriber.Id)
 	plan.CreatedAt = types.StringValue(subscriber.CreatedAt)
 	plan.UpdatedAt = types.StringValue(subscriber.UpdatedAt)
@@ -123,7 +133,14 @@ func (r *subscriberResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	subscriber, err := r.messaging.GetSubscriber(state.TopicID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
+	subscriber, err := messagingClient.GetSubscriber(state.TopicID.ValueString(), state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -133,6 +150,7 @@ func (r *subscriberResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
+	state.ProjectID = types.StringValue(projectID)
 	state.ID = types.StringValue(subscriber.Id)
 	state.TargetID = types.StringValue(subscriber.TargetId)
 	state.CreatedAt = types.StringValue(subscriber.CreatedAt)
@@ -152,7 +170,14 @@ func (r *subscriberResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, err := r.messaging.DeleteSubscriber(state.TopicID.ValueString(), state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Missing project_id", err.Error())
+		return
+	}
+	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+
+	_, err = messagingClient.DeleteSubscriber(state.TopicID.ValueString(), state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting subscriber", common.FormatError(err))
 	}

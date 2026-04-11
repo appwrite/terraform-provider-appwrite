@@ -11,18 +11,14 @@ Manages an Appwrite user.
 ## Example Usage
 
 ```terraform
-resource "appwrite_auth_team" "engineering" {
-  name = "Engineering"
-}
-
 resource "appwrite_auth_user" "john" {
-  name     = "John Doe"
+  name     = "john doe"
   email    = "john@example.com"
   password = var.user_password
 }
 
 resource "appwrite_auth_user" "admin" {
-  name     = "Admin"
+  name     = "admin"
   email    = "admin@example.com"
   password = var.admin_password
   labels   = ["admin", "staff"]
@@ -42,6 +38,7 @@ resource "appwrite_auth_user" "admin" {
 - `password` (String, Sensitive) The user password. Write-only, not returned by the API.
 - `phone` (String) The user phone number in E.164 format.
 - `phone_verification` (Boolean) Whether the user phone is verified.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `status` (Boolean) Whether the user account is enabled. Defaults to true.
 
 ### Read-Only
@@ -60,4 +57,5 @@ terraform import appwrite_auth_user.john <user-id>
 ## See Also
 
 - [appwrite_auth_team](auth_team.md) - Manage teams
-- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics with user subscriptions
+- [appwrite_messaging_topic](messaging_topic.md) - Manage messaging topics
+- [appwrite_messaging_subscriber](messaging_subscriber.md) - Subscribe users to topics

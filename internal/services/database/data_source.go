@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -17,7 +17,7 @@ var (
 )
 
 type databaseDataSource struct {
-	tablesdb *tablesdb.TablesDB
+	clients *common.AppwriteClients
 }
 
 type databaseDataSourceModel struct {
@@ -26,6 +26,7 @@ type databaseDataSourceModel struct {
 	Enabled   types.Bool   `tfsdk:"enabled"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func NewDatabaseDataSource() datasource.DataSource {
@@ -60,6 +61,11 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Description: "The database last update timestamp.",
 				Computed:    true,
 			},
+			"project_id": schema.StringAttribute{
+				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -76,7 +82,7 @@ func (d *databaseDataSource) Configure(_ context.Context, req datasource.Configu
 		)
 		return
 	}
-	d.tablesdb = clients.TablesDB
+	d.clients = clients
 }
 
 func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -86,12 +92,20 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	db, err := d.tablesdb.Get(config.ID.ValueString())
+	projectID, err := common.ResolveProjectID(d.clients, config.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
+		return
+	}
+	tablesdbClient := appwrite.NewTablesDB(d.clients.ClientForProject(projectID))
+
+	db, err := tablesdbClient.Get(config.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading database", common.FormatError(err))
 		return
 	}
 
+	config.ProjectID = types.StringValue(projectID)
 	config.ID = types.StringValue(db.Id)
 	config.Name = types.StringValue(db.Name)
 	config.Enabled = types.BoolValue(db.Enabled)

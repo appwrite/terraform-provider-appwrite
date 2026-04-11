@@ -11,21 +11,19 @@ Manages an Appwrite backup policy.
 ## Example Usage
 
 ```terraform
-# Daily backup of all databases with 7 day retention
 resource "appwrite_backup_policy" "daily" {
-  name      = "Daily Database Backup"
+  name      = "daily database backup"
   services  = ["databases"]
   retention = 7
   schedule  = "0 2 * * *"
 }
 
-# Backup a specific database
 resource "appwrite_tablesdb" "main" {
   name = "main"
 }
 
 resource "appwrite_backup_policy" "production" {
-  name        = "Production Database Backup"
+  name        = "production database backup"
   services    = ["databases"]
   resource_id = appwrite_tablesdb.main.id
   retention   = 14
@@ -47,6 +45,7 @@ resource "appwrite_backup_policy" "production" {
 - `enabled` (Boolean) Whether the policy is enabled. Defaults to true.
 - `id` (String) The backup policy ID.
 - `name` (String) The backup policy name.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `resource_id` (String) The resource ID to back up. Set to back up a single database instead of all databases.
 
 ### Read-Only
@@ -64,4 +63,5 @@ terraform import appwrite_backup_policy.daily <policy-id>
 
 ## See Also
 
-- [appwrite_tablesdb](tablesdb.md) - Manage databases
+- [appwrite_tablesdb](tablesdb.md) - Manage databases that can be backed up
+- [appwrite_storage_bucket](storage_bucket.md) - Manage storage buckets that can be backed up

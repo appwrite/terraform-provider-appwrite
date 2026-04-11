@@ -6,27 +6,52 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appwrite/sdk-for-go/v2/backups"
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/client"
-	"github.com/appwrite/sdk-for-go/v2/messaging"
-	"github.com/appwrite/sdk-for-go/v2/storage"
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
-	"github.com/appwrite/sdk-for-go/v2/teams"
-	"github.com/appwrite/sdk-for-go/v2/users"
-	"github.com/appwrite/sdk-for-go/v2/webhooks"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// AppwriteClients holds the configured SDK service clients.
+// AppwriteClients holds the base configuration for creating SDK clients.
 type AppwriteClients struct {
-	TablesDB  *tablesdb.TablesDB
-	Storage   *storage.Storage
-	Messaging *messaging.Messaging
-	Users     *users.Users
-	Teams     *teams.Teams
-	Backups   *backups.Backups
-	Webhooks  *webhooks.Webhooks
+	// BaseOptions contains the client options without a project (endpoint + key + self_signed).
+	BaseOptions []client.ClientOption
+	// ProjectID is the provider-level default project ID.
+	ProjectID string
+}
+
+// ClientForProject creates a new SDK client targeting a specific project.
+func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
+	opts := make([]client.ClientOption, len(ac.BaseOptions))
+	copy(opts, ac.BaseOptions)
+	opts = append(opts, appwrite.WithProject(projectID))
+	return appwrite.NewClient(opts...)
+}
+
+// ResolveProjectID returns the resource-level project_id if set, otherwise the provider default.
+// Returns an error if neither is set.
+func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) (string, error) {
+	if !resourceProjectID.IsNull() && !resourceProjectID.IsUnknown() && resourceProjectID.ValueString() != "" {
+		return resourceProjectID.ValueString(), nil
+	}
+	if clients.ProjectID != "" {
+		return clients.ProjectID, nil
+	}
+	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
+}
+
+// ProjectIDAttribute returns the shared schema attribute for project_id on resources.
+func ProjectIDAttribute() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Optional:      true,
+		Computed:      true,
+		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+	}
 }
 
 // IsNotFoundError checks if an Appwrite SDK error is a 404.

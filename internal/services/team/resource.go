@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
 	"github.com/appwrite/sdk-for-go/v2/teams"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -22,7 +23,7 @@ var (
 )
 
 type teamResource struct {
-	teams *teams.Teams
+	clients *common.AppwriteClients
 }
 
 type teamResourceModel struct {
@@ -31,6 +32,7 @@ type teamResourceModel struct {
 	Roles     types.List   `tfsdk:"roles"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func NewTeamResource() resource.Resource {
@@ -68,6 +70,7 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "The team last update timestamp in ISO 8601 format.",
 				Computed:    true,
 			},
+			"project_id": common.ProjectIDAttribute(),
 		},
 	}
 }
@@ -81,7 +84,7 @@ func (r *teamResource) Configure(_ context.Context, req resource.ConfigureReques
 		resp.Diagnostics.AddError("Unexpected Resource Configure Type", fmt.Sprintf("Expected *common.AppwriteClients, got: %T", req.ProviderData))
 		return
 	}
-	r.teams = clients.Teams
+	r.clients = clients
 }
 
 func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -91,6 +94,13 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
+		return
+	}
+	teamsClient := appwrite.NewTeams(r.clients.ClientForProject(projectID))
+
 	var opts []teams.CreateOption
 	if !plan.Roles.IsNull() && !plan.Roles.IsUnknown() {
 		var roles []string
@@ -98,7 +108,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		opts = append(opts, r.teams.WithCreateRoles(roles))
+		opts = append(opts, teamsClient.WithCreateRoles(roles))
 	}
 
 	teamID := plan.ID.ValueString()
@@ -106,12 +116,13 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 		teamID = id.Unique()
 	}
 
-	team, err := r.teams.Create(teamID, plan.Name.ValueString(), opts...)
+	team, err := teamsClient.Create(teamID, plan.Name.ValueString(), opts...)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating team", common.FormatError(err))
 		return
 	}
 
+	plan.ProjectID = types.StringValue(projectID)
 	plan.ID = types.StringValue(team.Id)
 	plan.Name = types.StringValue(team.Name)
 	plan.CreatedAt = types.StringValue(team.CreatedAt)
@@ -127,7 +138,14 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	team, err := r.teams.Get(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
+		return
+	}
+	teamsClient := appwrite.NewTeams(r.clients.ClientForProject(projectID))
+
+	team, err := teamsClient.Get(state.ID.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -137,6 +155,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	state.ProjectID = types.StringValue(projectID)
 	state.ID = types.StringValue(team.Id)
 	state.Name = types.StringValue(team.Name)
 	state.CreatedAt = types.StringValue(team.CreatedAt)
@@ -152,12 +171,20 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	team, err := r.teams.UpdateName(plan.ID.ValueString(), plan.Name.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
+		return
+	}
+	teamsClient := appwrite.NewTeams(r.clients.ClientForProject(projectID))
+
+	team, err := teamsClient.UpdateName(plan.ID.ValueString(), plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating team", common.FormatError(err))
 		return
 	}
 
+	plan.ProjectID = types.StringValue(projectID)
 	plan.ID = types.StringValue(team.Id)
 	plan.Name = types.StringValue(team.Name)
 	plan.CreatedAt = types.StringValue(team.CreatedAt)
@@ -173,7 +200,14 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, err := r.teams.Delete(state.ID.ValueString())
+	projectID, err := common.ResolveProjectID(r.clients, state.ProjectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
+		return
+	}
+	teamsClient := appwrite.NewTeams(r.clients.ClientForProject(projectID))
+
+	_, err = teamsClient.Delete(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
 		resp.Diagnostics.AddError("Error deleting team", common.FormatError(err))
 	}

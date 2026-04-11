@@ -12,6 +12,10 @@ The Appwrite provider is used to manage resources on [Appwrite](https://appwrite
 
 The provider requires an API key with appropriate scopes for the resources you want to manage. You can configure credentials directly in the provider block or via environment variables.
 
+## Project Scoping
+
+The `project_id` can be set at the provider level as a default for all resources, or overridden on individual resources. When `project_id` is set on the provider, all resources inherit it automatically. Resources can override this value by setting their own `project_id`.
+
 ## Example Usage
 
 ```terraform
@@ -29,5 +33,40 @@ provider "appwrite" {
 
 - `api_key` (String, Sensitive) The Appwrite API key. Can also be set with the APPWRITE_API_KEY environment variable.
 - `endpoint` (String) The Appwrite API endpoint (e.g. https://cloud.appwrite.io/v1). Can also be set with the APPWRITE_ENDPOINT environment variable.
-- `project_id` (String) The Appwrite project ID. Can also be set with the APPWRITE_PROJECT_ID environment variable.
+- `project_id` (String) The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.
 - `self_signed` (Boolean) Accept self-signed SSL certificates. Useful for Appwrite Community Edition with self-signed certs. Defaults to false.
+
+## Resources
+
+### TablesDB
+
+- [appwrite_tablesdb](resources/tablesdb.md) - Manage databases
+- [appwrite_tablesdb_table](resources/tablesdb_table.md) - Manage tables within a database
+- [appwrite_tablesdb_column](resources/tablesdb_column.md) - Manage columns within a table
+- [appwrite_tablesdb_index](resources/tablesdb_index.md) - Manage indexes within a table
+- [appwrite_tablesdb_row](resources/tablesdb_row.md) - Manage rows within a table
+
+### Storage
+
+- [appwrite_storage_bucket](resources/storage_bucket.md) - Manage storage buckets
+- [appwrite_storage_file](resources/storage_file.md) - Manage files within a bucket
+
+### Auth
+
+- [appwrite_auth_user](resources/auth_user.md) - Manage users
+- [appwrite_auth_team](resources/auth_team.md) - Manage teams
+
+### Messaging
+
+- [appwrite_messaging_provider](resources/messaging_provider.md) - Manage messaging providers (email, SMS, push)
+- [appwrite_messaging_topic](resources/messaging_topic.md) - Manage messaging topics
+- [appwrite_messaging_subscriber](resources/messaging_subscriber.md) - Manage topic subscribers
+
+### Other
+
+- [appwrite_webhook](resources/webhook.md) - Manage webhooks
+- [appwrite_backup_policy](resources/backup_policy.md) - Manage backup policies
+
+## Data Sources
+
+- [appwrite_tablesdb](data-sources/tablesdb.md) - Fetch a database by ID

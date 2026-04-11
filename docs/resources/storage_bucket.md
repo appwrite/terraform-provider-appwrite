@@ -49,6 +49,7 @@ resource "appwrite_storage_bucket" "documents" {
 - `id` (String) The bucket ID. Must be unique within the project.
 - `maximum_file_size` (Number) Maximum file size in bytes.
 - `permissions` (List of String) Bucket-level permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `transformations` (Boolean) Whether image transformations are enabled. Defaults to false.
 
 ### Read-Only
@@ -67,3 +68,4 @@ terraform import appwrite_storage_bucket.uploads <bucket-id>
 ## See Also
 
 - [appwrite_storage_file](storage_file.md) - Manage files within a bucket
+- [appwrite_backup_policy](backup_policy.md) - Back up storage buckets

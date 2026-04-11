@@ -41,7 +41,7 @@ resource "appwrite_tablesdb_row" "alice" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
   data = jsonencode({
-    name  = "Alice"
+    name  = "alice"
     email = "alice@example.com"
   })
 
@@ -65,6 +65,7 @@ resource "appwrite_tablesdb_row" "alice" {
 
 - `id` (String) The row ID.
 - `permissions` (List of String) Row permissions.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 
 ### Read-Only
 
