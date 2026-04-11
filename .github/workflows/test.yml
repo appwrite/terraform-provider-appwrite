@@ -22,6 +22,21 @@ jobs:
         with:
           terraform_wrapper: false
 
+      - name: Verify required secrets
+        run: |
+          missing=()
+          [ -z "$APPWRITE_ENDPOINT" ] && missing+=("APPWRITE_ENDPOINT")
+          [ -z "$APPWRITE_PROJECT_ID" ] && missing+=("APPWRITE_PROJECT_ID")
+          [ -z "$APPWRITE_API_KEY" ] && missing+=("APPWRITE_API_KEY")
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+        env:
+          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+
       - name: Run acceptance tests
         run: make acceptance-test
         timeout-minutes: 20
