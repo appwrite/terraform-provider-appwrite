@@ -23,7 +23,7 @@ resource "appwrite_site" "test" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("appwrite_site.test", "id"),
 					resource.TestCheckResourceAttr("appwrite_site.test", "name", "test-site"),
-					resource.TestCheckResourceAttr("appwrite_site.test", "framework", "static"),
+					resource.TestCheckResourceAttr("appwrite_site.test", "framework", "other"),
 					resource.TestCheckResourceAttr("appwrite_site.test", "build_runtime", "node-22"),
 					resource.TestCheckResourceAttr("appwrite_site.test", "enabled", "true"),
 					resource.TestCheckResourceAttrSet("appwrite_site.test", "created_at"),

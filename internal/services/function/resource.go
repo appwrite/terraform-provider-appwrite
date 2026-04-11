@@ -149,26 +149,30 @@ func (r *functionResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 			},
 			"build_specification": schema.StringAttribute{
-				Description: "Machine specification for deployment builds.",
-				Optional:    true,
-				Computed:    true,
+				Description:   "Machine specification for deployment builds.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"runtime_specification": schema.StringAttribute{
-				Description: "Machine specification for executions.",
-				Optional:    true,
-				Computed:    true,
+				Description:   "Machine specification for executions.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"deployment_retention": schema.Int64Attribute{
 				Description: "How many days to keep non-active deployments before automatic deletion.",
 				Optional:    true,
 			},
 			"deployment_id": schema.StringAttribute{
-				Description: "The active deployment ID.",
-				Computed:    true,
+				Description:   "The active deployment ID.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"created_at": schema.StringAttribute{
-				Description: "The function creation timestamp in ISO 8601 format.",
-				Computed:    true,
+				Description:   "The function creation timestamp in ISO 8601 format.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "The function last update timestamp in ISO 8601 format.",
@@ -469,6 +473,9 @@ func (r *functionResource) mapToState(ctx context.Context, function *models.Func
 	}
 	if function.ProviderRootDirectory != "" {
 		model.ProviderRootDir = types.StringValue(function.ProviderRootDirectory)
+	}
+	if !model.ProviderSilentMode.IsNull() {
+		model.ProviderSilentMode = types.BoolValue(function.ProviderSilentMode)
 	}
 	model.BuildSpecification = types.StringValue(function.BuildSpecification)
 	model.RuntimeSpecification = types.StringValue(function.RuntimeSpecification)

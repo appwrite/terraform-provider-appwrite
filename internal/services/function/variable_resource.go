@@ -73,8 +73,9 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 			},
 			"created_at": schema.StringAttribute{
-				Description: "The variable creation timestamp in ISO 8601 format.",
-				Computed:    true,
+				Description:   "The variable creation timestamp in ISO 8601 format.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "The variable last update timestamp in ISO 8601 format.",

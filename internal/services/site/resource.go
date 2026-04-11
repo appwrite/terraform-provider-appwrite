@@ -122,9 +122,10 @@ func (r *siteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:    true,
 			},
 			"adapter": schema.StringAttribute{
-				Description: "The site framework adapter.",
-				Optional:    true,
-				Computed:    true,
+				Description:   "The site framework adapter.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"fallback_file": schema.StringAttribute{
 				Description: "Name of fallback file to use instead of 404 page. If null, Appwrite 404 page will be displayed.",
@@ -151,26 +152,30 @@ func (r *siteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:    true,
 			},
 			"build_specification": schema.StringAttribute{
-				Description: "Machine specification for deployment builds.",
-				Optional:    true,
-				Computed:    true,
+				Description:   "Machine specification for deployment builds.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"runtime_specification": schema.StringAttribute{
-				Description: "Machine specification for SSR executions.",
-				Optional:    true,
-				Computed:    true,
+				Description:   "Machine specification for SSR executions.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"deployment_retention": schema.Int64Attribute{
 				Description: "How many days to keep non-active deployments before automatic deletion.",
 				Optional:    true,
 			},
 			"deployment_id": schema.StringAttribute{
-				Description: "The active deployment ID.",
-				Computed:    true,
+				Description:   "The active deployment ID.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"created_at": schema.StringAttribute{
-				Description: "The site creation timestamp in ISO 8601 format.",
-				Computed:    true,
+				Description:   "The site creation timestamp in ISO 8601 format.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "The site last update timestamp in ISO 8601 format.",
@@ -344,7 +349,7 @@ func (r *siteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if !plan.OutputDirectory.IsNull() {
 		opts = append(opts, sitesClient.WithUpdateOutputDirectory(plan.OutputDirectory.ValueString()))
 	}
-	if !plan.Adapter.IsNull() && !plan.Adapter.IsUnknown() {
+	if !plan.Adapter.IsNull() && !plan.Adapter.IsUnknown() && plan.Adapter.ValueString() != "" {
 		opts = append(opts, sitesClient.WithUpdateAdapter(plan.Adapter.ValueString()))
 	}
 	if !plan.FallbackFile.IsNull() {
@@ -451,6 +456,9 @@ func (r *siteResource) mapToState(site *models.Site, model *siteResourceModel) {
 	}
 	if site.ProviderRootDirectory != "" {
 		model.ProviderRootDir = types.StringValue(site.ProviderRootDirectory)
+	}
+	if !model.ProviderSilentMode.IsNull() {
+		model.ProviderSilentMode = types.BoolValue(site.ProviderSilentMode)
 	}
 	if site.DeploymentRetention != 0 {
 		model.DeploymentRetention = types.Int64Value(int64(site.DeploymentRetention))
