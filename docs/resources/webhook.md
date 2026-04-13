@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_webhook"
+subcategory: "Webhooks"
 description: |-
   Manages an Appwrite webhook.
 ---

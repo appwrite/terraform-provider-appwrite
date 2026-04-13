@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_messaging_provider"
+subcategory: "Messaging"
 description: |-
   Manages an Appwrite messaging provider.
 ---

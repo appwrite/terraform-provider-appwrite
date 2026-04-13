@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_tablesdb_column"
+subcategory: "TablesDB"
 description: |-
   Manages a column in an Appwrite table.
 ---

@@ -7,7 +7,7 @@ resource "appwrite_function" "hello_world" {
 
 resource "appwrite_function" "scheduled" {
   name     = "daily-cleanup"
-  runtime  = "python-3.11"
+  runtime  = "node-22"
   schedule = "0 0 * * *"
   timeout  = 60
 }

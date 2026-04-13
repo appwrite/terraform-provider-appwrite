@@ -1,0 +1,1 @@
+terraform import appwrite_site_variable.example 64f2cf04267f49939e93/69da26209a91a11035a8
