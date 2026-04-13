@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_function"
+subcategory: "Functions"
 description: |-
   Manages an Appwrite function.
 ---
@@ -20,7 +21,7 @@ resource "appwrite_function" "hello_world" {
 
 resource "appwrite_function" "scheduled" {
   name     = "daily-cleanup"
-  runtime  = "python-3.11"
+  runtime  = "node-22"
   schedule = "0 0 * * *"
   timeout  = 60
 }
@@ -70,34 +71,40 @@ resource "appwrite_function" "event_driven" {
 - `deployment_id` (String) The active deployment ID.
 - `updated_at` (String) The function last update timestamp in ISO 8601 format.
 
+## Import
+
+Using `terraform import`:
+
+```shell
+terraform import appwrite_function.example 64f2cd7e27bda9f23ab6
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_function.example
+  id = "your-function-id"
+}
+```
+
 ## VCS Integration
 
-You can connect a function to a Git repository for automatic deployments. When configured, Appwrite will automatically create new deployments when you push to the connected branch.
+Connect a function to a Git repository for automatic deployments on push:
 
 ```hcl
 resource "appwrite_function" "api" {
   name    = "api"
   runtime = "node-22"
 
-  installation_id        = "your-github-installation-id"
-  provider_repository_id = "your-repository-id"
-  provider_branch        = "main"
+  installation_id         = "your-github-installation-id"
+  provider_repository_id  = "your-repository-id"
+  provider_branch         = "main"
   provider_root_directory = "functions/api"
-  provider_silent_mode    = false
 }
 ```
-
-The following attributes are used for VCS integration:
-
-- `installation_id` - The VCS installation ID (e.g. from a GitHub App installation).
-- `provider_repository_id` - The repository ID in your VCS provider.
-- `provider_branch` - The branch to track for automatic deployments.
-- `provider_root_directory` - The path within the repository where the function code lives.
-- `provider_silent_mode` - When enabled, Appwrite will not post comments on pull/merge requests.
-
-
 
 ## See Also
 
 - [appwrite_function_variable](function_variable.md) - Manage function environment variables
-- [appwrite_webhook](webhook.md) - Manage webhooks (can trigger on function events)
+- [appwrite_webhook](webhook.md) - Manage webhooks

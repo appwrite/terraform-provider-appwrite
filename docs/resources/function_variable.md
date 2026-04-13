@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_function_variable"
+subcategory: "Functions"
 description: |-
   Manages an Appwrite function environment variable.
 ---
@@ -7,6 +8,8 @@ description: |-
 # Resource: appwrite_function_variable
 
 Manages an Appwrite function environment variable.
+
+~> **NOTE:** Secret variables are write-only. Once created with `secret = true`, the value cannot be read back from the API.
 
 ## Example Usage
 
@@ -45,9 +48,22 @@ resource "appwrite_function_variable" "secret_key" {
 - `id` (String) The variable ID.
 - `updated_at` (String) The variable last update timestamp in ISO 8601 format.
 
+## Import
 
+Import uses the format `function_id/variable_id`:
 
--> **Note:** Import uses the format `function_id/variable_id`.
+```shell
+terraform import appwrite_function_variable.example 64f2cd7e27bda9f23ab6/69da24c7747e5c2cdfc4
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_function_variable.example
+  id = "function-id/variable-id"
+}
+```
 
 ## See Also
 

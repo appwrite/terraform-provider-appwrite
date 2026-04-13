@@ -1,0 +1,1 @@
+terraform import appwrite_function_variable.example 64f2cd7e27bda9f23ab6/69da24c7747e5c2cdfc4

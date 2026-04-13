@@ -13,10 +13,10 @@ resource "appwrite_site" "dashboard" {
 }
 
 resource "appwrite_site" "docs" {
-  name            = "docs"
-  framework       = "astro"
-  build_runtime   = "node-22"
-  install_command = "npm install"
-  build_command   = "npm run build"
+  name             = "docs"
+  framework        = "astro"
+  build_runtime    = "node-22"
+  install_command  = "npm install"
+  build_command    = "npm run build"
   output_directory = "dist"
 }

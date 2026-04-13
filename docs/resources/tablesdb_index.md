@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_tablesdb_index"
+subcategory: "TablesDB"
 description: |-
   Manages an index on an Appwrite table.
 ---

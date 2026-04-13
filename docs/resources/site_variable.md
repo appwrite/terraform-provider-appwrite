@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_site_variable"
+subcategory: "Sites"
 description: |-
   Manages an Appwrite site environment variable.
 ---
@@ -7,6 +8,8 @@ description: |-
 # Resource: appwrite_site_variable
 
 Manages an Appwrite site environment variable.
+
+~> **NOTE:** Secret variables are write-only. Once created with `secret = true`, the value cannot be read back from the API.
 
 ## Example Usage
 
@@ -45,9 +48,22 @@ resource "appwrite_site_variable" "secret_key" {
 - `id` (String) The variable ID.
 - `updated_at` (String) The variable last update timestamp in ISO 8601 format.
 
+## Import
 
+Import uses the format `site_id/variable_id`:
 
--> **Note:** Import uses the format `site_id/variable_id`.
+```shell
+terraform import appwrite_site_variable.example 64f2cf04267f49939e93/69da26209a91a11035a8
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_site_variable.example
+  id = "site-id/variable-id"
+}
+```
 
 ## See Also
 

@@ -1,0 +1,1 @@
+terraform import appwrite_site.example 64f2cf04267f49939e93

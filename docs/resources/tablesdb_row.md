@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_tablesdb_row"
+subcategory: "TablesDB"
 description: |-
   Manages a row in an Appwrite tablesdb table.
 ---

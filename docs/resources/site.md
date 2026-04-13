@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_site"
+subcategory: "Sites"
 description: |-
   Manages an Appwrite site.
 ---
@@ -7,6 +8,8 @@ description: |-
 # Resource: appwrite_site
 
 Manages an Appwrite site.
+
+-> **Tip:** Supported frameworks include `nextjs`, `nuxt`, `sveltekit`, `astro`, `remix`, `analog`, `react`, `vue`, `vite`, `flutter`, and `other`. Use `other` for static sites or unsupported frameworks.
 
 ## Example Usage
 
@@ -26,11 +29,11 @@ resource "appwrite_site" "dashboard" {
 }
 
 resource "appwrite_site" "docs" {
-  name            = "docs"
-  framework       = "astro"
-  build_runtime   = "node-22"
-  install_command = "npm install"
-  build_command   = "npm run build"
+  name             = "docs"
+  framework        = "astro"
+  build_runtime    = "node-22"
+  install_command  = "npm install"
+  build_command    = "npm run build"
   output_directory = "dist"
 }
 ```
@@ -72,9 +75,26 @@ resource "appwrite_site" "docs" {
 - `deployment_id` (String) The active deployment ID.
 - `updated_at` (String) The site last update timestamp in ISO 8601 format.
 
+## Import
+
+Using `terraform import`:
+
+```shell
+terraform import appwrite_site.example 64f2cf04267f49939e93
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_site.example
+  id = "your-site-id"
+}
+```
+
 ## VCS Integration
 
-You can connect a site to a Git repository for automatic deployments. When configured, Appwrite will automatically create new deployments when you push to the connected branch.
+Connect a site to a Git repository for automatic deployments on push:
 
 ```hcl
 resource "appwrite_site" "app" {
@@ -86,19 +106,8 @@ resource "appwrite_site" "app" {
   provider_repository_id  = "your-repository-id"
   provider_branch         = "main"
   provider_root_directory = "apps/web"
-  provider_silent_mode    = false
 }
 ```
-
-The following attributes are used for VCS integration:
-
-- `installation_id` - The VCS installation ID (e.g. from a GitHub App installation).
-- `provider_repository_id` - The repository ID in your VCS provider.
-- `provider_branch` - The branch to track for automatic deployments.
-- `provider_root_directory` - The path within the repository where the site code lives.
-- `provider_silent_mode` - When enabled, Appwrite will not post comments on pull/merge requests.
-
-
 
 ## See Also
 

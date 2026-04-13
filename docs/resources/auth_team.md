@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_auth_team"
+subcategory: "Auth"
 description: |-
   Manages an Appwrite team.
 ---

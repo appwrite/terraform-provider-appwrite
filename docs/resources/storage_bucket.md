@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_storage_bucket"
+subcategory: "Storage"
 description: |-
   Manages an Appwrite storage bucket.
 ---

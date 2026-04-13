@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_backup_policy"
+subcategory: "Backups"
 description: |-
   Manages an Appwrite backup policy.
 ---

@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_tablesdb"
+subcategory: "TablesDB"
 description: |-
   Manages an Appwrite database.
 ---

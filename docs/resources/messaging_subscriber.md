@@ -1,5 +1,6 @@
 ---
 page_title: "Resource: appwrite_messaging_subscriber"
+subcategory: "Messaging"
 description: |-
   Manages a subscriber to an Appwrite messaging topic.
 ---

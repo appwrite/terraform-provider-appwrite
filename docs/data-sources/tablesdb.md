@@ -1,5 +1,6 @@
 ---
 page_title: "Data Source: appwrite_tablesdb"
+subcategory: "TablesDB"
 description: |-
   Fetches an Appwrite database by ID.
 ---
