@@ -211,7 +211,24 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	// Save the planned transformations value before mapping from the API response,
+	// since some Appwrite server versions (e.g. self-hosted) may not support this
+	// feature and silently return false.
+	plannedTransformations := plan.Transformations
+
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
+
+	if !plannedTransformations.IsNull() && !plannedTransformations.IsUnknown() &&
+		plannedTransformations.ValueBool() != bucket.Transformations {
+		resp.Diagnostics.AddError(
+			"Transformations not supported",
+			"The server did not accept the transformations setting. "+
+				"Image transformations may not be supported on this Appwrite server version. "+
+				"Remove the `transformations` attribute from your configuration or upgrade your server.",
+		)
+		return
+	}
+
 	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -304,7 +321,21 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	plannedTransformations := plan.Transformations
+
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
+
+	if !plannedTransformations.IsNull() && !plannedTransformations.IsUnknown() &&
+		plannedTransformations.ValueBool() != bucket.Transformations {
+		resp.Diagnostics.AddError(
+			"Transformations not supported",
+			"The server did not accept the transformations setting. "+
+				"Image transformations may not be supported on this Appwrite server version. "+
+				"Remove the `transformations` attribute from your configuration or upgrade your server.",
+		)
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
