@@ -211,21 +211,24 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	// Save the planned transformations value before mapping from the API response,
-	// since some Appwrite server versions (e.g. self-hosted) may not support this
-	// feature and silently return false.
-	plannedTransformations := plan.Transformations
+	// Save planned values before mapping from API response, since self-hosted
+	// servers may silently ignore certain attributes.
+	planned := plan
 
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
 
-	if !plannedTransformations.IsNull() && !plannedTransformations.IsUnknown() &&
-		plannedTransformations.ValueBool() != bucket.Transformations {
-		resp.Diagnostics.AddError(
-			"Transformations not supported",
-			"The server did not accept the transformations setting. "+
-				"Image transformations may not be supported on this Appwrite server version. "+
-				"Remove the `transformations` attribute from your configuration or upgrade your server.",
-		)
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Transformations, bucket.Transformations, "transformations", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Encryption, bucket.Encryption, "encryption", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Antivirus, bucket.Antivirus, "antivirus", "storage bucket"),
+		common.CheckStringNotIgnored(planned.Compression, bucket.Compression, "compression", "storage bucket"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -321,18 +324,22 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	plannedTransformations := plan.Transformations
+	planned := plan
 
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
 
-	if !plannedTransformations.IsNull() && !plannedTransformations.IsUnknown() &&
-		plannedTransformations.ValueBool() != bucket.Transformations {
-		resp.Diagnostics.AddError(
-			"Transformations not supported",
-			"The server did not accept the transformations setting. "+
-				"Image transformations may not be supported on this Appwrite server version. "+
-				"Remove the `transformations` attribute from your configuration or upgrade your server.",
-		)
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Transformations, bucket.Transformations, "transformations", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Encryption, bucket.Encryption, "encryption", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Antivirus, bucket.Antivirus, "antivirus", "storage bucket"),
+		common.CheckStringNotIgnored(planned.Compression, bucket.Compression, "compression", "storage bucket"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

@@ -108,6 +108,55 @@ func GetColumnStatus(raw *interface{}) (string, error) {
 	return status, nil
 }
 
+// AttrCheck holds the result of an attribute mismatch check.
+type AttrCheck struct {
+	Summary  string
+	Detail   string
+	Mismatch bool
+}
+
+// CheckBoolNotIgnored returns an error diagnostic if the planned bool value differs from
+// the API response, indicating the server doesn't support this attribute.
+func CheckBoolNotIgnored(planned types.Bool, actual bool, attrName string, resourceDesc string) AttrCheck {
+	if planned.IsNull() || planned.IsUnknown() {
+		return AttrCheck{}
+	}
+	if planned.ValueBool() != actual {
+		return AttrCheck{
+			Summary: fmt.Sprintf("Attribute %q not supported", attrName),
+			Detail: fmt.Sprintf(
+				"The server did not accept the %q setting for %s. "+
+					"This feature may not be supported on this Appwrite server version. "+
+					"Remove the %q attribute from your configuration or upgrade your server.",
+				attrName, resourceDesc, attrName,
+			),
+			Mismatch: true,
+		}
+	}
+	return AttrCheck{}
+}
+
+// CheckStringNotIgnored returns an error diagnostic if the planned string value differs from
+// the API response, indicating the server doesn't support this attribute.
+func CheckStringNotIgnored(planned types.String, actual string, attrName string, resourceDesc string) AttrCheck {
+	if planned.IsNull() || planned.IsUnknown() {
+		return AttrCheck{}
+	}
+	if planned.ValueString() != actual {
+		return AttrCheck{
+			Summary: fmt.Sprintf("Attribute %q not supported", attrName),
+			Detail: fmt.Sprintf(
+				"The server did not accept the %q setting for %s (sent %q, got %q). "+
+					"This feature may not be supported on this Appwrite server version. "+
+					"Remove the %q attribute from your configuration or upgrade your server.",
+				attrName, resourceDesc, planned.ValueString(), actual, attrName,
+			),
+			Mismatch: true,
+		}
+	}
+	return AttrCheck{}
+}
+
 // ImportColumnState parses a "database_id/table_id/key" import ID into state.
 func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "/", 3)

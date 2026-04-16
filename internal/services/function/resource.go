@@ -288,8 +288,25 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	planned := plan
+
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(ctx, function, &plan, &resp.Diagnostics)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
+		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
+		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -413,8 +430,25 @@ func (r *functionResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	planned := plan
+
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(ctx, function, &plan, &resp.Diagnostics)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
+		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
+		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

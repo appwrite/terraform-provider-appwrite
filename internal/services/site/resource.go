@@ -276,8 +276,26 @@ func (r *siteResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	planned := plan
+
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(site, &plan)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Logging, site.Logging, "logging", "site"),
+		common.CheckStringNotIgnored(planned.Adapter, site.Adapter, "adapter", "site"),
+		common.CheckStringNotIgnored(planned.BuildSpecification, site.BuildSpecification, "build_specification", "site"),
+		common.CheckStringNotIgnored(planned.RuntimeSpecification, site.RuntimeSpecification, "runtime_specification", "site"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -386,8 +404,26 @@ func (r *siteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	planned := plan
+
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(site, &plan)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Logging, site.Logging, "logging", "site"),
+		common.CheckStringNotIgnored(planned.Adapter, site.Adapter, "adapter", "site"),
+		common.CheckStringNotIgnored(planned.BuildSpecification, site.BuildSpecification, "build_specification", "site"),
+		common.CheckStringNotIgnored(planned.RuntimeSpecification, site.RuntimeSpecification, "runtime_specification", "site"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
