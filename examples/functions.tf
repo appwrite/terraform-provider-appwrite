@@ -39,16 +39,6 @@ resource "appwrite_function_deployment" "process_order_code" {
   activate    = true
 }
 
-# Deploy a function from VCS (requires the function to have a VCS provider configured
-# via installation_id, provider_repository_id, and provider_branch)
-# resource "appwrite_function_deployment" "daily_report_vcs" {
-#   function_id = appwrite_function.daily_report.id
-#   source_type = "vcs"
-#   type        = "branch"
-#   reference   = "main"
-#   activate    = true
-# }
-
 # Deploy a function from a template
 resource "appwrite_function_deployment" "daily_report_template" {
   function_id    = appwrite_function.daily_report.id

@@ -33,16 +33,6 @@ resource "appwrite_site_deployment" "landing_page_code" {
   activate    = true
 }
 
-# Deploy a site from VCS (requires the site to have a VCS provider configured
-# via installation_id, provider_repository_id, and provider_branch)
-# resource "appwrite_site_deployment" "dashboard_vcs" {
-#   site_id     = appwrite_site.dashboard.id
-#   source_type = "vcs"
-#   type        = "branch"
-#   reference   = "main"
-#   activate    = true
-# }
-
 # Deploy a site from a template
 resource "appwrite_site_deployment" "dashboard_template" {
   site_id        = appwrite_site.dashboard.id

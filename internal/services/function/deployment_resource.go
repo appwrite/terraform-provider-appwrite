@@ -33,29 +33,29 @@ type deploymentResource struct {
 }
 
 type deploymentResourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	FunctionID   types.String `tfsdk:"function_id"`
-	SourceType   types.String `tfsdk:"source_type"`
-	Activate     types.Bool   `tfsdk:"activate"`
-	WaitForReady types.Bool   `tfsdk:"wait_for_ready"`
-	CodePath     types.String `tfsdk:"code_path"`
-	CodeHash     types.String `tfsdk:"code_hash"`
-	Entrypoint   types.String `tfsdk:"entrypoint"`
-	Commands     types.String `tfsdk:"commands"`
-	Type         types.String `tfsdk:"type"`
-	Reference    types.String `tfsdk:"reference"`
-	Repository   types.String `tfsdk:"repository"`
-	Owner        types.String `tfsdk:"owner"`
+	ID            types.String `tfsdk:"id"`
+	FunctionID    types.String `tfsdk:"function_id"`
+	SourceType    types.String `tfsdk:"source_type"`
+	Activate      types.Bool   `tfsdk:"activate"`
+	WaitForReady  types.Bool   `tfsdk:"wait_for_ready"`
+	CodePath      types.String `tfsdk:"code_path"`
+	CodeHash      types.String `tfsdk:"code_hash"`
+	Entrypoint    types.String `tfsdk:"entrypoint"`
+	Commands      types.String `tfsdk:"commands"`
+	Type          types.String `tfsdk:"type"`
+	Reference     types.String `tfsdk:"reference"`
+	Repository    types.String `tfsdk:"repository"`
+	Owner         types.String `tfsdk:"owner"`
 	RootDirectory types.String `tfsdk:"root_directory"`
-	Status       types.String `tfsdk:"status"`
-	BuildLogs    types.String `tfsdk:"build_logs"`
+	Status        types.String `tfsdk:"status"`
+	BuildLogs     types.String `tfsdk:"build_logs"`
 	BuildDuration types.Int64  `tfsdk:"build_duration"`
-	SourceSize   types.Int64  `tfsdk:"source_size"`
-	BuildSize    types.Int64  `tfsdk:"build_size"`
-	TotalSize    types.Int64  `tfsdk:"total_size"`
-	CreatedAt    types.String `tfsdk:"created_at"`
-	UpdatedAt    types.String `tfsdk:"updated_at"`
-	ProjectID    types.String `tfsdk:"project_id"`
+	SourceSize    types.Int64  `tfsdk:"source_size"`
+	BuildSize     types.Int64  `tfsdk:"build_size"`
+	TotalSize     types.Int64  `tfsdk:"total_size"`
+	CreatedAt     types.String `tfsdk:"created_at"`
+	UpdatedAt     types.String `tfsdk:"updated_at"`
+	ProjectID     types.String `tfsdk:"project_id"`
 }
 
 func NewDeploymentResource() resource.Resource {
@@ -81,7 +81,7 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"source_type": schema.StringAttribute{
-				Description:   `The deployment source type. Must be one of "code", "vcs", or "template".`,
+				Description:   `The deployment source type. Must be one of "code" or "template".`,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -121,12 +121,12 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
-				Description:   `Reference type for VCS and template deployments (e.g. "branch", "tag", "commit").`,
+				Description:   `Reference type for template deployments (e.g. "branch", "tag", "commit").`,
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"reference": schema.StringAttribute{
-				Description:   "Reference value for VCS and template deployments (e.g. branch name, tag, or commit hash).",
+				Description:   "Reference value for template deployments (e.g. branch name, tag, or commit hash).",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -242,23 +242,6 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 		deployment, err = functionsClient.CreateDeployment(functionID, inputFile, activate, opts...)
 
-	case "vcs":
-		if plan.Type.IsNull() || plan.Type.IsUnknown() {
-			resp.Diagnostics.AddError("Missing required attribute", `"type" is required when source_type is "vcs"`)
-			return
-		}
-		if plan.Reference.IsNull() || plan.Reference.IsUnknown() {
-			resp.Diagnostics.AddError("Missing required attribute", `"reference" is required when source_type is "vcs"`)
-			return
-		}
-
-		var opts []functions.CreateVcsDeploymentOption
-		if !plan.Activate.IsNull() && !plan.Activate.IsUnknown() {
-			opts = append(opts, functionsClient.WithCreateVcsDeploymentActivate(plan.Activate.ValueBool()))
-		}
-
-		deployment, err = functionsClient.CreateVcsDeployment(functionID, plan.Type.ValueString(), plan.Reference.ValueString(), opts...)
-
 	case "template":
 		if plan.Repository.IsNull() || plan.Repository.IsUnknown() {
 			resp.Diagnostics.AddError("Missing required attribute", `"repository" is required when source_type is "template"`)
@@ -297,7 +280,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 
 	default:
-		resp.Diagnostics.AddError("Invalid source_type", fmt.Sprintf("source_type must be one of: code, vcs, template. Got: %s", sourceType))
+		resp.Diagnostics.AddError("Invalid source_type", fmt.Sprintf("source_type must be one of: code, template. Got: %s", sourceType))
 		return
 	}
 

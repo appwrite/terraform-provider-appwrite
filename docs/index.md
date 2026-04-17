@@ -71,6 +71,18 @@ The `project_id` can be set at the provider level as a default for all resources
 - [appwrite_auth_user](resources/auth_user.md) - Manage users
 - [appwrite_auth_team](resources/auth_team.md) - Manage teams
 
+### Functions
+
+- [appwrite_function](resources/function.md) - Manage functions
+- [appwrite_function_variable](resources/function_variable.md) - Manage function environment variables
+- [appwrite_function_deployment](resources/function_deployment.md) - Manage function deployments
+
+### Sites
+
+- [appwrite_site](resources/site.md) - Manage sites
+- [appwrite_site_variable](resources/site_variable.md) - Manage site environment variables
+- [appwrite_site_deployment](resources/site_deployment.md) - Manage site deployments
+
 ### Messaging
 
 - [appwrite_messaging_provider](resources/messaging_provider.md) - Manage messaging providers (email, SMS, push)

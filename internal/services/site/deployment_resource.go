@@ -82,7 +82,7 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"source_type": schema.StringAttribute{
-				Description:   `The deployment source type. Must be one of "code", "vcs", or "template".`,
+				Description:   `The deployment source type. Must be one of "code" or "template".`,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -127,12 +127,12 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
-				Description:   `Reference type for VCS and template deployments (e.g. "branch", "tag", "commit").`,
+				Description:   `Reference type for template deployments (e.g. "branch", "tag", "commit").`,
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"reference": schema.StringAttribute{
-				Description:   "Reference value for VCS and template deployments (e.g. branch name, tag, or commit hash).",
+				Description:   "Reference value for template deployments (e.g. branch name, tag, or commit hash).",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -249,23 +249,6 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 		deployment, err = sitesClient.CreateDeployment(siteID, inputFile, opts...)
 
-	case "vcs":
-		if plan.Type.IsNull() || plan.Type.IsUnknown() {
-			resp.Diagnostics.AddError("Missing required attribute", `"type" is required when source_type is "vcs"`)
-			return
-		}
-		if plan.Reference.IsNull() || plan.Reference.IsUnknown() {
-			resp.Diagnostics.AddError("Missing required attribute", `"reference" is required when source_type is "vcs"`)
-			return
-		}
-
-		var opts []sites.CreateVcsDeploymentOption
-		if !plan.Activate.IsNull() && !plan.Activate.IsUnknown() {
-			opts = append(opts, sitesClient.WithCreateVcsDeploymentActivate(plan.Activate.ValueBool()))
-		}
-
-		deployment, err = sitesClient.CreateVcsDeployment(siteID, plan.Type.ValueString(), plan.Reference.ValueString(), opts...)
-
 	case "template":
 		if plan.Repository.IsNull() || plan.Repository.IsUnknown() {
 			resp.Diagnostics.AddError("Missing required attribute", `"repository" is required when source_type is "template"`)
@@ -304,7 +287,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 
 	default:
-		resp.Diagnostics.AddError("Invalid source_type", fmt.Sprintf("source_type must be one of: code, vcs, template. Got: %s", sourceType))
+		resp.Diagnostics.AddError("Invalid source_type", fmt.Sprintf("source_type must be one of: code, template. Got: %s", sourceType))
 		return
 	}
 
