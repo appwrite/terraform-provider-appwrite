@@ -134,9 +134,10 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
+	rawClient := r.clients.ClientForProject(projectID)
 	for _, col := range columns {
 		if err := common.WaitForColumnAvailable(ctx, func() (interface{}, error) {
-			return tablesdbClient.GetColumn(databaseId, tableId, col)
+			return common.GetColumnRaw(rawClient, databaseId, tableId, col)
 		}, col); err != nil {
 			resp.Diagnostics.AddError("Error waiting for columns", err.Error())
 			return

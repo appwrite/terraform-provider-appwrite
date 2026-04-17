@@ -192,15 +192,15 @@ func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, e
 }
 
 // WaitForColumnAvailable polls a column until its status becomes "available",
-// with a maximum wait of 60 seconds.
+// with a maximum wait of 5 minutes.
 func WaitForColumnAvailable(ctx context.Context, getColumn func() (interface{}, error), key string) error {
-	deadline := time.After(60 * time.Second)
+	deadline := time.After(5 * time.Minute)
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("timed out waiting for column %q to become available", key)
 		case <-deadline:
-			return fmt.Errorf("column %q did not become available within 60s", key)
+			return fmt.Errorf("column %q did not become available within 5m", key)
 		default:
 		}
 

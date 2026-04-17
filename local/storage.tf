@@ -20,5 +20,5 @@ resource "appwrite_storage_bucket" "documents" {
 resource "appwrite_storage_file" "readme" {
   bucket_id = appwrite_storage_bucket.documents.id
   name      = "readme.txt"
-  file_path = "files/readme.txt"
+  file_path  = "./files/file.txt"
 }
