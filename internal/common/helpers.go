@@ -170,6 +170,34 @@ func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
 }
 
+// WaitForDeploymentReady polls a deployment until its status becomes "ready",
+// "failed", or "canceled". Returns nil on "ready", error otherwise.
+func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, error), deploymentID string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for deployment %q to become ready", deploymentID)
+		default:
+		}
+
+		status, err := getDeployment()
+		if err != nil {
+			return fmt.Errorf("error checking deployment %q status: %w", deploymentID, err)
+		}
+
+		switch status {
+		case "ready":
+			return nil
+		case "failed":
+			return fmt.Errorf("deployment %q failed", deploymentID)
+		case "canceled":
+			return fmt.Errorf("deployment %q was canceled", deploymentID)
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+}
+
 // WaitForColumnAvailable polls a column until its status becomes "available",
 // with a maximum wait of 60 seconds.
 func WaitForColumnAvailable(ctx context.Context, getColumn func() (*interface{}, error), key string) error {

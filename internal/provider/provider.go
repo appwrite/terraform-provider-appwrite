@@ -144,6 +144,8 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		functionsvc.NewVariableResource,
 		sitesvc.NewSiteResource,
 		sitesvc.NewVariableResource,
+		sitesvc.NewDeploymentResource,
+		functionsvc.NewDeploymentResource,
 	}
 }
 

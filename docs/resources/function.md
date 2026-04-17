@@ -106,5 +106,6 @@ resource "appwrite_function" "api" {
 
 ## See Also
 
+- [appwrite_function_deployment](function_deployment.md) - Manage function deployments
 - [appwrite_function_variable](function_variable.md) - Manage function environment variables
 - [appwrite_webhook](webhook.md) - Manage webhooks

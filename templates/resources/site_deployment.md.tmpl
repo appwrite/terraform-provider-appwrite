@@ -1,0 +1,69 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Sites"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Deployments are immutable - any change to input attributes will destroy the existing deployment and create a new one. Use the `wait_for_ready` attribute (default `true`) to wait for the build to complete before Terraform proceeds.
+
+-> **Tip:** Use `code_hash = filesha256("./dist.tar.gz")` to trigger a new deployment when your code file changes, even if the file path stays the same.
+
+## Example Usage
+
+### Code Upload
+
+```terraform
+resource "appwrite_site_deployment" "landing_page" {
+  site_id     = appwrite_site.landing_page.id
+  source_type = "code"
+  code_path   = "./dist.tar.gz"
+  code_hash   = filesha256("./dist.tar.gz")
+  activate    = true
+}
+```
+
+### Template
+
+```terraform
+resource "appwrite_site_deployment" "dashboard" {
+  site_id        = appwrite_site.dashboard.id
+  source_type    = "template"
+  repository     = "templates-for-sites"
+  owner          = "appwrite"
+  root_directory = "nextjs/starter"
+  type           = "branch"
+  reference      = "main"
+  activate       = true
+}
+```
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Import uses the format `site_id/deployment_id`:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_site_deployment.example
+  id = "site-id/deployment-id"
+}
+```
+{{- end }}
+
+~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
+
+## See Also
+
+- [appwrite_site](site.md) - Manage sites
+- [appwrite_site_variable](site_variable.md) - Manage site environment variables

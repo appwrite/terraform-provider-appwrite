@@ -68,3 +68,4 @@ import {
 ## See Also
 
 - [appwrite_function](function.md) - Manage functions
+- [appwrite_function_deployment](function_deployment.md) - Manage function deployments

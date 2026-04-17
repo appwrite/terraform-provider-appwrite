@@ -65,17 +65,19 @@ export APPWRITE_API_KEY="api-key"
 
 ### Functions
 
-| Resource                       | Description          |
-|--------------------------------|----------------------|
-| `appwrite_function`            | Function             |
-| `appwrite_function_variable`   | Environment variable |
+| Resource                          | Description          |
+|-----------------------------------|----------------------|
+| `appwrite_function`               | Function             |
+| `appwrite_function_variable`      | Environment variable |
+| `appwrite_function_deployment`    | Deployment           |
 
 ### Sites
 
-| Resource                   | Description          |
-|----------------------------|----------------------|
-| `appwrite_site`            | Site                 |
-| `appwrite_site_variable`   | Environment variable |
+| Resource                      | Description          |
+|-------------------------------|----------------------|
+| `appwrite_site`               | Site                 |
+| `appwrite_site_variable`      | Environment variable |
+| `appwrite_site_deployment`    | Deployment           |
 
 ### Messaging
 
@@ -148,6 +150,25 @@ resource "appwrite_site_variable" "api_url" {
   site_id = appwrite_site.dashboard.id
   key     = "NEXT_PUBLIC_API_URL"
   value   = "https://api.example.com"
+}
+
+resource "appwrite_function_deployment" "on_signup" {
+  function_id = appwrite_function.on_signup.id
+  source_type = "code"
+  code_path   = "./on-signup.tar.gz"
+  code_hash   = filesha256("./on-signup.tar.gz")
+  activate    = true
+}
+
+resource "appwrite_site_deployment" "dashboard" {
+  site_id        = appwrite_site.dashboard.id
+  source_type    = "template"
+  repository     = "templates-for-sites"
+  owner          = "appwrite"
+  root_directory = "nextjs/starter"
+  type           = "branch"
+  reference      = "main"
+  activate       = true
 }
 
 resource "appwrite_storage_bucket" "images" {
