@@ -33,7 +33,7 @@ resource "appwrite_function_deployment" "process_order_code" {
   function_id = appwrite_function.process_order.id
   source_type = "code"
   code_path   = "./process-order.tar.gz"
-  code_hash   = filesha256("./process-order.tar.gz")
+  code_hash   = filesha256("./files/process-order.tar.gz")
   entrypoint  = "index.js"
   commands    = "npm install"
   activate    = true

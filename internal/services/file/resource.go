@@ -3,6 +3,7 @@ package file
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/appwrite/sdk-for-go/v3/appwrite"
@@ -138,7 +139,15 @@ func (r *fileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if plan.Name.IsNull() || plan.Name.IsUnknown() {
 		fileName = ""
 	}
-	inputFile := appwritefile.NewInputFile(plan.FilePath.ValueString(), fileName)
+	filePath := plan.FilePath.ValueString()
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		resp.Diagnostics.AddError(
+			"File not found",
+			fmt.Sprintf("The file at path %q does not exist. Please verify the file_path attribute points to a valid local file.", filePath),
+		)
+		return
+	}
+	inputFile := appwritefile.NewInputFile(filePath, fileName)
 
 	var opts []storage.CreateFileOption
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
