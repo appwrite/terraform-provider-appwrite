@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/client"
@@ -167,4 +168,34 @@ func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("database_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("table_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
+}
+
+// WaitForColumnAvailable polls a column until its status becomes "available",
+// with a maximum wait of 60 seconds.
+func WaitForColumnAvailable(ctx context.Context, getColumn func() (*interface{}, error), key string) error {
+	deadline := time.After(60 * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for column %q to become available", key)
+		case <-deadline:
+			return fmt.Errorf("column %q did not become available within 60s", key)
+		default:
+		}
+
+		raw, err := getColumn()
+		if err != nil {
+			return fmt.Errorf("error checking column %q status: %w", key, err)
+		}
+
+		status, _ := GetColumnStatus(raw)
+		switch status {
+		case "available":
+			return nil
+		case "failed", "stuck":
+			return fmt.Errorf("column %q is in %q state", key, status)
+		}
+
+		time.Sleep(1 * time.Second)
+	}
 }

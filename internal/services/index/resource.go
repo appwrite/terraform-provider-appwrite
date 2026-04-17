@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/id"
@@ -133,12 +132,15 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		opts = append(opts, tablesdbClient.WithCreateIndexOrders(orders))
 	}
 
-	// Appwrite creates columns asynchronously. Wait for all columns to become available.
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
-	if err := r.waitForColumns(ctx, tablesdbClient, databaseId, tableId, columns); err != nil {
-		resp.Diagnostics.AddError("Error waiting for columns", err.Error())
-		return
+	for _, col := range columns {
+		if err := common.WaitForColumnAvailable(ctx, func() (*interface{}, error) {
+			return tablesdbClient.GetColumn(databaseId, tableId, col)
+		}, col); err != nil {
+			resp.Diagnostics.AddError("Error waiting for columns", err.Error())
+			return
+		}
 	}
 
 	indexKey := plan.Key.ValueString()
@@ -253,31 +255,3 @@ func (r *indexResource) ImportState(ctx context.Context, req resource.ImportStat
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
 }
 
-// waitForColumns polls each column until its status is "available" or the context is cancelled.
-func (r *indexResource) waitForColumns(ctx context.Context, tablesdbClient *tablesdb.TablesDB, databaseId, tableId string, columns []string) error {
-	for _, col := range columns {
-		for {
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("timed out waiting for column %q to become available", col)
-			default:
-			}
-
-			raw, err := tablesdbClient.GetColumn(databaseId, tableId, col)
-			if err != nil {
-				return fmt.Errorf("error checking column %q status: %w", col, err)
-			}
-
-			status, _ := common.GetColumnStatus(raw)
-			if status == "available" {
-				break
-			}
-			if status == "failed" || status == "stuck" {
-				return fmt.Errorf("column %q is in %q state and cannot be indexed", col, status)
-			}
-
-			time.Sleep(1 * time.Second)
-		}
-	}
-	return nil
-}
