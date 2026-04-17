@@ -468,6 +468,13 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	if err := common.WaitForColumnAvailable(ctx, func() (*interface{}, error) {
+		return tablesdbClient.GetColumn(databaseId, tableId, key)
+	}, key); err != nil {
+		resp.Diagnostics.AddError("Error waiting for column to become available", err.Error())
+		return
+	}
+
 	r.readResponseIntoState(ctx, responseJSON, &plan, &resp.Diagnostics)
 	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

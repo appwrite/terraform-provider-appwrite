@@ -131,11 +131,391 @@ resource "appwrite_tablesdb_row" "alice" {
   database_id = appwrite_tablesdb.main.id
   table_id    = appwrite_tablesdb_table.users.id
   data = jsonencode({
-    name  = "Alice"
-    email = "alice@example.com"
-    age   = 30
+    name   = "Alice"
+    email  = "alice@example.com"
+    age    = 30
     active = true
     role   = "admin"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "bob" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Bob"
+    email  = "bob@example.com"
+    age    = 25
+    active = true
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "charlie" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Charlie"
+    email  = "charlie@example.com"
+    age    = 35
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "diana" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Diana"
+    email  = "diana@example.com"
+    age    = 28
+    active = true
+    role   = "admin"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "ethan" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Ethan"
+    email  = "ethan@example.com"
+    age    = 42
+    active = false
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "fiona" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Fiona"
+    email  = "fiona@example.com"
+    age    = 31
+    active = true
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "george" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "George"
+    email  = "george@example.com"
+    age    = 50
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "hannah" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Hannah"
+    email  = "hannah@example.com"
+    age    = 22
+    active = true
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "ivan" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Ivan"
+    email  = "ivan@example.com"
+    age    = 38
+    active = false
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "julia" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Julia"
+    email  = "julia@example.com"
+    age    = 27
+    active = true
+    role   = "admin"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "kevin" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Kevin"
+    email  = "kevin@example.com"
+    age    = 33
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "laura" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Laura"
+    email  = "laura@example.com"
+    age    = 45
+    active = true
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "mike" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Mike"
+    email  = "mike@example.com"
+    age    = 29
+    active = false
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "nina" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Nina"
+    email  = "nina@example.com"
+    age    = 36
+    active = true
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "oscar" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Oscar"
+    email  = "oscar@example.com"
+    age    = 41
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "paula" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Paula"
+    email  = "paula@example.com"
+    age    = 24
+    active = true
+    role   = "admin"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "quinn" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Quinn"
+    email  = "quinn@example.com"
+    age    = 19
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "rachel" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Rachel"
+    email  = "rachel@example.com"
+    age    = 34
+    active = false
+    role   = "editor"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "steve" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Steve"
+    email  = "steve@example.com"
+    age    = 48
+    active = true
+    role   = "viewer"
+  })
+
+  depends_on = [
+    appwrite_tablesdb_column.name,
+    appwrite_tablesdb_column.email,
+    appwrite_tablesdb_column.age,
+    appwrite_tablesdb_column.active,
+    appwrite_tablesdb_column.role,
+  ]
+}
+
+resource "appwrite_tablesdb_row" "tina" {
+  database_id = appwrite_tablesdb.main.id
+  table_id    = appwrite_tablesdb_table.users.id
+  data = jsonencode({
+    name   = "Tina"
+    email  = "tina@example.com"
+    age    = 26
+    active = true
+    role   = "editor"
   })
 
   depends_on = [

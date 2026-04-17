@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/appwrite/sdk-for-go/v2/appwrite"
 	"github.com/appwrite/sdk-for-go/v2/client"
@@ -108,6 +109,55 @@ func GetColumnStatus(raw *interface{}) (string, error) {
 	return status, nil
 }
 
+// AttrCheck holds the result of an attribute mismatch check.
+type AttrCheck struct {
+	Summary  string
+	Detail   string
+	Mismatch bool
+}
+
+// CheckBoolNotIgnored returns an error diagnostic if the planned bool value differs from
+// the API response, indicating the server doesn't support this attribute.
+func CheckBoolNotIgnored(planned types.Bool, actual bool, attrName string, resourceDesc string) AttrCheck {
+	if planned.IsNull() || planned.IsUnknown() {
+		return AttrCheck{}
+	}
+	if planned.ValueBool() != actual {
+		return AttrCheck{
+			Summary: fmt.Sprintf("Attribute %q not supported", attrName),
+			Detail: fmt.Sprintf(
+				"The server did not accept the %q setting for %s. "+
+					"This feature may not be supported on this Appwrite server version. "+
+					"Remove the %q attribute from your configuration or upgrade your server.",
+				attrName, resourceDesc, attrName,
+			),
+			Mismatch: true,
+		}
+	}
+	return AttrCheck{}
+}
+
+// CheckStringNotIgnored returns an error diagnostic if the planned string value differs from
+// the API response, indicating the server doesn't support this attribute.
+func CheckStringNotIgnored(planned types.String, actual string, attrName string, resourceDesc string) AttrCheck {
+	if planned.IsNull() || planned.IsUnknown() {
+		return AttrCheck{}
+	}
+	if planned.ValueString() != actual {
+		return AttrCheck{
+			Summary: fmt.Sprintf("Attribute %q not supported", attrName),
+			Detail: fmt.Sprintf(
+				"The server did not accept the %q setting for %s (sent %q, got %q). "+
+					"This feature may not be supported on this Appwrite server version. "+
+					"Remove the %q attribute from your configuration or upgrade your server.",
+				attrName, resourceDesc, planned.ValueString(), actual, attrName,
+			),
+			Mismatch: true,
+		}
+	}
+	return AttrCheck{}
+}
+
 // ImportColumnState parses a "database_id/table_id/key" import ID into state.
 func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "/", 3)
@@ -118,4 +168,34 @@ func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("database_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("table_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
+}
+
+// WaitForColumnAvailable polls a column until its status becomes "available",
+// with a maximum wait of 60 seconds.
+func WaitForColumnAvailable(ctx context.Context, getColumn func() (*interface{}, error), key string) error {
+	deadline := time.After(60 * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for column %q to become available", key)
+		case <-deadline:
+			return fmt.Errorf("column %q did not become available within 60s", key)
+		default:
+		}
+
+		raw, err := getColumn()
+		if err != nil {
+			return fmt.Errorf("error checking column %q status: %w", key, err)
+		}
+
+		status, _ := GetColumnStatus(raw)
+		switch status {
+		case "available":
+			return nil
+		case "failed", "stuck":
+			return fmt.Errorf("column %q is in %q state", key, status)
+		}
+
+		time.Sleep(1 * time.Second)
+	}
 }

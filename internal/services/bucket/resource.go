@@ -211,7 +211,27 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	// Save planned values before mapping from API response, since self-hosted
+	// servers may silently ignore certain attributes.
+	planned := plan
+
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Transformations, bucket.Transformations, "transformations", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Encryption, bucket.Encryption, "encryption", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Antivirus, bucket.Antivirus, "antivirus", "storage bucket"),
+		common.CheckStringNotIgnored(planned.Compression, bucket.Compression, "compression", "storage bucket"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -304,7 +324,25 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	planned := plan
+
 	mapBucketToModel(ctx, bucket, &plan, &resp.Diagnostics)
+
+	checks := []common.AttrCheck{
+		common.CheckBoolNotIgnored(planned.Transformations, bucket.Transformations, "transformations", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Encryption, bucket.Encryption, "encryption", "storage bucket"),
+		common.CheckBoolNotIgnored(planned.Antivirus, bucket.Antivirus, "antivirus", "storage bucket"),
+		common.CheckStringNotIgnored(planned.Compression, bucket.Compression, "compression", "storage bucket"),
+	}
+	for _, c := range checks {
+		if c.Mismatch {
+			resp.Diagnostics.AddError(c.Summary, c.Detail)
+		}
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
