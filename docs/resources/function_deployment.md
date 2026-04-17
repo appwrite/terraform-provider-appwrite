@@ -50,13 +50,13 @@ resource "appwrite_function_deployment" "daily_report" {
 ### Required
 
 - `function_id` (String) The function ID this deployment belongs to.
-- `source_type` (String) The deployment source type. Must be one of `"code"` or `"template"`.
+- `source_type` (String) The deployment source type. Must be one of "code" or "template".
 
 ### Optional
 
-- `activate` (Boolean) Whether to activate this deployment after creation. Defaults to `false`.
-- `code_hash` (String) Hash of the code file for drift detection. Use `filesha256()` to compute.
-- `code_path` (String) Local path to the code tar.gz file to upload. Required when `source_type` is `"code"`.
+- `activate` (Boolean) Whether to activate this deployment after creation.
+- `code_hash` (String) Hash of the code file for drift detection. Use filesha256() to compute.
+- `code_path` (String) Local path to the code tar.gz file to upload. Required when source_type is code.
 - `commands` (String) Build commands for code deployments.
 - `entrypoint` (String) The entrypoint file for code deployments.
 - `owner` (String) Repository owner for template deployments.
@@ -64,8 +64,8 @@ resource "appwrite_function_deployment" "daily_report" {
 - `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash).
 - `repository` (String) Repository name for template deployments.
 - `root_directory` (String) Root directory in the repository for template deployments.
-- `type` (String) Reference type for template deployments (e.g. `"branch"`, `"tag"`, `"commit"`).
-- `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to `true`.
+- `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit").
+- `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to true.
 
 ### Read-Only
 
@@ -79,22 +79,7 @@ resource "appwrite_function_deployment" "daily_report" {
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
 
-## Import
 
-Import uses the format `function_id/deployment_id`:
-
-```shell
-terraform import appwrite_function_deployment.example 64f2cd7e27bda9f23ab6/69e1ee8d02206401eeec
-```
-
-Using an import block (Terraform v1.5.0+):
-
-```hcl
-import {
-  to = appwrite_function_deployment.example
-  id = "function-id/deployment-id"
-}
-```
 
 ~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
 

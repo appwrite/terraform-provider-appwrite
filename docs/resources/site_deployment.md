@@ -48,14 +48,14 @@ resource "appwrite_site_deployment" "dashboard" {
 ### Required
 
 - `site_id` (String) The site ID this deployment belongs to.
-- `source_type` (String) The deployment source type. Must be one of `"code"` or `"template"`.
+- `source_type` (String) The deployment source type. Must be one of "code" or "template".
 
 ### Optional
 
-- `activate` (Boolean) Whether to activate this deployment after creation. Defaults to `false`.
+- `activate` (Boolean) Whether to activate this deployment after creation.
 - `build_command` (String) Custom build command for code deployments.
-- `code_hash` (String) Hash of the code file for drift detection. Use `filesha256()` to compute.
-- `code_path` (String) Local path to the code file to upload. Required when `source_type` is `"code"`.
+- `code_hash` (String) Hash of the code file for drift detection. Use filesha256() to compute.
+- `code_path` (String) Local path to the code file to upload. Required when source_type is code.
 - `install_command` (String) Custom install command for code deployments.
 - `output_directory` (String) Build output directory for code deployments.
 - `owner` (String) Repository owner for template deployments.
@@ -63,8 +63,8 @@ resource "appwrite_site_deployment" "dashboard" {
 - `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash).
 - `repository` (String) Repository name for template deployments.
 - `root_directory` (String) Root directory in the repository for template deployments.
-- `type` (String) Reference type for template deployments (e.g. `"branch"`, `"tag"`, `"commit"`).
-- `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to `true`.
+- `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit").
+- `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to true.
 
 ### Read-Only
 
@@ -78,22 +78,7 @@ resource "appwrite_site_deployment" "dashboard" {
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
 
-## Import
 
-Import uses the format `site_id/deployment_id`:
-
-```shell
-terraform import appwrite_site_deployment.example 64f2cf04267f49939e93/69e1ee8d1810e6fc3064
-```
-
-Using an import block (Terraform v1.5.0+):
-
-```hcl
-import {
-  to = appwrite_site_deployment.example
-  id = "site-id/deployment-id"
-}
-```
 
 ~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
 
