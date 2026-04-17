@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v2/appwrite"
-	"github.com/appwrite/sdk-for-go/v2/id"
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
+	"github.com/appwrite/sdk-for-go/v3/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/id"
+	"github.com/appwrite/sdk-for-go/v3/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -468,8 +468,8 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	if err := common.WaitForColumnAvailable(ctx, func() (*interface{}, error) {
-		return tablesdbClient.GetColumn(databaseId, tableId, key)
+	if err := common.WaitForColumnAvailable(ctx, func() (interface{}, error) {
+		return common.GetColumnRaw(r.clients.ClientForProject(projectID), databaseId, tableId, key)
 	}, key); err != nil {
 		resp.Diagnostics.AddError("Error waiting for column to become available", err.Error())
 		return
@@ -492,21 +492,15 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.AddError("Missing project_id", err.Error())
 		return
 	}
-	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
+	sdkClient := r.clients.ClientForProject(projectID)
 
-	raw, err := tablesdbClient.GetColumn(state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	generic, err := common.GetColumnRaw(sdkClient, state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError("Error reading column", common.FormatError(err))
-		return
-	}
-
-	var generic map[string]interface{}
-	if err := common.DecodeColumn(raw, &generic); err != nil {
-		resp.Diagnostics.AddError("Error decoding column", err.Error())
 		return
 	}
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v2/appwrite"
-	"github.com/appwrite/sdk-for-go/v2/id"
-	"github.com/appwrite/sdk-for-go/v2/models"
-	"github.com/appwrite/sdk-for-go/v2/webhooks"
+	"github.com/appwrite/sdk-for-go/v3/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/id"
+	"github.com/appwrite/sdk-for-go/v3/models"
+	"github.com/appwrite/sdk-for-go/v3/webhooks"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -35,10 +35,10 @@ type webhookResourceModel struct {
 	URL          types.String `tfsdk:"url"`
 	Events       types.List   `tfsdk:"events"`
 	Enabled      types.Bool   `tfsdk:"enabled"`
-	Security     types.Bool   `tfsdk:"security"`
-	HttpUser     types.String `tfsdk:"http_user"`
-	HttpPass     types.String `tfsdk:"http_pass"`
-	SignatureKey types.String `tfsdk:"signature_key"`
+	Tls          types.Bool   `tfsdk:"tls"`
+	AuthUsername types.String `tfsdk:"auth_username"`
+	AuthPassword types.String `tfsdk:"auth_password"`
+	Secret       types.String `tfsdk:"secret"`
 	CreatedAt    types.String `tfsdk:"created_at"`
 	UpdatedAt    types.String `tfsdk:"updated_at"`
 	ProjectID    types.String `tfsdk:"project_id"`
@@ -81,23 +81,23 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 			},
-			"security": schema.BoolAttribute{
+			"tls": schema.BoolAttribute{
 				Description: "Whether SSL/TLS certificate verification is enabled. Defaults to false.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
-			"http_user": schema.StringAttribute{
+			"auth_username": schema.StringAttribute{
 				Description: "HTTP basic authentication username.",
 				Optional:    true,
 			},
-			"http_pass": schema.StringAttribute{
+			"auth_password": schema.StringAttribute{
 				Description: "HTTP basic authentication password.",
 				Optional:    true,
 				Sensitive:   true,
 			},
-			"signature_key": schema.StringAttribute{
-				Description: "Signature key for validating incoming webhooks.",
+			"secret": schema.StringAttribute{
+				Description: "Secret key for validating incoming webhooks.",
 				Computed:    true,
 				Sensitive:   true,
 			},
@@ -155,14 +155,14 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		opts = append(opts, webhooksClient.WithCreateEnabled(plan.Enabled.ValueBool()))
 	}
-	if !plan.Security.IsNull() && !plan.Security.IsUnknown() {
-		opts = append(opts, webhooksClient.WithCreateSecurity(plan.Security.ValueBool()))
+	if !plan.Tls.IsNull() && !plan.Tls.IsUnknown() {
+		opts = append(opts, webhooksClient.WithCreateTls(plan.Tls.ValueBool()))
 	}
-	if !plan.HttpUser.IsNull() {
-		opts = append(opts, webhooksClient.WithCreateHttpUser(plan.HttpUser.ValueString()))
+	if !plan.AuthUsername.IsNull() {
+		opts = append(opts, webhooksClient.WithCreateAuthUsername(plan.AuthUsername.ValueString()))
 	}
-	if !plan.HttpPass.IsNull() {
-		opts = append(opts, webhooksClient.WithCreateHttpPass(plan.HttpPass.ValueString()))
+	if !plan.AuthPassword.IsNull() {
+		opts = append(opts, webhooksClient.WithCreateAuthPassword(plan.AuthPassword.ValueString()))
 	}
 
 	webhook, err := webhooksClient.Create(webhookID, plan.URL.ValueString(), plan.Name.ValueString(), events, opts...)
@@ -229,14 +229,14 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		opts = append(opts, webhooksClient.WithUpdateEnabled(plan.Enabled.ValueBool()))
 	}
-	if !plan.Security.IsNull() && !plan.Security.IsUnknown() {
-		opts = append(opts, webhooksClient.WithUpdateSecurity(plan.Security.ValueBool()))
+	if !plan.Tls.IsNull() && !plan.Tls.IsUnknown() {
+		opts = append(opts, webhooksClient.WithUpdateTls(plan.Tls.ValueBool()))
 	}
-	if !plan.HttpUser.IsNull() {
-		opts = append(opts, webhooksClient.WithUpdateHttpUser(plan.HttpUser.ValueString()))
+	if !plan.AuthUsername.IsNull() {
+		opts = append(opts, webhooksClient.WithUpdateAuthUsername(plan.AuthUsername.ValueString()))
 	}
-	if !plan.HttpPass.IsNull() {
-		opts = append(opts, webhooksClient.WithUpdateHttpPass(plan.HttpPass.ValueString()))
+	if !plan.AuthPassword.IsNull() {
+		opts = append(opts, webhooksClient.WithUpdateAuthPassword(plan.AuthPassword.ValueString()))
 	}
 
 	webhook, err := webhooksClient.Update(plan.ID.ValueString(), plan.Name.ValueString(), plan.URL.ValueString(), events, opts...)
@@ -279,15 +279,15 @@ func (r *webhookResource) mapToState(ctx context.Context, webhook *models.Webhoo
 	model.Name = types.StringValue(webhook.Name)
 	model.URL = types.StringValue(webhook.Url)
 	model.Enabled = types.BoolValue(webhook.Enabled)
-	model.Security = types.BoolValue(webhook.Security)
-	model.SignatureKey = types.StringValue(webhook.SignatureKey)
+	model.Tls = types.BoolValue(webhook.Tls)
+	model.Secret = types.StringValue(webhook.Secret)
 	model.CreatedAt = types.StringValue(webhook.CreatedAt)
 	model.UpdatedAt = types.StringValue(webhook.UpdatedAt)
 
-	if webhook.HttpUser != "" {
-		model.HttpUser = types.StringValue(webhook.HttpUser)
+	if webhook.AuthUsername != "" {
+		model.AuthUsername = types.StringValue(webhook.AuthUsername)
 	}
-	// Don't overwrite http_pass - API may not return it
+	// Don't overwrite auth_password - API may not return it
 
 	eventsList, diags := types.ListValueFrom(ctx, types.StringType, webhook.Events)
 	diagnostics.Append(diags...)

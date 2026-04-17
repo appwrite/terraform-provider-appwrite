@@ -26,14 +26,14 @@ resource "appwrite_webhook" "test" {
 					resource.TestCheckResourceAttr("appwrite_webhook.test", "url", "https://example.com/webhook"),
 					resource.TestCheckResourceAttr("appwrite_webhook.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("appwrite_webhook.test", "events.#", "1"),
-					resource.TestCheckResourceAttrSet("appwrite_webhook.test", "signature_key"),
+					resource.TestCheckResourceAttrSet("appwrite_webhook.test", "secret"),
 				),
 			},
 			{
 				ResourceName:            "appwrite_webhook.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"http_pass"},
+				ImportStateVerifyIgnore: []string{"auth_password"},
 			},
 			{
 				Config: `
