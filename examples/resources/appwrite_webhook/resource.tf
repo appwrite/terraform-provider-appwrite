@@ -5,17 +5,17 @@ resource "appwrite_webhook" "order_created" {
 }
 
 resource "appwrite_webhook" "user_events" {
-  name     = "user events"
-  url      = "https://api.example.com/webhooks/users"
-  events   = ["users.*.create", "users.*.update", "users.*.delete"]
-  security = true
+  name   = "user events"
+  url    = "https://api.example.com/webhooks/users"
+  events = ["users.*.create", "users.*.update", "users.*.delete"]
+  tls    = true
 }
 
 resource "appwrite_webhook" "authenticated" {
-  name      = "authenticated webhook"
-  url       = "https://api.example.com/webhooks/secure"
-  events    = ["databases.*.collections.*.documents.*.create"]
-  http_user = "webhook"
-  http_pass = var.webhook_password
-  security  = true
+  name          = "authenticated webhook"
+  url           = "https://api.example.com/webhooks/secure"
+  events        = ["databases.*.collections.*.documents.*.create"]
+  auth_username = "webhook"
+  auth_password = var.webhook_password
+  tls           = true
 }

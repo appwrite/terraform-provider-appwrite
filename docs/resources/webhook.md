@@ -19,19 +19,19 @@ resource "appwrite_webhook" "order_created" {
 }
 
 resource "appwrite_webhook" "user_events" {
-  name     = "user events"
-  url      = "https://api.example.com/webhooks/users"
-  events   = ["users.*.create", "users.*.update", "users.*.delete"]
-  security = true
+  name   = "user events"
+  url    = "https://api.example.com/webhooks/users"
+  events = ["users.*.create", "users.*.update", "users.*.delete"]
+  tls    = true
 }
 
 resource "appwrite_webhook" "authenticated" {
-  name      = "authenticated webhook"
-  url       = "https://api.example.com/webhooks/secure"
-  events    = ["databases.*.collections.*.documents.*.create"]
-  http_user = "webhook"
-  http_pass = var.webhook_password
-  security  = true
+  name          = "authenticated webhook"
+  url           = "https://api.example.com/webhooks/secure"
+  events        = ["databases.*.collections.*.documents.*.create"]
+  auth_username = "webhook"
+  auth_password = var.webhook_password
+  tls           = true
 }
 ```
 
@@ -47,16 +47,16 @@ resource "appwrite_webhook" "authenticated" {
 ### Optional
 
 - `enabled` (Boolean) Whether the webhook is enabled. Defaults to true.
-- `http_pass` (String, Sensitive) HTTP basic authentication password.
-- `http_user` (String) HTTP basic authentication username.
+- `auth_password` (String, Sensitive) HTTP basic authentication password.
+- `auth_username` (String) HTTP basic authentication username.
 - `id` (String) The webhook ID.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
-- `security` (Boolean) Whether SSL/TLS certificate verification is enabled. Defaults to false.
+- `tls` (Boolean) Whether SSL/TLS certificate verification is enabled. Defaults to false.
 
 ### Read-Only
 
 - `created_at` (String) The webhook creation timestamp in ISO 8601 format.
-- `signature_key` (String, Sensitive) Signature key for validating incoming webhooks.
+- `secret` (String, Sensitive) Secret key for validating incoming webhooks.
 - `updated_at` (String) The webhook last update timestamp in ISO 8601 format.
 
 ## Import

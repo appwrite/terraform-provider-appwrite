@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appwrite/sdk-for-go/v2/appwrite"
-	"github.com/appwrite/sdk-for-go/v2/client"
+	"github.com/appwrite/sdk-for-go/v3/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -79,34 +79,27 @@ func FormatError(err error) string {
 	return err.Error()
 }
 
-// DecodeColumn decodes the raw *interface{} response from GetColumn into a typed model.
-func DecodeColumn(raw *interface{}, target interface{}) error {
-	if raw == nil {
-		return fmt.Errorf("nil response from GetColumn")
+// GetColumnRaw fetches a column using a raw API call, bypassing the SDK's
+// type-matching logic which doesn't handle all column types (e.g. text,
+// longtext, mediumtext, varchar, point, line, polygon).
+func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]interface{}, error) {
+	path := fmt.Sprintf("/tablesdb/%s/tables/%s/columns/%s", databaseID, tableID, key)
+	resp, err := c.Call("GET", path, map[string]interface{}{}, map[string]interface{}{
+		"databaseId": databaseID,
+		"tableId":    tableID,
+		"key":        key,
+	})
+	if err != nil {
+		return nil, err
 	}
-	switch v := (*raw).(type) {
-	case string:
-		return json.Unmarshal([]byte(v), target)
-	default:
-		b, err := json.Marshal(v)
-		if err != nil {
-			return fmt.Errorf("failed to marshal GetColumn response: %w", err)
-		}
-		return json.Unmarshal(b, target)
+	if !strings.HasPrefix(resp.Type, "application/json") {
+		return nil, fmt.Errorf("unexpected response type: %s", resp.Type)
 	}
-}
-
-// GetColumnStatus extracts the status field from a raw GetColumn response.
-func GetColumnStatus(raw *interface{}) (string, error) {
-	if raw == nil {
-		return "", fmt.Errorf("nil response")
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(resp.Result.(string)), &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal column response: %w", err)
 	}
-	var generic map[string]interface{}
-	if err := DecodeColumn(raw, &generic); err != nil {
-		return "", err
-	}
-	status, _ := generic["status"].(string)
-	return status, nil
+	return result, nil
 }
 
 // AttrCheck holds the result of an attribute mismatch check.
@@ -200,7 +193,7 @@ func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, e
 
 // WaitForColumnAvailable polls a column until its status becomes "available",
 // with a maximum wait of 60 seconds.
-func WaitForColumnAvailable(ctx context.Context, getColumn func() (*interface{}, error), key string) error {
+func WaitForColumnAvailable(ctx context.Context, getColumn func() (interface{}, error), key string) error {
 	deadline := time.After(60 * time.Second)
 	for {
 		select {
@@ -216,7 +209,10 @@ func WaitForColumnAvailable(ctx context.Context, getColumn func() (*interface{},
 			return fmt.Errorf("error checking column %q status: %w", key, err)
 		}
 
-		status, _ := GetColumnStatus(raw)
+		var status string
+		if m, ok := raw.(map[string]interface{}); ok {
+			status, _ = m["status"].(string)
+		}
 		switch status {
 		case "available":
 			return nil

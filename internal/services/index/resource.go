@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appwrite/sdk-for-go/v2/appwrite"
-	"github.com/appwrite/sdk-for-go/v2/id"
-	"github.com/appwrite/sdk-for-go/v2/tablesdb"
+	"github.com/appwrite/sdk-for-go/v3/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/id"
+	"github.com/appwrite/sdk-for-go/v3/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -135,7 +135,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 	databaseId := plan.DatabaseID.ValueString()
 	tableId := plan.TableID.ValueString()
 	for _, col := range columns {
-		if err := common.WaitForColumnAvailable(ctx, func() (*interface{}, error) {
+		if err := common.WaitForColumnAvailable(ctx, func() (interface{}, error) {
 			return tablesdbClient.GetColumn(databaseId, tableId, col)
 		}, col); err != nil {
 			resp.Diagnostics.AddError("Error waiting for columns", err.Error())

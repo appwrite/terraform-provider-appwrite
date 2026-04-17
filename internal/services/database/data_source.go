@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v2/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/appwrite"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"

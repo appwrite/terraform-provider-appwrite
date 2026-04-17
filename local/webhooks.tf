@@ -8,5 +8,5 @@ resource "appwrite_webhook" "user_events" {
   name     = "User Events"
   url      = "https://api.example.com/webhooks/users"
   events   = ["users.*.create", "users.*.update", "users.*.delete"]
-  security = true
+  tls = true
 }
