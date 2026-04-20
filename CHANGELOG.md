@@ -12,26 +12,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Data sources for storage buckets, users, teams, functions, sites, topics, and webhooks
 - Schema validators for deployment `source_type`, bucket `compression`, and function `name`/`runtime`
 - User-Agent header (`terraform-provider-appwrite/<version>`) on all API calls
-- Acceptance tests for function and site deployment resources
-- Examples and documentation for deployment resources
+- Acceptance tests for function and site deployment resources and data sources
 - `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, and GitHub issue templates
+- `CODEOWNERS` file and pull request template
 - `golangci-lint` in CI pipeline
+- Import support for function and site deployment resources
 
-### Removed
+## [1.2.1] - 2026-04-17
 
-- Empty `projectvar` package
+### Fixed
 
-## [0.1.0] - 2026-04-12
+- Index creation resource handling
+- Duplicate example files removed from the repository
+
+## [1.2.0] - 2026-04-17
+
+### Changed
+
+- Upgraded `go-sdk` to `v3.0.0` with webhook field renames
+
+## [1.1.0] - 2026-04-17
 
 ### Added
 
-- Initial release with 20 resources and 1 data source
-- Support for TablesDB (databases, tables, columns, indexes, rows)
-- Support for Storage (buckets, files)
-- Support for Auth (users, teams)
-- Support for Functions (functions, variables, deployments)
-- Support for Sites (sites, variables, deployments)
-- Support for Messaging (topics, providers, subscribers)
-- Support for Webhooks and Backup Policies
+- Deployment resources for sites and functions
+- Documentation and examples for deployment resources
+
+## [1.0.2] - 2026-04-17
+
+### Changed
+
+- Polished repository README
+
+### Fixed
+
+- Added `WaitForColumnAvailable` preventing column creation errors
+- Error handling for self-hosted API limitations
+
+## [1.0.1] - 2026-04-13
+
+### Changed
+
+- Refactored documentation
+
+## [1.0.0] - 2026-04-12
+
+### Added
+
+- Resources for functions and sites with their respective variables
+- Cleaned up documentation
+
+## [0.0.8] - 2026-04-12
+
+### Added
+
+- Initial release with support for TablesDB, Storage, Auth, Messaging, Webhooks, and Backup Policies
 - Acceptance tests for all resources
 - Auto-generated documentation via `terraform-plugin-docs`
