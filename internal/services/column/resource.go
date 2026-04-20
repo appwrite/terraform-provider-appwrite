@@ -210,19 +210,15 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	switch columnType {
 	case "string":
-		if plan.Size.IsNull() {
-			resp.Diagnostics.AddError("Missing attribute", "size is required for string columns")
-			return
-		}
-		var opts []tablesdb.CreateStringColumnOption
+		var opts []tablesdb.CreateTextColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, tablesdbClient.WithCreateStringColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, tablesdbClient.WithCreateStringColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateTextColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, tablesdbClient.WithCreateStringColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateTextColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := tablesdbClient.CreateStringColumn(databaseId, tableId, key, int(plan.Size.ValueInt64()), required, opts...)
+		col, e := tablesdbClient.CreateTextColumn(databaseId, tableId, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -539,11 +535,8 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	switch columnType {
 	case "string":
-		var opts []tablesdb.UpdateStringColumnOption
-		if !plan.Size.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateStringColumnSize(int(plan.Size.ValueInt64())))
-		}
-		col, e := tablesdbClient.UpdateStringColumn(databaseId, tableId, key, required, defaultStr, opts...)
+		var opts []tablesdb.UpdateTextColumnOption
+		col, e := tablesdbClient.UpdateTextColumn(databaseId, tableId, key, required, defaultStr, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)

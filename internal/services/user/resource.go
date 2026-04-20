@@ -170,7 +170,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	userID = user.Id
 
 	if !plan.Status.IsNull() && !plan.Status.IsUnknown() && !plan.Status.ValueBool() {
-		user, err = usersClient.UpdateStatus(userID, false)
+		_, err = usersClient.UpdateStatus(userID, false)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user status", common.FormatError(err))
 			return
@@ -182,21 +182,21 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		user, err = usersClient.UpdateLabels(userID, labels)
+		_, err = usersClient.UpdateLabels(userID, labels)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting user labels", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.EmailVerification.IsNull() && !plan.EmailVerification.IsUnknown() && plan.EmailVerification.ValueBool() {
-		user, err = usersClient.UpdateEmailVerification(userID, true)
+		_, err = usersClient.UpdateEmailVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting email verification", common.FormatError(err))
 			return
 		}
 	}
 	if !plan.PhoneVerification.IsNull() && !plan.PhoneVerification.IsUnknown() && plan.PhoneVerification.ValueBool() {
-		user, err = usersClient.UpdatePhoneVerification(userID, true)
+		_, err = usersClient.UpdatePhoneVerification(userID, true)
 		if err != nil {
 			resp.Diagnostics.AddError("Error setting phone verification", common.FormatError(err))
 			return
