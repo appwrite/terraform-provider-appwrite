@@ -97,3 +97,10 @@ The `project_id` can be set at the provider level as a default for all resources
 ## Data Sources
 
 - [appwrite_tablesdb](data-sources/tablesdb.md) - Fetch a database by ID
+- [appwrite_storage_bucket](data-sources/storage_bucket.md) - Fetch a storage bucket by ID
+- [appwrite_auth_user](data-sources/auth_user.md) - Fetch a user by ID
+- [appwrite_auth_team](data-sources/auth_team.md) - Fetch a team by ID
+- [appwrite_function](data-sources/function.md) - Fetch a function by ID
+- [appwrite_site](data-sources/site.md) - Fetch a site by ID
+- [appwrite_messaging_topic](data-sources/messaging_topic.md) - Fetch a messaging topic by ID
+- [appwrite_webhook](data-sources/webhook.md) - Fetch a webhook by ID

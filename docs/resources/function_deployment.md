@@ -9,35 +9,25 @@ description: |-
 
 Manages an Appwrite function deployment.
 
-Deployments are immutable - any change to input attributes will destroy the existing deployment and create a new one. Use the `wait_for_ready` attribute (default `true`) to wait for the build to complete before Terraform proceeds.
-
--> **Tip:** Use `code_hash = filesha256("./code.tar.gz")` to trigger a new deployment when your code file changes, even if the file path stays the same.
-
 ## Example Usage
 
-### Code Upload
-
 ```terraform
-resource "appwrite_function_deployment" "process_order" {
-  function_id = appwrite_function.process_order.id
+resource "appwrite_function_deployment" "from_code" {
+  function_id = appwrite_function.example.id
   source_type = "code"
-  code_path   = "./process-order.tar.gz"
-  code_hash   = filesha256("./process-order.tar.gz")
+  code_path   = "dist/function.tar.gz"
+  code_hash   = filesha256("dist/function.tar.gz")
   entrypoint  = "index.js"
   commands    = "npm install"
   activate    = true
 }
-```
 
-### Template
-
-```terraform
-resource "appwrite_function_deployment" "daily_report" {
-  function_id    = appwrite_function.daily_report.id
+resource "appwrite_function_deployment" "from_template" {
+  function_id    = appwrite_function.example.id
   source_type    = "template"
-  repository     = "templates"
+  repository     = "starter-template"
   owner          = "appwrite"
-  root_directory = "node/starter"
+  root_directory = "node"
   type           = "branch"
   reference      = "main"
   activate       = true
@@ -79,11 +69,10 @@ resource "appwrite_function_deployment" "daily_report" {
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
 
+## Import
 
+Import is supported using the following syntax:
 
-~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
-
-## See Also
-
-- [appwrite_function](function.md) - Manage functions
-- [appwrite_function_variable](function_variable.md) - Manage function environment variables
+```shell
+terraform import appwrite_function_deployment.example function_id/deployment_id
+```

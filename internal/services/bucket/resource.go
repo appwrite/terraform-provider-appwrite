@@ -9,6 +9,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v3/models"
 	"github.com/appwrite/sdk-for-go/v3/storage"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -104,6 +106,7 @@ func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("none"),
+				Validators:  []validator.String{stringvalidator.OneOf("none", "gzip", "zstd")},
 			},
 			"encryption": schema.BoolAttribute{
 				Description: "Whether bucket encryption is enabled. Defaults to true.",

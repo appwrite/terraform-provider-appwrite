@@ -40,7 +40,7 @@ func TestAccTableResource_basic(t *testing.T) {
 	})
 }
 
-func testAccTableConfig(databaseId, tableId, name string) string {
+func testAccTableConfig(databaseID, tableID, name string) string {
 	return fmt.Sprintf(`
 resource "appwrite_tablesdb" "test" {
   id   = %q
@@ -52,5 +52,5 @@ resource "appwrite_tablesdb_table" "test" {
   id          = %q
   name        = %q
 }
-`, databaseId, tableId, name)
+`, databaseID, tableID, name)
 }

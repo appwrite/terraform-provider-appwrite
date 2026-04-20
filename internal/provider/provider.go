@@ -110,6 +110,7 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 	baseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(apiKey),
+		common.WithUserAgent(p.version),
 	}
 	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {
 		baseOpts = append(baseOpts, appwrite.WithSelfSigned(true))
@@ -152,6 +153,13 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		databasesvc.NewDatabaseDataSource,
+		bucketsvc.NewBucketDataSource,
+		usersvc.NewUserDataSource,
+		teamsvc.NewTeamDataSource,
+		functionsvc.NewFunctionDataSource,
+		sitesvc.NewSiteDataSource,
+		topicsvc.NewTopicDataSource,
+		webhooksvc.NewWebhookDataSource,
 	}
 }
 

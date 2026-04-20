@@ -1,0 +1,1 @@
+terraform import appwrite_site_deployment.example site_id/deployment_id
