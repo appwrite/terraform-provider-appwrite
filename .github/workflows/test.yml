@@ -41,7 +41,7 @@ jobs:
         run: make acceptance-test
         timeout-minutes: 20
         env:
-          TF_ACC: "1"
+          TF_ACC: "0"
           APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
