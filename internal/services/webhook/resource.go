@@ -35,7 +35,7 @@ type webhookResourceModel struct {
 	URL          types.String `tfsdk:"url"`
 	Events       types.List   `tfsdk:"events"`
 	Enabled      types.Bool   `tfsdk:"enabled"`
-	Tls          types.Bool   `tfsdk:"tls"`
+	TLS          types.Bool   `tfsdk:"tls"`
 	AuthUsername types.String `tfsdk:"auth_username"`
 	AuthPassword types.String `tfsdk:"auth_password"`
 	Secret       types.String `tfsdk:"secret"`
@@ -155,8 +155,8 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		opts = append(opts, webhooksClient.WithCreateEnabled(plan.Enabled.ValueBool()))
 	}
-	if !plan.Tls.IsNull() && !plan.Tls.IsUnknown() {
-		opts = append(opts, webhooksClient.WithCreateTls(plan.Tls.ValueBool()))
+	if !plan.TLS.IsNull() && !plan.TLS.IsUnknown() {
+		opts = append(opts, webhooksClient.WithCreateTls(plan.TLS.ValueBool()))
 	}
 	if !plan.AuthUsername.IsNull() {
 		opts = append(opts, webhooksClient.WithCreateAuthUsername(plan.AuthUsername.ValueString()))
@@ -229,8 +229,8 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		opts = append(opts, webhooksClient.WithUpdateEnabled(plan.Enabled.ValueBool()))
 	}
-	if !plan.Tls.IsNull() && !plan.Tls.IsUnknown() {
-		opts = append(opts, webhooksClient.WithUpdateTls(plan.Tls.ValueBool()))
+	if !plan.TLS.IsNull() && !plan.TLS.IsUnknown() {
+		opts = append(opts, webhooksClient.WithUpdateTls(plan.TLS.ValueBool()))
 	}
 	if !plan.AuthUsername.IsNull() {
 		opts = append(opts, webhooksClient.WithUpdateAuthUsername(plan.AuthUsername.ValueString()))
@@ -279,7 +279,7 @@ func (r *webhookResource) mapToState(ctx context.Context, webhook *models.Webhoo
 	model.Name = types.StringValue(webhook.Name)
 	model.URL = types.StringValue(webhook.Url)
 	model.Enabled = types.BoolValue(webhook.Enabled)
-	model.Tls = types.BoolValue(webhook.Tls)
+	model.TLS = types.BoolValue(webhook.Tls)
 	model.Secret = types.StringValue(webhook.Secret)
 	model.CreatedAt = types.StringValue(webhook.CreatedAt)
 	model.UpdatedAt = types.StringValue(webhook.UpdatedAt)

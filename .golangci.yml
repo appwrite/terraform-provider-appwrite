@@ -1,5 +1,6 @@
 linters:
   enable:
+    # Default linters
     - errcheck
     - gosimple
     - govet
@@ -7,9 +8,79 @@ linters:
     - staticcheck
     - unused
 
+    # Code style
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+    - whitespace
+
+    # Bug detection
+    - bodyclose
+    - durationcheck
+    - nilerr
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
+
+    # Code complexity & maintenance
+    - copyloopvar
+    - dupword
+    - errname
+    - errorlint
+    - fatcontext
+    - goconst
+    - goprintffuncname
+    - makezero
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - usetesting
+    - tparallel
+    - usestdlibvars
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true
+      - name: increment-decrement
+      - name: var-naming
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
 issues:
   exclude-dirs:
     - vendor
+  max-issues-per-linter: 0
+  max-same-issues: 0
 
 run:
   timeout: 5m

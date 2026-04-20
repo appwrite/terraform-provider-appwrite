@@ -132,12 +132,12 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		opts = append(opts, tablesdbClient.WithCreateIndexOrders(orders))
 	}
 
-	databaseId := plan.DatabaseID.ValueString()
-	tableId := plan.TableID.ValueString()
+	databaseID := plan.DatabaseID.ValueString()
+	tableID := plan.TableID.ValueString()
 	rawClient := r.clients.ClientForProject(projectID)
 	for _, col := range columns {
 		if err := common.WaitForColumnAvailable(ctx, func() (interface{}, error) {
-			return common.GetColumnRaw(rawClient, databaseId, tableId, col)
+			return common.GetColumnRaw(rawClient, databaseID, tableID, col)
 		}, col); err != nil {
 			resp.Diagnostics.AddError("Error waiting for columns", err.Error())
 			return
@@ -150,8 +150,8 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	idx, err := tablesdbClient.CreateIndex(
-		databaseId,
-		tableId,
+		databaseID,
+		tableID,
 		indexKey,
 		plan.Type.ValueString(),
 		columns,

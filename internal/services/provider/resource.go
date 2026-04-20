@@ -44,22 +44,22 @@ type providerResourceModel struct {
 	Password       types.String `tfsdk:"password"`
 	Encryption     types.String `tfsdk:"encryption"`
 	AutoTLS        types.Bool   `tfsdk:"auto_tls"`
-	ApiKey         types.String `tfsdk:"api_key"`
-	ApiSecret      types.String `tfsdk:"api_secret"`
+	APIKey         types.String `tfsdk:"api_key"`
+	APISecret      types.String `tfsdk:"api_secret"`
 	Domain         types.String `tfsdk:"domain"`
 	IsEuRegion     types.Bool   `tfsdk:"is_eu_region"`
 	AccountSid     types.String `tfsdk:"account_sid"`
 	AuthToken      types.String `tfsdk:"auth_token"`
 	From           types.String `tfsdk:"from"`
-	SenderId       types.String `tfsdk:"sender_id"`
+	SenderID       types.String `tfsdk:"sender_id"`
 	AuthKey        types.String `tfsdk:"auth_key"`
-	AuthKeyId      types.String `tfsdk:"auth_key_id"`
-	TeamId         types.String `tfsdk:"team_id"`
-	BundleId       types.String `tfsdk:"bundle_id"`
+	AuthKeyID      types.String `tfsdk:"auth_key_id"`
+	TeamID         types.String `tfsdk:"team_id"`
+	BundleID       types.String `tfsdk:"bundle_id"`
 	Sandbox        types.Bool   `tfsdk:"sandbox"`
 	ServiceAccount types.String `tfsdk:"service_account_json"`
-	CustomerId     types.String `tfsdk:"customer_id"`
-	TemplateId     types.String `tfsdk:"template_id"`
+	CustomerID     types.String `tfsdk:"customer_id"`
+	TemplateID     types.String `tfsdk:"template_id"`
 	CreatedAt      types.String `tfsdk:"created_at"`
 	UpdatedAt      types.String `tfsdk:"updated_at"`
 }
@@ -267,7 +267,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 	switch providerType {
 	case "sendgrid":
 		var opts []messaging.CreateSendgridProviderOption
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateSendgridProviderApiKey(v.ValueString()))
 		}
 		if v := plan.FromEmail; !v.IsNull() {
@@ -289,7 +289,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 
 	case "mailgun":
 		var opts []messaging.CreateMailgunProviderOption
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateMailgunProviderApiKey(v.ValueString()))
 		}
 		if v := plan.Domain; !v.IsNull() {
@@ -355,7 +355,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 
 	case "resend":
 		var opts []messaging.CreateResendProviderOption
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateResendProviderApiKey(v.ValueString()))
 		}
 		if v := plan.FromEmail; !v.IsNull() {
@@ -393,10 +393,10 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 
 	case "vonage":
 		var opts []messaging.CreateVonageProviderOption
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateVonageProviderApiKey(v.ValueString()))
 		}
-		if v := plan.ApiSecret; !v.IsNull() {
+		if v := plan.APISecret; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateVonageProviderApiSecret(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -409,13 +409,13 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 
 	case "msg91":
 		var opts []messaging.CreateMsg91ProviderOption
-		if v := plan.SenderId; !v.IsNull() {
+		if v := plan.SenderID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateMsg91ProviderSenderId(v.ValueString()))
 		}
 		if v := plan.AuthKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateMsg91ProviderAuthKey(v.ValueString()))
 		}
-		if v := plan.TemplateId; !v.IsNull() {
+		if v := plan.TemplateID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateMsg91ProviderTemplateId(v.ValueString()))
 		}
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
@@ -425,10 +425,10 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 
 	case "telesign":
 		var opts []messaging.CreateTelesignProviderOption
-		if v := plan.CustomerId; !v.IsNull() {
+		if v := plan.CustomerID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateTelesignProviderCustomerId(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateTelesignProviderApiKey(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -444,7 +444,7 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.Username; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateTextmagicProviderUsername(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateTextmagicProviderApiKey(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -460,13 +460,13 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 		if v := plan.AuthKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateAPNSProviderAuthKey(v.ValueString()))
 		}
-		if v := plan.AuthKeyId; !v.IsNull() {
+		if v := plan.AuthKeyID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateAPNSProviderAuthKeyId(v.ValueString()))
 		}
-		if v := plan.TeamId; !v.IsNull() {
+		if v := plan.TeamID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateAPNSProviderTeamId(v.ValueString()))
 		}
-		if v := plan.BundleId; !v.IsNull() {
+		if v := plan.BundleID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithCreateAPNSProviderBundleId(v.ValueString()))
 		}
 		if v := plan.Sandbox; !v.IsNull() {
@@ -558,7 +558,7 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateSendgridProviderName(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateSendgridProviderApiKey(v.ValueString()))
 		}
 		if v := plan.FromEmail; !v.IsNull() {
@@ -583,7 +583,7 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMailgunProviderName(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMailgunProviderApiKey(v.ValueString()))
 		}
 		if v := plan.Domain; !v.IsNull() {
@@ -654,7 +654,7 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateResendProviderName(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateResendProviderApiKey(v.ValueString()))
 		}
 		if v := plan.FromEmail; !v.IsNull() {
@@ -698,10 +698,10 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateVonageProviderName(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateVonageProviderApiKey(v.ValueString()))
 		}
-		if v := plan.ApiSecret; !v.IsNull() {
+		if v := plan.APISecret; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateVonageProviderApiSecret(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -717,13 +717,13 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMsg91ProviderName(v.ValueString()))
 		}
-		if v := plan.SenderId; !v.IsNull() {
+		if v := plan.SenderID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMsg91ProviderSenderId(v.ValueString()))
 		}
 		if v := plan.AuthKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMsg91ProviderAuthKey(v.ValueString()))
 		}
-		if v := plan.TemplateId; !v.IsNull() {
+		if v := plan.TemplateID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateMsg91ProviderTemplateId(v.ValueString()))
 		}
 		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
@@ -736,10 +736,10 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Name; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateTelesignProviderName(v.ValueString()))
 		}
-		if v := plan.CustomerId; !v.IsNull() {
+		if v := plan.CustomerID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateTelesignProviderCustomerId(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateTelesignProviderApiKey(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -758,7 +758,7 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.Username; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateTextmagicProviderUsername(v.ValueString()))
 		}
-		if v := plan.ApiKey; !v.IsNull() {
+		if v := plan.APIKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateTextmagicProviderApiKey(v.ValueString()))
 		}
 		if v := plan.From; !v.IsNull() {
@@ -777,13 +777,13 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		if v := plan.AuthKey; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateAPNSProviderAuthKey(v.ValueString()))
 		}
-		if v := plan.AuthKeyId; !v.IsNull() {
+		if v := plan.AuthKeyID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateAPNSProviderAuthKeyId(v.ValueString()))
 		}
-		if v := plan.TeamId; !v.IsNull() {
+		if v := plan.TeamID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateAPNSProviderTeamId(v.ValueString()))
 		}
-		if v := plan.BundleId; !v.IsNull() {
+		if v := plan.BundleID; !v.IsNull() {
 			opts = append(opts, messagingClient.WithUpdateAPNSProviderBundleId(v.ValueString()))
 		}
 		if v := plan.Sandbox; !v.IsNull() {

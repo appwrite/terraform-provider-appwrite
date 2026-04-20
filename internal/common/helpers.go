@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -36,8 +37,8 @@ func WithUserAgent(version string) client.ClientOption {
 
 // ClientForProject creates a new SDK client targeting a specific project.
 func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
-	opts := make([]client.ClientOption, len(ac.BaseOptions))
-	copy(opts, ac.BaseOptions)
+	opts := make([]client.ClientOption, 0, len(ac.BaseOptions)+1)
+	opts = append(opts, ac.BaseOptions...)
 	opts = append(opts, appwrite.WithProject(projectID))
 	return appwrite.NewClient(opts...)
 }
@@ -66,7 +67,8 @@ func ProjectIDAttribute() schema.StringAttribute {
 
 // IsNotFoundError checks if an Appwrite SDK error is a 404.
 func IsNotFoundError(err error) bool {
-	if appErr, ok := err.(*client.AppwriteError); ok {
+	var appErr *client.AppwriteError
+	if errors.As(err, &appErr) {
 		return appErr.GetStatusCode() == 404
 	}
 	return false
@@ -74,7 +76,8 @@ func IsNotFoundError(err error) bool {
 
 // IsColumnNotAvailableError checks if the error is due to a column still being processed.
 func IsColumnNotAvailableError(err error) bool {
-	if appErr, ok := err.(*client.AppwriteError); ok {
+	var appErr *client.AppwriteError
+	if errors.As(err, &appErr) {
 		return appErr.GetStatusCode() == 400 && strings.Contains(appErr.GetMessage(), "not yet available")
 	}
 	return false
@@ -82,7 +85,8 @@ func IsColumnNotAvailableError(err error) bool {
 
 // FormatError returns a detailed error string including status code and response body.
 func FormatError(err error) string {
-	if appErr, ok := err.(*client.AppwriteError); ok {
+	var appErr *client.AppwriteError
+	if errors.As(err, &appErr) {
 		return fmt.Sprintf("%s (status: %d, response: %s)", appErr.GetMessage(), appErr.GetStatusCode(), appErr.GetResponse())
 	}
 	return err.Error()
@@ -104,8 +108,12 @@ func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]
 	if !strings.HasPrefix(resp.Type, "application/json") {
 		return nil, fmt.Errorf("unexpected response type: %s", resp.Type)
 	}
+	resultStr, ok := resp.Result.(string)
+	if !ok {
+		return nil, fmt.Errorf("unexpected response result type: %T", resp.Result)
+	}
 	var result map[string]interface{}
-	if err := json.Unmarshal([]byte(resp.Result.(string)), &result); err != nil {
+	if err := json.Unmarshal([]byte(resultStr), &result); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal column response: %w", err)
 	}
 	return result, nil

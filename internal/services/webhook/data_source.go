@@ -26,7 +26,7 @@ type webhookDataSourceModel struct {
 	URL       types.String `tfsdk:"url"`
 	Events    types.List   `tfsdk:"events"`
 	Enabled   types.Bool   `tfsdk:"enabled"`
-	Tls       types.Bool   `tfsdk:"tls"`
+	TLS       types.Bool   `tfsdk:"tls"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
 	ProjectID types.String `tfsdk:"project_id"`
@@ -126,7 +126,7 @@ func (d *webhookDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	config.Name = types.StringValue(webhook.Name)
 	config.URL = types.StringValue(webhook.Url)
 	config.Enabled = types.BoolValue(webhook.Enabled)
-	config.Tls = types.BoolValue(webhook.Tls)
+	config.TLS = types.BoolValue(webhook.Tls)
 	config.CreatedAt = types.StringValue(webhook.CreatedAt)
 	config.UpdatedAt = types.StringValue(webhook.UpdatedAt)
 
