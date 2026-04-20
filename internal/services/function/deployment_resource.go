@@ -11,6 +11,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v3/functions"
 	"github.com/appwrite/sdk-for-go/v3/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -84,6 +86,7 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description:   `The deployment source type. Must be one of "code" or "template".`,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Validators:    []validator.String{stringvalidator.OneOf("code", "template")},
 			},
 			"activate": schema.BoolAttribute{
 				Description: "Whether to activate this deployment after creation.",

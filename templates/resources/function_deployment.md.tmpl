@@ -9,63 +9,16 @@ description: |-
 
 {{.Description}}
 
-Deployments are immutable - any change to input attributes will destroy the existing deployment and create a new one. Use the `wait_for_ready` attribute (default `true`) to wait for the build to complete before Terraform proceeds.
-
--> **Tip:** Use `code_hash = filesha256("./code.tar.gz")` to trigger a new deployment when your code file changes, even if the file path stays the same.
-
+{{ if .HasExample -}}
 ## Example Usage
 
-### Code Upload
-
-```terraform
-resource "appwrite_function_deployment" "process_order" {
-  function_id = appwrite_function.process_order.id
-  source_type = "code"
-  code_path   = "./process-order.tar.gz"
-  code_hash   = filesha256("./process-order.tar.gz")
-  entrypoint  = "index.js"
-  commands    = "npm install"
-  activate    = true
-}
-```
-
-### Template
-
-```terraform
-resource "appwrite_function_deployment" "daily_report" {
-  function_id    = appwrite_function.daily_report.id
-  source_type    = "template"
-  repository     = "templates"
-  owner          = "appwrite"
-  root_directory = "node/starter"
-  type           = "branch"
-  reference      = "main"
-  activate       = true
-}
-```
+{{ tffile .ExampleFile }}
+{{- end }}
 
 {{ .SchemaMarkdown | trimspace }}
 
-{{ if .HasImport -}}
 ## Import
 
-Import uses the format `function_id/deployment_id`:
+Import is supported using the following syntax:
 
 {{ codefile "shell" .ImportFile }}
-
-Using an import block (Terraform v1.5.0+):
-
-```hcl
-import {
-  to = appwrite_function_deployment.example
-  id = "function-id/deployment-id"
-}
-```
-{{- end }}
-
-~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
-
-## See Also
-
-- [appwrite_function](function.md) - Manage functions
-- [appwrite_function_variable](function_variable.md) - Manage function environment variables

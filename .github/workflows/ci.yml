@@ -32,8 +32,10 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Go vet
-        run: go vet ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
 
       - name: Check formatting
         run: |

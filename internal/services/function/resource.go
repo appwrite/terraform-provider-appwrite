@@ -9,6 +9,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v3/id"
 	"github.com/appwrite/sdk-for-go/v3/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -78,10 +80,12 @@ func (r *functionResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"name": schema.StringAttribute{
 				Description: "The function name.",
 				Required:    true,
+				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"runtime": schema.StringAttribute{
 				Description: "The function execution runtime (e.g. node-22, python-3.11, dart-3.5).",
 				Required:    true,
+				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"enabled": schema.BoolAttribute{
 				Description: "Whether the function is enabled. Defaults to true.",

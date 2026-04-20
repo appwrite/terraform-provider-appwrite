@@ -25,6 +25,15 @@ type AppwriteClients struct {
 	ProjectID string
 }
 
+// WithUserAgent returns a ClientOption that sets the User-Agent header to identify
+// Terraform provider traffic. This is required for HashiCorp partner providers.
+func WithUserAgent(version string) client.ClientOption {
+	return func(clt *client.Client) error {
+		clt.Headers["user-agent"] = fmt.Sprintf("terraform-provider-appwrite/%s", version)
+		return nil
+	}
+}
+
 // ClientForProject creates a new SDK client targeting a specific project.
 func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
 	opts := make([]client.ClientOption, len(ac.BaseOptions))

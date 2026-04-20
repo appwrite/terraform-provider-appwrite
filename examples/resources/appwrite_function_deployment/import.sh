@@ -1,0 +1,1 @@
+terraform import appwrite_function_deployment.example function_id/deployment_id

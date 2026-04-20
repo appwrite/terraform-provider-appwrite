@@ -28,7 +28,7 @@ resource "appwrite_site_variable" "landing_ga_id" {
 resource "appwrite_site_deployment" "landing_page_code" {
   site_id     = appwrite_site.landing_page.id
   source_type = "code"
-  code_path   = "./dist.tar.gz"
+  code_path   = "./files/dist.tar.gz"
   code_hash   = filesha256("./files/dist.tar.gz")
   activate    = true
 }

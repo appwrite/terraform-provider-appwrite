@@ -9,33 +9,23 @@ description: |-
 
 Manages an Appwrite site deployment.
 
-Deployments are immutable - any change to input attributes will destroy the existing deployment and create a new one. Use the `wait_for_ready` attribute (default `true`) to wait for the build to complete before Terraform proceeds.
-
--> **Tip:** Use `code_hash = filesha256("./dist.tar.gz")` to trigger a new deployment when your code file changes, even if the file path stays the same.
-
 ## Example Usage
 
-### Code Upload
-
 ```terraform
-resource "appwrite_site_deployment" "landing_page" {
-  site_id     = appwrite_site.landing_page.id
+resource "appwrite_site_deployment" "from_code" {
+  site_id     = appwrite_site.example.id
   source_type = "code"
-  code_path   = "./dist.tar.gz"
-  code_hash   = filesha256("./dist.tar.gz")
+  code_path   = "dist/site.tar.gz"
+  code_hash   = filesha256("dist/site.tar.gz")
   activate    = true
 }
-```
 
-### Template
-
-```terraform
-resource "appwrite_site_deployment" "dashboard" {
-  site_id        = appwrite_site.dashboard.id
+resource "appwrite_site_deployment" "from_template" {
+  site_id        = appwrite_site.example.id
   source_type    = "template"
-  repository     = "templates-for-sites"
+  repository     = "starter-template"
   owner          = "appwrite"
-  root_directory = "nextjs/starter"
+  root_directory = "nextjs"
   type           = "branch"
   reference      = "main"
   activate       = true
@@ -78,11 +68,10 @@ resource "appwrite_site_deployment" "dashboard" {
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
 
+## Import
 
+Import is supported using the following syntax:
 
-~> **NOTE:** Imported deployments will not have `source_type`, `code_path`, or template attributes in state since these are not returned by the API. The imported resource can be read and deleted but not recreated without specifying these attributes.
-
-## See Also
-
-- [appwrite_site](site.md) - Manage sites
-- [appwrite_site_variable](site_variable.md) - Manage site environment variables
+```shell
+terraform import appwrite_site_deployment.example site_id/deployment_id
+```
