@@ -36,7 +36,7 @@ jobs:
             sleep 2
           done
           echo "Appwrite did not become ready"
-          docker compose -f testing/docker-compose.yml logs appwrite
+          docker compose -f testing/docker-compose.yaml logs appwrite
           exit 1
 
       - name: Bootstrap project and API key
@@ -99,8 +99,8 @@ jobs:
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f testing/docker-compose.yml logs --tail=100
+        run: docker compose -f testing/docker-compose.yaml logs --tail=100
 
       - name: Tear down
         if: always()
-        run: docker compose -f testing/docker-compose.yml down -v --remove-orphans
+        run: docker compose -f testing/docker-compose.yaml down -v --remove-orphans

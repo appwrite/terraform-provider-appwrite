@@ -10,7 +10,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yaml"
 APPWRITE_URL="http://localhost:20080/v1"
 COOKIE_JAR=$(mktemp)
 
