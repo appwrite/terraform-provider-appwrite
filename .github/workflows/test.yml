@@ -22,26 +22,85 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: Verify required secrets
+      - name: Start Appwrite
+        run: docker compose -f testing/docker-compose.yaml up -d --remove-orphans
+
+      - name: Wait for Appwrite
         run: |
-          missing=()
-          [ -z "$APPWRITE_ENDPOINT" ] && missing+=("APPWRITE_ENDPOINT")
-          [ -z "$APPWRITE_PROJECT_ID" ] && missing+=("APPWRITE_PROJECT_ID")
-          [ -z "$APPWRITE_API_KEY" ] && missing+=("APPWRITE_API_KEY")
-          if [ ${#missing[@]} -ne 0 ]; then
-            echo "::error::Missing required secrets: ${missing[*]}"
-            exit 1
-          fi
-        env:
-          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          echo "Waiting for Appwrite to be ready..."
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:20080/v1/health > /dev/null 2>&1; then
+              echo "Appwrite is ready!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Appwrite did not become ready"
+          docker compose -f testing/docker-compose.yml logs appwrite
+          exit 1
+
+      - name: Bootstrap project and API key
+        run: |
+          APPWRITE_URL="http://localhost:20080/v1"
+          COOKIE_JAR=$(mktemp)
+
+          # Create admin account
+          curl -sf -X POST "$APPWRITE_URL/account" \
+            -H "Content-Type: application/json" \
+            -H "X-Appwrite-Project: console" \
+            -c "$COOKIE_JAR" \
+            -d '{"userId":"unique()","email":"admin@test.local","password":"password1234","name":"Admin"}' \
+            > /dev/null
+
+          # Login
+          curl -sf -X POST "$APPWRITE_URL/account/sessions/email" \
+            -H "Content-Type: application/json" \
+            -H "X-Appwrite-Project: console" \
+            -c "$COOKIE_JAR" \
+            -b "$COOKIE_JAR" \
+            -d '{"email":"admin@test.local","password":"password1234"}' \
+            > /dev/null
+
+          # Create team
+          TEAM_ID=$(curl -sf -X POST "$APPWRITE_URL/teams" \
+            -H "Content-Type: application/json" \
+            -H "X-Appwrite-Project: console" \
+            -b "$COOKIE_JAR" \
+            -d '{"teamId":"unique()","name":"Testing"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['\$id'])")
+
+          # Create project
+          curl -sf -X POST "$APPWRITE_URL/projects" \
+            -H "Content-Type: application/json" \
+            -H "X-Appwrite-Project: console" \
+            -b "$COOKIE_JAR" \
+            -d "{\"projectId\":\"tf-test\",\"name\":\"Terraform Tests\",\"teamId\":\"$TEAM_ID\"}" \
+            > /dev/null
+
+          # Create API key with all scopes
+          ALL_SCOPES='["sessions.write","users.read","users.write","teams.read","teams.write","databases.read","databases.write","collections.read","collections.write","attributes.read","attributes.write","indexes.read","indexes.write","documents.read","documents.write","files.read","files.write","buckets.read","buckets.write","functions.read","functions.write","execution.read","execution.write","locale.read","health.read","avatars.read","webhooks.read","webhooks.write","rules.read","rules.write","messaging.read","messaging.write","providers.read","providers.write","topics.read","topics.write","subscribers.read","subscribers.write","targets.read","targets.write","backups.read","backups.write","sites.read","sites.write","vcs.read","vcs.write","migrations.read","migrations.write"]'
+
+          API_KEY=$(curl -sf -X POST "$APPWRITE_URL/projects/tf-test/keys" \
+            -H "Content-Type: application/json" \
+            -H "X-Appwrite-Project: console" \
+            -b "$COOKIE_JAR" \
+            -d "{\"name\":\"tf-acceptance-tests\",\"scopes\":$ALL_SCOPES}" | python3 -c "import sys,json; print(json.load(sys.stdin)['secret'])")
+
+          echo "APPWRITE_ENDPOINT=$APPWRITE_URL" >> "$GITHUB_ENV"
+          echo "APPWRITE_PROJECT_ID=tf-test" >> "$GITHUB_ENV"
+          echo "APPWRITE_API_KEY=$API_KEY" >> "$GITHUB_ENV"
+
+          rm -f "$COOKIE_JAR"
 
       - name: Run acceptance tests
         run: make acceptance-test
         timeout-minutes: 20
         env:
-          TF_ACC: "0"
-          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          TF_ACC: "1"
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose -f testing/docker-compose.yml logs --tail=100
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f testing/docker-compose.yml down -v --remove-orphans

@@ -11,7 +11,7 @@ test:
 	go test ./... -v -count=1 -timeout 10m
 
 acceptance-test:
-	TF_ACC=1 go test ./... -v -count=1 $(TESTARGS) -timeout 120m
+	TF_ACC=$${TF_ACC:-1} go test ./... -v -count=1 $(TESTARGS) -timeout 120m
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development."
@@ -42,4 +42,14 @@ clean:
 docs:
 	go generate ./...
 
-.PHONY: build install test acceptance-test sweep test-compile vet fmt fmt-check lint clean docs
+# Self-hosted Appwrite for testing
+appwrite-up:
+	./testing/bootstrap.sh --up
+
+appwrite-down:
+	./testing/bootstrap.sh --down
+
+appwrite-test:
+	./testing/bootstrap.sh
+
+.PHONY: build install test acceptance-test sweep test-compile vet fmt fmt-check lint clean docs appwrite-up appwrite-down appwrite-test
