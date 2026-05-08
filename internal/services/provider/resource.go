@@ -90,7 +90,7 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"type": schema.StringAttribute{
 				Description:   "The provider type. One of: sendgrid, mailgun, smtp, resend, twilio, vonage, msg91, telesign, textmagic, apns, fcm.",
 				Required:      true,
-				PlanModifiers: []planmodifier.String{common.RequiresReplaceExceptImport()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"enabled": schema.BoolAttribute{
 				Description: "Whether the provider is enabled.",
@@ -847,5 +847,10 @@ func (r *providerResource) mapToState(prov *models.Provider, model *providerReso
 	model.Enabled = types.BoolValue(prov.Enabled)
 	model.CreatedAt = types.StringValue(prov.CreatedAt)
 	model.UpdatedAt = types.StringValue(prov.UpdatedAt)
-	// Don't overwrite type from API — preserve the user's value
+	// Don't overwrite type when already set — preserve the user's value.
+	// During import, type is not yet in state, so populate it from the API.
+	// Provider types (sendgrid, smtp, twilio, etc.) match between API and schema.
+	if model.Type.IsNull() || model.Type.IsUnknown() {
+		model.Type = types.StringValue(prov.Type)
+	}
 }

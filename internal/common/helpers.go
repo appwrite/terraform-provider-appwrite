@@ -168,21 +168,6 @@ func CheckStringNotIgnored(planned types.String, actual string, attrName string,
 	return AttrCheck{}
 }
 
-// RequiresReplaceExceptImport returns a plan modifier that forces resource replacement
-// when the attribute value changes, but not when it's being set for the first time
-// during import (where the prior state value is null).
-func RequiresReplaceExceptImport() planmodifier.String {
-	return stringplanmodifier.RequiresReplaceIf(
-		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
-			// During import, the state value is null because the attribute wasn't
-			// previously tracked. Don't force replacement in that case.
-			resp.RequiresReplace = !req.StateValue.IsNull()
-		},
-		"Requires replace unless the resource is being imported.",
-		"Requires replace unless the resource is being imported.",
-	)
-}
-
 // ImportColumnState parses a "database_id/table_id/key" import ID into state.
 func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "/", 3)

@@ -91,7 +91,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"type": schema.StringAttribute{
 				Description:   "The column type. One of: " + allColumnTypes + ".",
 				Required:      true,
-				PlanModifiers: []planmodifier.String{common.RequiresReplaceExceptImport()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"required": schema.BoolAttribute{
 				Description: "Whether the column is required.",
@@ -731,9 +731,15 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	if key, ok := generic["key"].(string); ok {
 		model.Key = types.StringValue(key)
 	}
-	// Don't overwrite type from API — Appwrite returns internal type names
-	// (e.g. "double" for "float", "string" for "email"/"enum") which differ
-	// from the user-facing type names we use in the schema.
+	// Don't overwrite type when already set — preserve the user's value.
+	// During import, type is not yet in state, so populate it from the API.
+	// The API returns internal names that differ from the schema in some cases
+	// (e.g. "double" for "float", "linestring" for "line"), so we normalize.
+	if model.Type.IsNull() || model.Type.IsUnknown() {
+		if apiType, ok := generic["type"].(string); ok {
+			model.Type = types.StringValue(normalizeAPIColumnType(apiType, generic))
+		}
+	}
 	if required, ok := generic["required"].(bool); ok {
 		model.Required = types.BoolValue(required)
 	}
@@ -767,6 +773,10 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	}
 	if encrypt, ok := generic["encrypt"].(bool); ok {
 		model.Encrypt = types.BoolValue(encrypt)
+	} else if model.Encrypt.IsNull() || model.Encrypt.IsUnknown() {
+		// The API only returns encrypt for string-like types. Default to false
+		// for other types so the state matches the schema default during import.
+		model.Encrypt = types.BoolValue(false)
 	}
 	if elements, ok := generic["elements"].([]interface{}); ok && len(elements) > 0 {
 		strs := make([]string, len(elements))
@@ -811,17 +821,38 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 				model.DefaultStr = types.StringNull()
 			}
 		case bool:
-			if !model.DefaultStr.IsNull() {
-				model.DefaultStr = types.StringValue(fmt.Sprintf("%t", v))
-			}
+			model.DefaultStr = types.StringValue(fmt.Sprintf("%t", v))
 		case float64:
-			if !model.DefaultStr.IsNull() {
-				if model.Type.ValueString() == colTypeInteger {
-					model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
-				} else {
-					model.DefaultStr = types.StringValue(fmt.Sprintf("%g", v))
-				}
+			if model.Type.ValueString() == colTypeInteger {
+				model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
+			} else {
+				model.DefaultStr = types.StringValue(fmt.Sprintf("%g", v))
 			}
 		}
+	}
+}
+
+// normalizeAPIColumnType maps an Appwrite API type back to the user-facing
+// schema type. Most types are returned as-is, but a few differ:
+//
+//	API "double"     → schema "float"
+//	API "linestring" → schema "line"
+//	API "string" with format "email"/"enum"/"url"/"ip" → that format name
+func normalizeAPIColumnType(apiType string, response map[string]interface{}) string {
+	switch apiType {
+	case "double":
+		return colTypeFloat
+	case "linestring":
+		return "line"
+	case "string":
+		if format, ok := response["format"].(string); ok {
+			switch format {
+			case "email", "enum", "url", "ip":
+				return format
+			}
+		}
+		return "string"
+	default:
+		return apiType
 	}
 }
