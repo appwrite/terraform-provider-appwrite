@@ -826,12 +826,16 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 				model.DefaultStr = types.StringNull()
 			}
 		case bool:
-			model.DefaultStr = types.StringValue(fmt.Sprintf("%t", v))
+			if !model.DefaultStr.IsNull() || model.DefaultStr.IsUnknown() {
+				model.DefaultStr = types.StringValue(fmt.Sprintf("%t", v))
+			}
 		case float64:
-			if model.Type.ValueString() == colTypeInteger {
-				model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
-			} else {
-				model.DefaultStr = types.StringValue(fmt.Sprintf("%g", v))
+			if !model.DefaultStr.IsNull() || model.DefaultStr.IsUnknown() {
+				if model.Type.ValueString() == colTypeInteger {
+					model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
+				} else {
+					model.DefaultStr = types.StringValue(fmt.Sprintf("%g", v))
+				}
 			}
 		}
 	}
