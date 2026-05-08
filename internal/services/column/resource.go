@@ -736,9 +736,10 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	// which differ from the user-facing type names we use in the schema.
 	// During import, however, the type is not yet in state, so we must populate it from the API
 	// response to avoid Terraform detecting a diff that forces replacement.
+	// We normalize the API type+format back to the user-facing schema name.
 	if model.Type.IsNull() || model.Type.IsUnknown() {
 		if apiType, ok := generic["type"].(string); ok {
-			model.Type = types.StringValue(apiType)
+			model.Type = types.StringValue(normalizeAPIType(apiType, generic))
 		}
 	}
 	if required, ok := generic["required"].(bool); ok {
@@ -830,5 +831,31 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 				}
 			}
 		}
+	}
+}
+
+// normalizeAPIType maps Appwrite's internal API type (and optional format) back
+// to the user-facing schema type name used in the Terraform provider.
+// For example, the API returns type="double" for float columns, and type="string"
+// with format="email" for email columns.
+func normalizeAPIType(apiType string, response map[string]interface{}) string {
+	switch apiType {
+	case "double":
+		return colTypeFloat
+	case "string":
+		format, _ := response["format"].(string)
+		switch format {
+		case "email":
+			return "email"
+		case "enum":
+			return "enum"
+		case "url":
+			return "url"
+		case "ip":
+			return "ip"
+		}
+		return "string"
+	default:
+		return apiType
 	}
 }
