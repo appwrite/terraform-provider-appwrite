@@ -847,5 +847,10 @@ func (r *providerResource) mapToState(prov *models.Provider, model *providerReso
 	model.Enabled = types.BoolValue(prov.Enabled)
 	model.CreatedAt = types.StringValue(prov.CreatedAt)
 	model.UpdatedAt = types.StringValue(prov.UpdatedAt)
-	// Don't overwrite type from API — preserve the user's value
+	// When the type is already set (normal Read after Create/Update), don't overwrite it
+	// to preserve the user's value. During import, however, the type is not yet in state,
+	// so we must populate it from the API to avoid Terraform detecting a diff that forces replacement.
+	if model.Type.IsNull() || model.Type.IsUnknown() {
+		model.Type = types.StringValue(prov.Type)
+	}
 }
