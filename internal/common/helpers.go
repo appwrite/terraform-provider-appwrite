@@ -168,22 +168,31 @@ func CheckStringNotIgnored(planned types.String, actual string, attrName string,
 	return AttrCheck{}
 }
 
-// ImportColumnState parses a "database_id/table_id/key" or "database_id/table_id/key/type"
-// import ID into state. The optional type segment lets users specify the column type explicitly,
-// which is necessary because Appwrite's API does not distinguish between some column types
-// (e.g. varchar, text, longtext, and mediumtext all return type="string").
+// RequiresReplaceExceptImport returns a plan modifier that forces resource replacement
+// when the attribute value changes, but not when it's being set for the first time
+// during import (where the prior state value is null).
+func RequiresReplaceExceptImport() planmodifier.String {
+	return stringplanmodifier.RequiresReplaceIf(
+		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+			// During import, the state value is null because the attribute wasn't
+			// previously tracked. Don't force replacement in that case.
+			resp.RequiresReplace = !req.StateValue.IsNull()
+		},
+		"Requires replace unless the resource is being imported.",
+		"Requires replace unless the resource is being imported.",
+	)
+}
+
+// ImportColumnState parses a "database_id/table_id/key" import ID into state.
 func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 4)
-	if len(parts) < 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
-		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected format: database_id/table_id/key[/type], got: %s", req.ID))
+	parts := strings.SplitN(req.ID, "/", 3)
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected format: database_id/table_id/key, got: %s", req.ID))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("database_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("table_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
-	if len(parts) == 4 && parts[3] != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("type"), parts[3])...)
-	}
 }
 
 // WaitForDeploymentReady polls a deployment until its status becomes "ready",
