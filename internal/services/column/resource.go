@@ -27,6 +27,11 @@ var (
 const (
 	colTypeInteger = "integer"
 	colTypeFloat   = "float"
+	colTypeString  = "string"
+	colTypeEnum    = "enum"
+	colTypeEmail   = "email"
+	colTypeURL     = "url"
+	colTypeLine    = "line"
 )
 
 var allColumnTypes = "varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
@@ -214,7 +219,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	var responseJSON []byte
 
 	switch columnType {
-	case "string":
+	case colTypeString:
 		var opts []tablesdb.CreateTextColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
@@ -341,7 +346,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "enum":
+	case colTypeEnum:
 		if plan.Elements.IsNull() {
 			resp.Diagnostics.AddError("Missing attribute", "elements is required for enum columns")
 			return
@@ -362,7 +367,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "email":
+	case colTypeEmail:
 		var opts []tablesdb.CreateEmailColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateEmailColumnDefault(plan.DefaultStr.ValueString()))
@@ -386,7 +391,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "url":
+	case colTypeURL:
 		var opts []tablesdb.CreateUrlColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateUrlColumnDefault(plan.DefaultStr.ValueString()))
@@ -417,7 +422,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "line":
+	case colTypeLine:
 		col, e := tablesdbClient.CreateLineColumn(databaseID, tableID, key, required)
 		err = e
 		if col != nil {
@@ -539,7 +544,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	var responseJSON []byte
 
 	switch columnType {
-	case "string":
+	case colTypeString:
 		var opts []tablesdb.UpdateTextColumnOption
 		col, e := tablesdbClient.UpdateTextColumn(databaseID, tableID, key, required, defaultStr, opts...)
 		err = e
@@ -614,7 +619,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "enum":
+	case colTypeEnum:
 		var elements []string
 		resp.Diagnostics.Append(plan.Elements.ElementsAs(ctx, &elements, false)...)
 		if resp.Diagnostics.HasError() {
@@ -626,7 +631,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "email":
+	case colTypeEmail:
 		col, e := tablesdbClient.UpdateEmailColumn(databaseID, tableID, key, required, defaultStr)
 		err = e
 		if col != nil {
@@ -640,7 +645,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "url":
+	case colTypeURL:
 		col, e := tablesdbClient.UpdateUrlColumn(databaseID, tableID, key, required, defaultStr)
 		err = e
 		if col != nil {
@@ -661,7 +666,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "line":
+	case colTypeLine:
 		col, e := tablesdbClient.UpdateLineColumn(databaseID, tableID, key, required)
 		err = e
 		if col != nil {
@@ -843,15 +848,15 @@ func normalizeAPIColumnType(apiType string, response map[string]interface{}) str
 	case "double":
 		return colTypeFloat
 	case "linestring":
-		return "line"
-	case "string":
+		return colTypeLine
+	case colTypeString:
 		if format, ok := response["format"].(string); ok {
 			switch format {
-			case "email", "enum", "url", "ip":
+			case colTypeEmail, colTypeEnum, colTypeURL, "ip":
 				return format
 			}
 		}
-		return "string"
+		return colTypeString
 	default:
 		return apiType
 	}
