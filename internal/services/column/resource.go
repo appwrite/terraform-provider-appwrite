@@ -731,17 +731,9 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	if key, ok := generic["key"].(string); ok {
 		model.Key = types.StringValue(key)
 	}
-	// When the type is already set (normal Read after Create/Update), don't overwrite it —
-	// Appwrite returns internal type names (e.g. "double" for "float", "string" for "email"/"enum")
-	// which differ from the user-facing type names we use in the schema.
-	// During import, however, the type is not yet in state, so we must populate it from the API
-	// response to avoid Terraform detecting a diff that forces replacement.
-	// We normalize the API type+format back to the user-facing schema name.
-	if model.Type.IsNull() || model.Type.IsUnknown() {
-		if apiType, ok := generic["type"].(string); ok {
-			model.Type = types.StringValue(normalizeAPIType(apiType, generic))
-		}
-	}
+	// Don't overwrite type from API — Appwrite returns internal type names
+	// (e.g. "double" for "float", "string" for "email"/"enum") which differ
+	// from the user-facing type names we use in the schema.
 	if required, ok := generic["required"].(bool); ok {
 		model.Required = types.BoolValue(required)
 	}
