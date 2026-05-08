@@ -27,6 +27,11 @@ var (
 const (
 	colTypeInteger = "integer"
 	colTypeFloat   = "float"
+	colTypeString  = "string"
+	colTypeEnum    = "enum"
+	colTypeEmail   = "email"
+	colTypeURL     = "url"
+	colTypeLine    = "line"
 )
 
 var allColumnTypes = "varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
@@ -165,10 +170,16 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"created_at": schema.StringAttribute{
 				Description: "The column creation timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"updated_at": schema.StringAttribute{
 				Description: "The column last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},
@@ -214,7 +225,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 	var responseJSON []byte
 
 	switch columnType {
-	case "string":
+	case colTypeString:
 		var opts []tablesdb.CreateTextColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
@@ -341,7 +352,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "enum":
+	case colTypeEnum:
 		if plan.Elements.IsNull() {
 			resp.Diagnostics.AddError("Missing attribute", "elements is required for enum columns")
 			return
@@ -362,7 +373,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "email":
+	case colTypeEmail:
 		var opts []tablesdb.CreateEmailColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateEmailColumnDefault(plan.DefaultStr.ValueString()))
@@ -386,7 +397,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "url":
+	case colTypeURL:
 		var opts []tablesdb.CreateUrlColumnOption
 		if !plan.DefaultStr.IsNull() {
 			opts = append(opts, tablesdbClient.WithCreateUrlColumnDefault(plan.DefaultStr.ValueString()))
@@ -417,7 +428,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "line":
+	case colTypeLine:
 		col, e := tablesdbClient.CreateLineColumn(databaseID, tableID, key, required)
 		err = e
 		if col != nil {
@@ -539,7 +550,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 	var responseJSON []byte
 
 	switch columnType {
-	case "string":
+	case colTypeString:
 		var opts []tablesdb.UpdateTextColumnOption
 		col, e := tablesdbClient.UpdateTextColumn(databaseID, tableID, key, required, defaultStr, opts...)
 		err = e
@@ -614,7 +625,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "enum":
+	case colTypeEnum:
 		var elements []string
 		resp.Diagnostics.Append(plan.Elements.ElementsAs(ctx, &elements, false)...)
 		if resp.Diagnostics.HasError() {
@@ -626,7 +637,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "email":
+	case colTypeEmail:
 		col, e := tablesdbClient.UpdateEmailColumn(databaseID, tableID, key, required, defaultStr)
 		err = e
 		if col != nil {
@@ -640,7 +651,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "url":
+	case colTypeURL:
 		col, e := tablesdbClient.UpdateUrlColumn(databaseID, tableID, key, required, defaultStr)
 		err = e
 		if col != nil {
@@ -661,7 +672,7 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case "line":
+	case colTypeLine:
 		col, e := tablesdbClient.UpdateLineColumn(databaseID, tableID, key, required)
 		err = e
 		if col != nil {
@@ -731,9 +742,15 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	if key, ok := generic["key"].(string); ok {
 		model.Key = types.StringValue(key)
 	}
-	// Don't overwrite type from API — Appwrite returns internal type names
-	// (e.g. "double" for "float", "string" for "email"/"enum") which differ
-	// from the user-facing type names we use in the schema.
+	// Don't overwrite type when already set — preserve the user's value.
+	// During import, type is not yet in state, so populate it from the API.
+	// The API returns internal names that differ from the schema in some cases
+	// (e.g. "double" for "float", "linestring" for "line"), so we normalize.
+	if model.Type.IsNull() || model.Type.IsUnknown() {
+		if apiType, ok := generic["type"].(string); ok {
+			model.Type = types.StringValue(normalizeAPIColumnType(apiType, generic))
+		}
+	}
 	if required, ok := generic["required"].(bool); ok {
 		model.Required = types.BoolValue(required)
 	}
@@ -767,6 +784,10 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	}
 	if encrypt, ok := generic["encrypt"].(bool); ok {
 		model.Encrypt = types.BoolValue(encrypt)
+	} else if model.Encrypt.IsNull() || model.Encrypt.IsUnknown() {
+		// The API only returns encrypt for string-like types. Default to false
+		// for other types so the state matches the schema default during import.
+		model.Encrypt = types.BoolValue(false)
 	}
 	if elements, ok := generic["elements"].([]interface{}); ok && len(elements) > 0 {
 		strs := make([]string, len(elements))
@@ -811,11 +832,11 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 				model.DefaultStr = types.StringNull()
 			}
 		case bool:
-			if !model.DefaultStr.IsNull() {
+			if !model.DefaultStr.IsNull() || model.DefaultStr.IsUnknown() {
 				model.DefaultStr = types.StringValue(fmt.Sprintf("%t", v))
 			}
 		case float64:
-			if !model.DefaultStr.IsNull() {
+			if !model.DefaultStr.IsNull() || model.DefaultStr.IsUnknown() {
 				if model.Type.ValueString() == colTypeInteger {
 					model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
 				} else {
@@ -823,5 +844,30 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 				}
 			}
 		}
+	}
+}
+
+// normalizeAPIColumnType maps an Appwrite API type back to the user-facing
+// schema type. Most types are returned as-is, but a few differ:
+//
+//	API "double"     → schema "float"
+//	API "linestring" → schema "line"
+//	API "string" with format "email"/"enum"/"url"/"ip" → that format name
+func normalizeAPIColumnType(apiType string, response map[string]interface{}) string {
+	switch apiType {
+	case "double":
+		return colTypeFloat
+	case "linestring":
+		return colTypeLine
+	case colTypeString:
+		if format, ok := response["format"].(string); ok {
+			switch format {
+			case colTypeEmail, colTypeEnum, colTypeURL, "ip":
+				return format
+			}
+		}
+		return colTypeString
+	default:
+		return apiType
 	}
 }
