@@ -332,7 +332,12 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 			opts = append(opts, tablesdbClient.WithCreateBigIntColumnMax(int(plan.Max.ValueInt64())))
 		}
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, tablesdbClient.WithCreateBigIntColumnDefault(parseIntDefault(plan.DefaultStr.ValueString())))
+			def, parseErr := parseBigIntDefault(plan.DefaultStr.ValueString())
+			if parseErr != nil {
+				resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+				return
+			}
+			opts = append(opts, tablesdbClient.WithCreateBigIntColumnDefault(def))
 		}
 		opts = append(opts, tablesdbClient.WithCreateBigIntColumnArray(array))
 		col, e := tablesdbClient.CreateBigIntColumn(databaseID, tableID, key, required, opts...)
@@ -631,7 +636,12 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if !plan.Max.IsNull() {
 			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMax(int(plan.Max.ValueInt64())))
 		}
-		col, e := tablesdbClient.UpdateBigIntColumn(databaseID, tableID, key, required, parseIntDefault(defaultStr), opts...)
+		def, parseErr := parseBigIntDefault(defaultStr)
+		if parseErr != nil {
+			resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+			return
+		}
+		col, e := tablesdbClient.UpdateBigIntColumn(databaseID, tableID, key, required, def, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
