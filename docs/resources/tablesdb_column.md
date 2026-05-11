@@ -120,19 +120,19 @@ resource "appwrite_tablesdb_column" "author" {
 
 - `database_id` (String) The database ID.
 - `table_id` (String) The table ID.
-- `type` (String) The column type. One of: varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string.
+- `type` (String) The column type. One of: varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string.
 
 ### Optional
 
-- `array` (Boolean) Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip types.
+- `array` (Boolean) Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip types.
 - `default` (String) Default value. Use "true"/"false" for boolean, numeric strings for integer/float.
 - `elements` (List of String) Array of allowed values. Required for enum type.
 - `encrypt` (Boolean) Whether the column is encrypted. Applies to string, varchar, text, longtext, mediumtext types.
 - `float_max` (Number) Maximum value. Applies to float type.
 - `float_min` (Number) Minimum value. Applies to float type.
 - `key` (String) The column key (name).
-- `max` (Number) Maximum value. Applies to integer type.
-- `min` (Number) Minimum value. Applies to integer type.
+- `max` (Number) Maximum value. Applies to integer and bigint types.
+- `min` (Number) Minimum value. Applies to integer and bigint types.
 - `on_delete` (String) Behavior when the parent document is deleted: restrict, cascade, setNull. Applies to relationship type.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `related_table_id` (String) The ID of the related table. Required for relationship type.
