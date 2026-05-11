@@ -32,9 +32,10 @@ const (
 	colTypeEmail   = "email"
 	colTypeURL     = "url"
 	colTypeLine    = "line"
+	colTypeBigInt  = "bigint"
 )
 
-var allColumnTypes = "varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
+var allColumnTypes = "varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip, point, line, polygon, relationship, string"
 
 type columnResource struct {
 	clients *common.AppwriteClients
@@ -105,7 +106,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Default:     booldefault.StaticBool(false),
 			},
 			"array": schema.BoolAttribute{
-				Description: "Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, float, boolean, enum, email, datetime, url, ip types.",
+				Description: "Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip types.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -115,11 +116,11 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 			},
 			"min": schema.Int64Attribute{
-				Description: "Minimum value. Applies to integer type.",
+				Description: "Minimum value. Applies to integer and bigint types.",
 				Optional:    true,
 			},
 			"max": schema.Int64Attribute{
-				Description: "Maximum value. Applies to integer type.",
+				Description: "Maximum value. Applies to integer and bigint types.",
 				Optional:    true,
 			},
 			"float_min": schema.Float64Attribute{
@@ -317,6 +318,29 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		opts = append(opts, tablesdbClient.WithCreateIntegerColumnArray(array))
 		col, e := tablesdbClient.CreateIntegerColumn(databaseID, tableID, key, required, opts...)
+		err = e
+		if col != nil {
+			responseJSON, _ = json.Marshal(col)
+		}
+
+	case colTypeBigInt:
+		var opts []tablesdb.CreateBigIntColumnOption
+		if !plan.Min.IsNull() {
+			opts = append(opts, tablesdbClient.WithCreateBigIntColumnMin(int(plan.Min.ValueInt64())))
+		}
+		if !plan.Max.IsNull() {
+			opts = append(opts, tablesdbClient.WithCreateBigIntColumnMax(int(plan.Max.ValueInt64())))
+		}
+		if !plan.DefaultStr.IsNull() {
+			def, parseErr := parseBigIntDefault(plan.DefaultStr.ValueString())
+			if parseErr != nil {
+				resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+				return
+			}
+			opts = append(opts, tablesdbClient.WithCreateBigIntColumnDefault(def))
+		}
+		opts = append(opts, tablesdbClient.WithCreateBigIntColumnArray(array))
+		col, e := tablesdbClient.CreateBigIntColumn(databaseID, tableID, key, required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -604,6 +628,25 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
+	case colTypeBigInt:
+		var opts []tablesdb.UpdateBigIntColumnOption
+		if !plan.Min.IsNull() {
+			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMin(int(plan.Min.ValueInt64())))
+		}
+		if !plan.Max.IsNull() {
+			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMax(int(plan.Max.ValueInt64())))
+		}
+		def, parseErr := parseBigIntDefault(defaultStr)
+		if parseErr != nil {
+			resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+			return
+		}
+		col, e := tablesdbClient.UpdateBigIntColumn(databaseID, tableID, key, required, def, opts...)
+		err = e
+		if col != nil {
+			responseJSON, _ = json.Marshal(col)
+		}
+
 	case colTypeFloat:
 		var opts []tablesdb.UpdateFloatColumnOption
 		if !plan.FloatMin.IsNull() {
@@ -768,7 +811,7 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	}
 	if minVal, ok := generic["min"].(float64); ok {
 		columnType := model.Type.ValueString()
-		if columnType == colTypeInteger {
+		if columnType == colTypeInteger || columnType == colTypeBigInt {
 			model.Min = types.Int64Value(int64(minVal))
 		} else if columnType == colTypeFloat {
 			model.FloatMin = types.Float64Value(minVal)
@@ -776,7 +819,7 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	}
 	if maxVal, ok := generic["max"].(float64); ok {
 		columnType := model.Type.ValueString()
-		if columnType == colTypeInteger {
+		if columnType == colTypeInteger || columnType == colTypeBigInt {
 			model.Max = types.Int64Value(int64(maxVal))
 		} else if columnType == colTypeFloat {
 			model.FloatMax = types.Float64Value(maxVal)
@@ -837,7 +880,7 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 			}
 		case float64:
 			if !model.DefaultStr.IsNull() || model.DefaultStr.IsUnknown() {
-				if model.Type.ValueString() == colTypeInteger {
+				if model.Type.ValueString() == colTypeInteger || model.Type.ValueString() == colTypeBigInt {
 					model.DefaultStr = types.StringValue(fmt.Sprintf("%d", int64(v)))
 				} else {
 					model.DefaultStr = types.StringValue(fmt.Sprintf("%g", v))
