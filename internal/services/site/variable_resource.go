@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/appwrite/sdk-for-go/v3/appwrite"
+	"github.com/appwrite/sdk-for-go/v3/id"
 	"github.com/appwrite/sdk-for-go/v3/models"
 	"github.com/appwrite/sdk-for-go/v3/sites"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -120,6 +121,7 @@ func (r *variableResource) Create(ctx context.Context, req resource.CreateReques
 
 	variable, err := sitesClient.CreateVariable(
 		plan.SiteID.ValueString(),
+		id.Unique(),
 		plan.Key.ValueString(),
 		plan.Value.ValueString(),
 		createOpts...,
@@ -178,6 +180,7 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	sitesClient := appwrite.NewSites(r.clients.ClientForProject(projectID))
 
 	updateOpts := []sites.UpdateVariableOption{
+		sitesClient.WithUpdateVariableKey(plan.Key.ValueString()),
 		sitesClient.WithUpdateVariableValue(plan.Value.ValueString()),
 	}
 	if !plan.Secret.IsNull() {
@@ -187,7 +190,6 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	variable, err := sitesClient.UpdateVariable(
 		plan.SiteID.ValueString(),
 		plan.ID.ValueString(),
-		plan.Key.ValueString(),
 		updateOpts...,
 	)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/appwrite/sdk-for-go/v3/appwrite"
 	"github.com/appwrite/sdk-for-go/v3/functions"
+	"github.com/appwrite/sdk-for-go/v3/id"
 	"github.com/appwrite/sdk-for-go/v3/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -120,6 +121,7 @@ func (r *variableResource) Create(ctx context.Context, req resource.CreateReques
 
 	variable, err := functionsClient.CreateVariable(
 		plan.FunctionID.ValueString(),
+		id.Unique(),
 		plan.Key.ValueString(),
 		plan.Value.ValueString(),
 		createOpts...,
@@ -178,6 +180,7 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	functionsClient := appwrite.NewFunctions(r.clients.ClientForProject(projectID))
 
 	updateOpts := []functions.UpdateVariableOption{
+		functionsClient.WithUpdateVariableKey(plan.Key.ValueString()),
 		functionsClient.WithUpdateVariableValue(plan.Value.ValueString()),
 	}
 	if !plan.Secret.IsNull() {
@@ -187,7 +190,6 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	variable, err := functionsClient.UpdateVariable(
 		plan.FunctionID.ValueString(),
 		plan.ID.ValueString(),
-		plan.Key.ValueString(),
 		updateOpts...,
 	)
 	if err != nil {
