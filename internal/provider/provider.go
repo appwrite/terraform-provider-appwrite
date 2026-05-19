@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/appwrite/sdk-for-go/v3/appwrite"
-	"github.com/appwrite/sdk-for-go/v3/client"
+	"github.com/appwrite/sdk-for-go/v4/appwrite"
+	"github.com/appwrite/sdk-for-go/v4/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
