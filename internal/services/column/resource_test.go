@@ -45,6 +45,24 @@ resource "appwrite_tablesdb_column" "test" {
 				),
 			},
 			{
+				Config: testAccColumnBaseConfig + `
+resource "appwrite_tablesdb_column" "test" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "title"
+  type        = "varchar"
+  size        = 256
+  required    = true
+  array       = true
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "key", "title"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "type", "varchar"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "array", "true"),
+				),
+			},
+			{
 				ResourceName:      "appwrite_tablesdb_column.test",
 				ImportState:       true,
 				ImportStateId:     "blog/articles/title",
