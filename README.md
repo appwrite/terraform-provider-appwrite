@@ -37,6 +37,10 @@ export APPWRITE_API_KEY="api-key"
 | api_key     | `APPWRITE_API_KEY`     | yes      | The Appwrite API key                                    |
 | self_signed | N/A                    | no       | Accept self-signed certificates (for Community Edition) |
 
+## Compatibility
+
+TablesDB resources are intended for Appwrite Cloud or Appwrite Community Edition 1.9.0 and later. Earlier self-hosted versions may return `general_route_not_found` errors for TablesDB routes.
+
 ## Resources
 
 ### TablesDB

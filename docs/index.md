@@ -51,6 +51,10 @@ The `project_id` can be set at the provider level as a default for all resources
 - `project_id` (String) The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.
 - `self_signed` (Boolean) Accept self-signed SSL certificates. Useful for Appwrite Community Edition with self-signed certs. Defaults to false.
 
+## Compatibility
+
+TablesDB resources are intended for Appwrite Cloud or Appwrite Community Edition 1.9.0 and later. Earlier self-hosted versions may return `general_route_not_found` errors for TablesDB routes.
+
 ## Resources
 
 ### TablesDB
