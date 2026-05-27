@@ -82,6 +82,9 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"updated_at": schema.StringAttribute{
 				Description: "The variable last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},

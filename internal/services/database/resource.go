@@ -71,6 +71,9 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"updated_at": schema.StringAttribute{
 				Description: "The database last update timestamp.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},

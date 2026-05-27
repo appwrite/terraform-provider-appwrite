@@ -69,6 +69,9 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"updated_at": schema.StringAttribute{
 				Description: "The team last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},

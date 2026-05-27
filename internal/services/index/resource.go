@@ -84,7 +84,12 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				ElementType: types.StringType,
 			},
 			"created_at": schema.StringAttribute{Computed: true},
-			"updated_at": schema.StringAttribute{Computed: true},
+			"updated_at": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
+			},
 			"project_id": common.ProjectIDAttribute(),
 		},
 	}
