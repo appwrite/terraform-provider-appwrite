@@ -186,7 +186,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "The column last update timestamp in ISO 8601 format.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					useStateForUnknownUnlessUpdating(),
+					common.UseStateForUnknownUnlessUpdating(),
 				},
 			},
 			"project_id": common.ProjectIDAttribute(),

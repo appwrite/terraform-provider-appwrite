@@ -71,6 +71,9 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"updated_at": schema.StringAttribute{
 				Description: "The subscriber last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 		},
 	}

@@ -108,6 +108,9 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"updated_at": schema.StringAttribute{
 				Description: "The webhook last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},

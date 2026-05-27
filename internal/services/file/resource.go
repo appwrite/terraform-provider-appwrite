@@ -99,6 +99,9 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"updated_at": schema.StringAttribute{
 				Description: "The file last update timestamp in ISO 8601 format.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					common.UseStateForUnknownUnlessUpdating(),
+				},
 			},
 		},
 	}
