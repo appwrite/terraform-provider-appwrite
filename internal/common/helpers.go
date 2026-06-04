@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appwrite/sdk-for-go/v4/appwrite"
-	"github.com/appwrite/sdk-for-go/v4/client"
+	"github.com/appwrite/sdk-for-go/v5/appwrite"
+	"github.com/appwrite/sdk-for-go/v5/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
