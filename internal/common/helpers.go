@@ -97,7 +97,15 @@ func FormatError(err error) string {
 // longtext, mediumtext, varchar, point, line, polygon).
 func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]interface{}, error) {
 	path := fmt.Sprintf("/tablesdb/%s/tables/%s/columns/%s", databaseID, tableID, key)
-	resp, err := c.Call("GET", path, map[string]interface{}{}, map[string]interface{}{
+	resp, err := c.Call("GET", path, map[string]interface{}{
+		// The Appwrite Go SDK stores the project id in client.Config["project"]
+		// (set by appwrite.WithProject) and only injects the X-Appwrite-Project
+		// header inside each typed service method. client.Call does not add it
+		// from Config, so this raw call must pass it explicitly or the server
+		// rejects the request with project_id_missing (HTTP 403). The typed
+		// table/index reads work because they set this header.
+		"X-Appwrite-Project": c.Config["project"],
+	}, map[string]interface{}{
 		"databaseId": databaseID,
 		"tableId":    tableID,
 		"key":        key,
