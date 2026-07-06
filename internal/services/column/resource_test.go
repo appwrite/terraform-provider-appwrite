@@ -54,6 +54,53 @@ resource "appwrite_tablesdb_column" "test" {
 	})
 }
 
+func TestAccColumnResource_string(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccColumnBaseConfig + `
+resource "appwrite_tablesdb_column" "test" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "slug"
+  type        = "string"
+  size        = 36
+  required    = true
+}
+
+# A sized string column must be indexable (the original bug materialized the
+# column as unbounded TEXT, which Appwrite refuses to index).
+resource "appwrite_tablesdb_index" "test" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "idx_slug"
+  type        = "key"
+  columns     = ["slug"]
+  orders      = ["ASC"]
+
+  depends_on = [appwrite_tablesdb_column.test]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "key", "slug"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "type", "string"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "size", "36"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "required", "true"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "array", "false"),
+				),
+			},
+			{
+				ResourceName:      "appwrite_tablesdb_column.test",
+				ImportState:       true,
+				ImportStateId:     "blog/articles/slug",
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccColumnResource_integer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },

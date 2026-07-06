@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgraded `go-sdk` to `v5.1.0`
 
+### Fixed
+
+- `appwrite_tablesdb_column`: `size` is no longer ignored for `type = "string"` — create/update call the string column endpoints again instead of the text endpoints, so columns materialize as `string(size)` (indexable) rather than unbounded TEXT ([#31](https://github.com/appwrite/terraform-provider-appwrite/issues/31))
+
 ## [1.6.0] - 2026-06-04
 
 ### Changed
