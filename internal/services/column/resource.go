@@ -234,7 +234,7 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	switch columnType {
 	case colTypeString:
-		if plan.Size.IsNull() {
+		if plan.Size.IsNull() || plan.Size.IsUnknown() {
 			resp.Diagnostics.AddError("Missing attribute", "size is required for string columns")
 			return
 		}
