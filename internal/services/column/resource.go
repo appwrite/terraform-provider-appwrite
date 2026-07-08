@@ -234,15 +234,19 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	switch columnType {
 	case colTypeString:
-		var opts []tablesdb.CreateTextColumnOption
+		if plan.Size.IsNull() || plan.Size.IsUnknown() {
+			resp.Diagnostics.AddError("Missing attribute", "size is required for string columns")
+			return
+		}
+		var opts []tablesdb.CreateStringColumnOption
 		if !plan.DefaultStr.IsNull() {
-			opts = append(opts, tablesdbClient.WithCreateTextColumnDefault(plan.DefaultStr.ValueString()))
+			opts = append(opts, tablesdbClient.WithCreateStringColumnDefault(plan.DefaultStr.ValueString()))
 		}
-		opts = append(opts, tablesdbClient.WithCreateTextColumnArray(array))
+		opts = append(opts, tablesdbClient.WithCreateStringColumnArray(array))
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
-			opts = append(opts, tablesdbClient.WithCreateTextColumnEncrypt(plan.Encrypt.ValueBool()))
+			opts = append(opts, tablesdbClient.WithCreateStringColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := tablesdbClient.CreateTextColumn(databaseID, tableID, key, required, opts...)
+		col, e := tablesdbClient.CreateStringColumn(databaseID, tableID, key, int(plan.Size.ValueInt64()), required, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -582,8 +586,11 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	switch columnType {
 	case colTypeString:
-		var opts []tablesdb.UpdateTextColumnOption
-		col, e := tablesdbClient.UpdateTextColumn(databaseID, tableID, key, required, defaultStr, opts...)
+		var opts []tablesdb.UpdateStringColumnOption
+		if !plan.Size.IsNull() {
+			opts = append(opts, tablesdbClient.WithUpdateStringColumnSize(int(plan.Size.ValueInt64())))
+		}
+		col, e := tablesdbClient.UpdateStringColumn(databaseID, tableID, key, required, defaultStr, opts...)
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
