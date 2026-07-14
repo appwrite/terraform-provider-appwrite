@@ -246,7 +246,8 @@ func (r *columnResource) Create(ctx context.Context, req resource.CreateRequest,
 		if !plan.Encrypt.IsNull() && !plan.Encrypt.IsUnknown() {
 			opts = append(opts, tablesdbClient.WithCreateStringColumnEncrypt(plan.Encrypt.ValueBool()))
 		}
-		col, e := tablesdbClient.CreateStringColumn(databaseID, tableID, key, int(plan.Size.ValueInt64()), required, opts...)
+		// ponytail: StringColumn is deprecated in SDK v6 in favor of TextColumn, but TextColumn has no size option; keep String to honor `size`. Migrate if the API gains text sizing.
+		col, e := tablesdbClient.CreateStringColumn(databaseID, tableID, key, int(plan.Size.ValueInt64()), required, opts...) //nolint:staticcheck
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
@@ -590,7 +591,8 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if !plan.Size.IsNull() {
 			opts = append(opts, tablesdbClient.WithUpdateStringColumnSize(int(plan.Size.ValueInt64())))
 		}
-		col, e := tablesdbClient.UpdateStringColumn(databaseID, tableID, key, required, defaultStr, opts...)
+		// ponytail: see CreateStringColumn note — keep String to honor `size` until TextColumn supports it.
+		col, e := tablesdbClient.UpdateStringColumn(databaseID, tableID, key, required, defaultStr, opts...) //nolint:staticcheck
 		err = e
 		if col != nil {
 			responseJSON, _ = json.Marshal(col)
