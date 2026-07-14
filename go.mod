@@ -1,9 +1,9 @@
 module github.com/appwrite/terraform-provider-appwrite
 
-go 1.25.0
+go 1.26.5
 
 require (
-	github.com/appwrite/sdk-for-go/v5 v5.1.0
+	github.com/appwrite/sdk-for-go/v6 v6.0.0
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
