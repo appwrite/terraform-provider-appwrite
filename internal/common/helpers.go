@@ -24,6 +24,14 @@ type AppwriteClients struct {
 	BaseOptions []client.ClientOption
 	// ProjectID is the provider-level default project ID.
 	ProjectID string
+
+	// Raw credentials, exposed so services built against a different SDK module
+	// (e.g. the unreleased dedicated-databases fork) can construct their own
+	// client without re-plumbing the provider config.
+	Endpoint   string
+	APIKey     string
+	SelfSigned bool
+	UserAgent  string
 }
 
 // WithUserAgent returns a ClientOption that sets the User-Agent header to identify

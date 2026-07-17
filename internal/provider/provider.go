@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/appwrite/sdk-for-go/v6/appwrite"
@@ -17,6 +18,7 @@ import (
 	bucketsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	dedicateddbsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicateddatabase"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -119,6 +121,10 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 	clients := &common.AppwriteClients{
 		BaseOptions: baseOpts,
 		ProjectID:   projectID,
+		Endpoint:    endpoint,
+		APIKey:      apiKey,
+		SelfSigned:  !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool(),
+		UserAgent:   fmt.Sprintf("terraform-provider-appwrite/%s", p.version),
 	}
 
 	resp.DataSourceData = clients
@@ -128,6 +134,8 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		databasesvc.NewDatabaseResource,
+		dedicateddbsvc.NewDatabaseResource,
+		dedicateddbsvc.NewBackupPolicyResource,
 		tablesvc.NewTableResource,
 		columnsvc.NewColumnResource,
 		indexsvc.NewIndexResource,

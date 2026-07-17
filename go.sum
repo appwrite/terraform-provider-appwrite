@@ -23,6 +23,8 @@ github.com/appwrite/sdk-for-go/v6 v6.0.0 h1:npGhGJNhvWx8DN7OdxTap5g22wknVSTUHAkp
 github.com/appwrite/sdk-for-go/v6 v6.0.0/go.mod h1:5oTdAwNsSNCY0FxwUzs1J0XAgxue2veWSdVcCSsKg8I=
 github.com/armon/go-radix v1.0.0 h1:F4z6KzEeeQIMeLFa97iZU6vupzoecKdU5TX24SNppXI=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
+github.com/aw-tests/sdk-for-go/v6 v6.0.0-20260717085122-b0c41417939c h1:Wu9yfIzioyOd9epEkwo+EW7AYl/BUsMiajRX3H7xTao=
+github.com/aw-tests/sdk-for-go/v6 v6.0.0-20260717085122-b0c41417939c/go.mod h1:DQqf5bOjLP3TkP+AQXH8OJWiSBQt3jGB6QzTshKOFSs=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bmatcuk/doublestar/v4 v4.9.1 h1:X8jg9rRZmJd4yRy7ZeNDRnM+T3ZfHv15JiBJ/avrEXE=
