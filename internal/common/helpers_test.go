@@ -1,7 +1,6 @@
 package common_test
 
 import (
-	"context"
 	"strings"
 	"testing"
 
@@ -40,7 +39,7 @@ func TestVariableKeyValidators(t *testing.T) {
 			resp := &validator.StringResponse{}
 
 			for _, v := range common.VariableKeyValidators() {
-				v.ValidateString(context.Background(), req, resp)
+				v.ValidateString(t.Context(), req, resp)
 			}
 
 			if got := !resp.Diagnostics.HasError(); got != tc.valid {
