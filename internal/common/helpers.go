@@ -5,16 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/appwrite/sdk-for-go/v6/appwrite"
 	"github.com/appwrite/sdk-for-go/v6/client"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -53,6 +56,23 @@ func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) 
 		return clients.ProjectID, nil
 	}
 	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
+}
+
+// variableKeyPattern mirrors the API rule for variable keys: they become
+// environment variable names at build and runtime, so only C-style identifiers
+// are accepted.
+var variableKeyPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+
+// VariableKeyValidators returns the validators for a variable key, so an
+// unusable key is reported at plan time instead of failing the apply.
+func VariableKeyValidators() []validator.String {
+	return []validator.String{
+		stringvalidator.LengthAtMost(255),
+		stringvalidator.RegexMatches(
+			variableKeyPattern,
+			"must contain only letters, digits and underscores, and must not start with a digit",
+		),
+	}
 }
 
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.

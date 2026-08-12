@@ -64,6 +64,7 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"key": schema.StringAttribute{
 				Description: "The variable key (name).",
 				Required:    true,
+				Validators:  common.VariableKeyValidators(),
 			},
 			"value": schema.StringAttribute{
 				Description: "The variable value.",
