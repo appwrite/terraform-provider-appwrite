@@ -1,0 +1,45 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+~> **Warning:** Destroying a project also deletes the resources and data contained in it.
+
+An organization-scoped API key with `projects.read` and `projects.write` scopes is required. Set `organization_id` on the provider or on this resource. A provider-level `project_id` is not required.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization and project ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, the project ID alone can be used:
+
+```shell
+terraform import appwrite_project.example example-project
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project.example
+  id = "organization-id/example-project"
+}
+```
+{{- end }}

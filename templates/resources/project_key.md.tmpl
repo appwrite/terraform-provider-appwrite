@@ -1,0 +1,52 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+~> **Note:** Creating project API keys requires an organization-scoped or console administrator credential. A standard project API key cannot create another project API key.
+
+~> **Warning:** The key secret is stored in Terraform state. Use an encrypted remote state backend and restrict access to it.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization, project, and key ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, use the project and key ID. When both `organization_id` and `project_id` are configured, use the key ID alone:
+
+```shell
+terraform import appwrite_project_key.example project-id/deployments
+terraform import appwrite_project_key.example deployments
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_key.example
+  id = "organization-id/project-id/deployments"
+}
+```
+
+The API may not return an existing key's secret during import. Replace the key to generate a new secret when necessary.
+{{- end }}
+
+## See Also
+
+- [appwrite_project](project.md) - Manage projects

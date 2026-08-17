@@ -4,11 +4,62 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/appwrite/sdk-for-go/v6/appwrite"
+	"github.com/appwrite/sdk-for-go/v6/client"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+func TestOrganizationHelpers(t *testing.T) {
+	clients := &common.AppwriteClients{
+		BaseOptions: []client.ClientOption{
+			appwrite.WithEndpoint("https://example.com/v1"),
+			appwrite.WithKey("test-key"),
+		},
+		OrganizationID: "provider-org",
+	}
+
+	organizationID, err := common.ResolveOrganizationID(clients, types.StringNull())
+	if err != nil {
+		t.Fatalf("ResolveOrganizationID returned an error: %v", err)
+	}
+	if organizationID != "provider-org" {
+		t.Fatalf("organization ID = %q, want provider-org", organizationID)
+	}
+
+	organizationID, err = common.ResolveOrganizationID(clients, types.StringValue("resource-org"))
+	if err != nil {
+		t.Fatalf("ResolveOrganizationID returned an error: %v", err)
+	}
+	if organizationID != "resource-org" {
+		t.Fatalf("organization ID = %q, want resource-org", organizationID)
+	}
+
+	organizationClient := clients.ClientForOrganization("resource-org")
+	if organizationClient.Config["project"] != "console" {
+		t.Errorf("project = %q, want console", organizationClient.Config["project"])
+	}
+	if organizationClient.Headers["X-Appwrite-Organization"] != "resource-org" {
+		t.Errorf("organization header = %q, want resource-org", organizationClient.Headers["X-Appwrite-Organization"])
+	}
+	if organizationClient.Headers["X-Appwrite-Key"] != "test-key" {
+		t.Errorf("key header = %q, want test-key", organizationClient.Headers["X-Appwrite-Key"])
+	}
+
+	projectClient := clients.ClientForProject("project-id")
+	if projectClient.Headers["X-Appwrite-Organization"] != "provider-org" {
+		t.Errorf("project client organization header = %q, want provider-org", projectClient.Headers["X-Appwrite-Organization"])
+	}
+}
+
+func TestResolveOrganizationIDMissing(t *testing.T) {
+	_, err := common.ResolveOrganizationID(&common.AppwriteClients{}, types.StringNull())
+	if err == nil {
+		t.Fatal("ResolveOrganizationID returned nil error without an organization ID")
+	}
+}
 
 func TestVariableKeyValidators(t *testing.T) {
 	tests := []struct {

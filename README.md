@@ -30,18 +30,32 @@ export APPWRITE_API_KEY="api-key"
 
 ## Provider Options
 
-| Property    | Environment Variable   | Required | Description                                             |
-|-------------|------------------------|----------|---------------------------------------------------------|
-| endpoint    | `APPWRITE_ENDPOINT`    | yes      | The Appwrite API endpoint                               |
-| project_id  | `APPWRITE_PROJECT_ID`  | yes      | The Appwrite project ID                                 |
-| api_key     | `APPWRITE_API_KEY`     | yes      | The Appwrite API key                                    |
-| self_signed | N/A                    | no       | Accept self-signed certificates (for Community Edition) |
+| Property        | Environment Variable       | Required | Description                                             |
+|-----------------|----------------------------|----------|---------------------------------------------------------|
+| endpoint        | `APPWRITE_ENDPOINT`        | yes      | The Appwrite API endpoint                               |
+| project_id      | `APPWRITE_PROJECT_ID`      | no       | The default Appwrite project ID                         |
+| organization_id | `APPWRITE_ORGANIZATION_ID` | no       | The default Appwrite organization ID                    |
+| api_key         | `APPWRITE_API_KEY`         | yes      | The Appwrite API key                                    |
+| self_signed     | N/A                        | no       | Accept self-signed certificates (for Community Edition) |
 
 ## Compatibility
 
 TablesDB resources are intended for Appwrite Cloud or Appwrite Community Edition 1.9.0 and later. Earlier self-hosted versions may return `general_route_not_found` errors for TablesDB routes.
 
 ## Resources
+
+### Projects
+
+| Resource                     | Description     |
+|------------------------------|-----------------|
+| `appwrite_project`           | Project         |
+| `appwrite_project_key`       | Project API key |
+
+### Proxy
+
+| Resource                  | Description                         |
+|---------------------------|-------------------------------------|
+| `appwrite_proxy_rule`     | Site or function custom domain rule |
 
 ### TablesDB
 

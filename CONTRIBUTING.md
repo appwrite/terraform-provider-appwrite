@@ -38,6 +38,9 @@ Acceptance tests (requires a running Appwrite instance):
 export APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
 export APPWRITE_PROJECT_ID="your-project-id"
 export APPWRITE_API_KEY="your-api-key"
+# Required only for organization-scoped tests such as appwrite_project and
+# appwrite_project_key. Use an organization key with projects/keys scopes:
+export APPWRITE_ORGANIZATION_ID="your-organization-id"
 make acceptance-test
 ```
 

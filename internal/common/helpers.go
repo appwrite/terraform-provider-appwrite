@@ -27,6 +27,8 @@ type AppwriteClients struct {
 	BaseOptions []client.ClientOption
 	// ProjectID is the provider-level default project ID.
 	ProjectID string
+	// OrganizationID is the provider-level default organization ID.
+	OrganizationID string
 }
 
 // WithUserAgent returns a ClientOption that sets the User-Agent header to identify
@@ -43,7 +45,23 @@ func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
 	opts := make([]client.ClientOption, 0, len(ac.BaseOptions)+1)
 	opts = append(opts, ac.BaseOptions...)
 	opts = append(opts, appwrite.WithProject(projectID))
-	return appwrite.NewClient(opts...)
+	c := appwrite.NewClient(opts...)
+	if ac.OrganizationID != "" {
+		c.AddHeader("X-Appwrite-Organization", ac.OrganizationID)
+	}
+	return c
+}
+
+// ClientForOrganization creates a client targeting the console project and
+// scopes it to an organization. Organization routes have no organization ID in
+// their path, so Appwrite resolves it from X-Appwrite-Organization.
+func (ac *AppwriteClients) ClientForOrganization(organizationID string) client.Client {
+	opts := make([]client.ClientOption, 0, len(ac.BaseOptions)+1)
+	opts = append(opts, ac.BaseOptions...)
+	opts = append(opts, appwrite.WithProject("console"))
+	c := appwrite.NewClient(opts...)
+	c.AddHeader("X-Appwrite-Organization", organizationID)
+	return c
 }
 
 // ResolveProjectID returns the resource-level project_id if set, otherwise the provider default.
@@ -56,6 +74,18 @@ func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) 
 		return clients.ProjectID, nil
 	}
 	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
+}
+
+// ResolveOrganizationID returns the resource-level organization_id if set,
+// otherwise the provider default. Returns an error if neither is set.
+func ResolveOrganizationID(clients *AppwriteClients, resourceOrganizationID types.String) (string, error) {
+	if !resourceOrganizationID.IsNull() && !resourceOrganizationID.IsUnknown() && resourceOrganizationID.ValueString() != "" {
+		return resourceOrganizationID.ValueString(), nil
+	}
+	if clients.OrganizationID != "" {
+		return clients.OrganizationID, nil
+	}
+	return "", fmt.Errorf("organization_id must be set either on the provider or the resource")
 }
 
 // variableKeyPattern mirrors the API rule for variable keys: they become
@@ -79,6 +109,17 @@ func VariableKeyValidators() []validator.String {
 func ProjectIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
 		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Optional:      true,
+		Computed:      true,
+		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+	}
+}
+
+// OrganizationIDAttribute returns the shared schema attribute for
+// organization_id on organization-scoped resources.
+func OrganizationIDAttribute() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description:   "The Appwrite organization ID. Defaults to the provider-level organization_id.",
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},

@@ -20,7 +20,9 @@ import (
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
+	projectsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/project"
 	providersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
+	proxysvc "github.com/appwrite/terraform-provider-appwrite/internal/services/proxy"
 	rowsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/row"
 	sitesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/site"
 	subscribersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/subscriber"
@@ -38,10 +40,11 @@ type appwriteProvider struct {
 }
 
 type appwriteProviderModel struct {
-	Endpoint   types.String `tfsdk:"endpoint"`
-	ProjectID  types.String `tfsdk:"project_id"`
-	APIKey     types.String `tfsdk:"api_key"`
-	SelfSigned types.Bool   `tfsdk:"self_signed"`
+	Endpoint       types.String `tfsdk:"endpoint"`
+	ProjectID      types.String `tfsdk:"project_id"`
+	OrganizationID types.String `tfsdk:"organization_id"`
+	APIKey         types.String `tfsdk:"api_key"`
+	SelfSigned     types.Bool   `tfsdk:"self_signed"`
 }
 
 func New(version string) func() provider.Provider {
@@ -67,6 +70,10 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.",
 				Optional:    true,
 			},
+			"organization_id": schema.StringAttribute{
+				Description: "The default Appwrite organization ID for organization-scoped resources. Can also be set with the APPWRITE_ORGANIZATION_ID environment variable. Can be overridden per-resource.",
+				Optional:    true,
+			},
 			"api_key": schema.StringAttribute{
 				Description: "The Appwrite API key. Can also be set with the APPWRITE_API_KEY environment variable.",
 				Optional:    true,
@@ -89,6 +96,7 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 
 	endpoint := stringValueOrEnv(config.Endpoint, "APPWRITE_ENDPOINT")
 	projectID := stringValueOrEnv(config.ProjectID, "APPWRITE_PROJECT_ID")
+	organizationID := stringValueOrEnv(config.OrganizationID, "APPWRITE_ORGANIZATION_ID")
 	apiKey := stringValueOrEnv(config.APIKey, "APPWRITE_API_KEY")
 
 	if endpoint == "" {
@@ -117,8 +125,9 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	clients := &common.AppwriteClients{
-		BaseOptions: baseOpts,
-		ProjectID:   projectID,
+		BaseOptions:    baseOpts,
+		ProjectID:      projectID,
+		OrganizationID: organizationID,
 	}
 
 	resp.DataSourceData = clients
@@ -127,6 +136,9 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		projectsvc.NewProjectResource,
+		projectsvc.NewKeyResource,
+		proxysvc.NewRuleResource,
 		databasesvc.NewDatabaseResource,
 		tablesvc.NewTableResource,
 		columnsvc.NewColumnResource,

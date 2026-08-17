@@ -16,11 +16,24 @@ var ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, erro
 
 func PreCheck(t *testing.T) {
 	t.Helper()
-	if os.Getenv("APPWRITE_ENDPOINT") == "" {
-		t.Fatal("APPWRITE_ENDPOINT must be set for acceptance tests")
-	}
+	preCheckBase(t)
 	if os.Getenv("APPWRITE_PROJECT_ID") == "" {
 		t.Fatal("APPWRITE_PROJECT_ID must be set for acceptance tests")
+	}
+}
+
+func OrganizationPreCheck(t *testing.T) {
+	t.Helper()
+	preCheckBase(t)
+	if os.Getenv("APPWRITE_ORGANIZATION_ID") == "" {
+		t.Skip("APPWRITE_ORGANIZATION_ID must be set for organization acceptance tests")
+	}
+}
+
+func preCheckBase(t *testing.T) {
+	t.Helper()
+	if os.Getenv("APPWRITE_ENDPOINT") == "" {
+		t.Fatal("APPWRITE_ENDPOINT must be set for acceptance tests")
 	}
 	if os.Getenv("APPWRITE_API_KEY") == "" {
 		t.Fatal("APPWRITE_API_KEY must be set for acceptance tests")

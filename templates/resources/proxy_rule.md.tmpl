@@ -1,0 +1,42 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Proxy"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import`:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_proxy_rule.example
+  id = "d9b2824f455601ef3ff9f8147c5f186c"
+}
+```
+
+On installations configured to use MD5 rule IDs, the ID is `md5(lower(domain))`. Always prefer the ID returned by the API because some Community Edition installations use generated IDs.
+{{- end }}
+
+## See Also
+
+- [appwrite_site](site.md) - Manage sites
+- [appwrite_function](function.md) - Manage functions

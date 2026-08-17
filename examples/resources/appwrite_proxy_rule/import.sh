@@ -1,0 +1,1 @@
+terraform import appwrite_proxy_rule.example d9b2824f455601ef3ff9f8147c5f186c
