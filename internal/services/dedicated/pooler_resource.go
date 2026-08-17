@@ -64,9 +64,26 @@ func (r *poolerResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *poolerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	maxConnectionsDescription := "The client-connection ceiling the pooler accepts."
+	// The PostgreSQL pooler has no client-connection cap of its own: it reports
+	// the database's network_max_connections and ignores anything sent. Marking
+	// the attribute computed-only there makes Terraform reject a configured
+	// value during planning, instead of the provider having to guess at apply
+	// time whether a known value came from the user or from prior state.
+	maxConnections := schema.Int64Attribute{
+		Description:   "The client-connection ceiling the pooler accepts.",
+		Optional:      true,
+		Computed:      true,
+		Validators:    []validator.Int64{int64validator.AtLeast(1)},
+		PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+	}
 	if r.engine == EnginePostgresql {
-		maxConnectionsDescription += " Read-only on PostgreSQL, where the pooler has no client cap and this reports the database's `network_max_connections` instead."
+		maxConnections = schema.Int64Attribute{
+			Description: "The client-connection ceiling the pooler accepts. Read-only on PostgreSQL, where the pooler has no client cap of its own and this reports the database's `network_max_connections` instead. Size it through the database's specification.",
+			Computed:    true,
+			// No UseStateForUnknown: this mirrors the database's
+			// network_max_connections, which changes when the database is
+			// resized, so the prior value is not a safe prediction.
+		}
 	}
 
 	resp.Schema = schema.Schema{
@@ -94,13 +111,7 @@ func (r *poolerResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Validators:    []validator.String{stringvalidator.OneOf("transaction", "session")},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"max_connections": schema.Int64Attribute{
-				Description:   maxConnectionsDescription,
-				Optional:      true,
-				Computed:      true,
-				Validators:    []validator.Int64{int64validator.AtLeast(1)},
-				PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
-			},
+			"max_connections": maxConnections,
 			"default_pool_size": schema.Int64Attribute{
 				Description:   "The default pool size per user.",
 				Optional:      true,
@@ -205,16 +216,12 @@ func (r *poolerResource) apply(ctx context.Context, plan poolerResourceModel, di
 		return
 	}
 
-	// PostgreSQL derives the pooler's client cap from the database rather than
-	// accepting one, so sending a value would silently do nothing.
-	maxConnections := optInt(plan.MaxConnections)
-	if r.engine == EnginePostgresql && maxConnections != nil {
-		diagnostics.AddError(
-			"max_connections is read-only on PostgreSQL",
-			"The PostgreSQL pooler has no client-connection cap of its own and reports the database's network_max_connections. "+
-				"Remove max_connections from this resource and set network_ip_allowlist sizing on the database instead.",
-		)
-		return
+	// On PostgreSQL the attribute is computed-only, so any value in the plan was
+	// read back from the server rather than configured. Sending it would be a
+	// no-op at best, so it is never forwarded.
+	var maxConnections *int
+	if r.engine != EnginePostgresql {
+		maxConnections = optInt(plan.MaxConnections)
 	}
 
 	pooler, err := api.UpdatePooler(plan.DatabaseID.ValueString(), PoolerOptions{

@@ -11,7 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-var regexpIncompleteMaintenanceWindow = regexp.MustCompile(`Incomplete maintenance window`)
+// RequiredTogether rejects a half-configured maintenance window while planning,
+// so the failure is the framework's combination error rather than an apply-time
+// diagnostic from the provider.
+var regexpIncompleteMaintenanceWindow = regexp.MustCompile(`Invalid Attribute Combination`)
 
 // specification returns the compute slug the acceptance tests provision with.
 // It is configurable because the available slugs depend on the organization's

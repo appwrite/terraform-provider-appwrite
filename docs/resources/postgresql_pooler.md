@@ -43,7 +43,6 @@ resource "appwrite_postgresql_pooler" "main" {
 ### Optional
 
 - `default_pool_size` (Number) The default pool size per user.
-- `max_connections` (Number) The client-connection ceiling the pooler accepts. Read-only on PostgreSQL, where the pooler has no client cap and this reports the database's `network_max_connections` instead.
 - `mode` (String) The pool mode. `transaction` returns a connection to the pool after each transaction; `session` holds it for the whole client session.
 - `pooler_cpu_limit` (String) The CPU limit for the pooler sidecar as a Kubernetes quantity, for example `200m`.
 - `pooler_cpu_request` (String) The CPU request for the pooler sidecar as a Kubernetes quantity, for example `100m`. Defaults to a proportion of the database CPU.
@@ -56,6 +55,7 @@ resource "appwrite_postgresql_pooler" "main" {
 
 - `enabled` (Boolean) Whether connection pooling is enabled.
 - `id` (String) The pooler identifier, which is the database ID it belongs to.
+- `max_connections` (Number) The client-connection ceiling the pooler accepts. Read-only on PostgreSQL, where the pooler has no client cap of its own and this reports the database's `network_max_connections` instead. Size it through the database's specification.
 - `port` (Number) The port the pooler listens on.
 
 ## Import

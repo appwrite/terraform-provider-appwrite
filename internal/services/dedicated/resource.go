@@ -8,6 +8,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -23,9 +24,10 @@ import (
 )
 
 var (
-	_ resource.Resource                = &databaseResource{}
-	_ resource.ResourceWithConfigure   = &databaseResource{}
-	_ resource.ResourceWithImportState = &databaseResource{}
+	_ resource.Resource                     = &databaseResource{}
+	_ resource.ResourceWithConfigure        = &databaseResource{}
+	_ resource.ResourceWithImportState      = &databaseResource{}
+	_ resource.ResourceWithConfigValidators = &databaseResource{}
 )
 
 type databaseResource struct {
@@ -308,6 +310,19 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			label,
 		),
 		Attributes: attributes,
+	}
+}
+
+// ConfigValidators enforces the day/hour pairing against the configuration
+// rather than the plan. The plan is not usable for this: both attributes are
+// optional-and-computed, so after the first apply UseStateForUnknown carries
+// the server's values forward and every plan looks fully configured.
+func (r *databaseResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.RequiredTogether(
+			path.MatchRoot("maintenance_window_day"),
+			path.MatchRoot("maintenance_window_hour_utc"),
+		),
 	}
 }
 

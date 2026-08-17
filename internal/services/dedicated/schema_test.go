@@ -119,21 +119,55 @@ func TestEngineLabels(t *testing.T) {
 	}
 }
 
-// The pooler's max_connections is read-only on PostgreSQL, and the schema
-// description is where a user finds that out before an apply fails.
-func TestPoolerMaxConnectionsDocumentedAsReadOnlyOnPostgres(t *testing.T) {
+// The PostgreSQL pooler ignores max_connections, so the attribute has to be
+// computed-only there. That makes Terraform reject a configured value while
+// planning; leaving it optional would instead force the provider to guess at
+// apply time whether a known plan value came from the user or was carried
+// forward from prior state by UseStateForUnknown, which it cannot tell apart.
+func TestPoolerMaxConnectionsIsComputedOnlyOnPostgres(t *testing.T) {
 	ctx := t.Context()
 
-	for engine, wantReadOnlyNote := range map[dedicated.Engine]bool{
-		dedicated.EnginePostgresql: true,
-		dedicated.EngineMysql:      false,
+	for engine, wantConfigurable := range map[dedicated.Engine]bool{
+		dedicated.EnginePostgresql: false,
+		dedicated.EngineMysql:      true,
 	} {
 		schemaResp := &resource.SchemaResponse{}
 		dedicated.NewPoolerResource(engine)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
 
-		description := schemaResp.Schema.Attributes["max_connections"].GetDescription()
-		if got := strings.Contains(description, "Read-only on PostgreSQL"); got != wantReadOnlyNote {
-			t.Errorf("%s max_connections read-only note = %v, want %v", engine, got, wantReadOnlyNote)
+		attribute := schemaResp.Schema.Attributes["max_connections"]
+		if got := attribute.IsOptional(); got != wantConfigurable {
+			t.Errorf("%s max_connections IsOptional() = %v, want %v", engine, got, wantConfigurable)
+		}
+		if !attribute.IsComputed() {
+			t.Errorf("%s max_connections should always be computed so it is read back from the server", engine)
+		}
+		if engine == dedicated.EnginePostgresql && !strings.Contains(attribute.GetDescription(), "Read-only on PostgreSQL") {
+			t.Errorf("%s max_connections description should say it is read-only", engine)
+		}
+	}
+}
+
+// The other pooler settings must stay configurable on both engines; making them
+// computed-only would silently ignore user configuration.
+func TestPoolerWritableAttributesAreConfigurable(t *testing.T) {
+	ctx := t.Context()
+
+	writable := []string{"mode", "default_pool_size", "read_write_splitting",
+		"pooler_cpu_request", "pooler_cpu_limit", "pooler_memory_request", "pooler_memory_limit"}
+
+	for _, engine := range []dedicated.Engine{dedicated.EnginePostgresql, dedicated.EngineMysql} {
+		schemaResp := &resource.SchemaResponse{}
+		dedicated.NewPoolerResource(engine)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
+
+		for _, name := range writable {
+			attribute, ok := schemaResp.Schema.Attributes[name]
+			if !ok {
+				t.Errorf("%s pooler is missing attribute %q", engine, name)
+				continue
+			}
+			if !attribute.IsOptional() {
+				t.Errorf("%s pooler attribute %q should be configurable", engine, name)
+			}
 		}
 	}
 }
