@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccProxyRuleResource_site(t *testing.T) {
-	domain := fmt.Sprintf("tf-%d.example.com", time.Now().UnixNano())
+	domain := testDomain("tf")
 	projectID := os.Getenv("APPWRITE_PROJECT_ID")
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +46,7 @@ func TestAccProxyRuleResource_site(t *testing.T) {
 }
 
 func TestAccProxyRuleResource_function(t *testing.T) {
-	domain := fmt.Sprintf("tf-function-%d.example.com", time.Now().UnixNano())
+	domain := testDomain("tf-function")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -63,6 +63,14 @@ func TestAccProxyRuleResource_function(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testDomain(prefix string) string {
+	baseDomain := os.Getenv("APPWRITE_TEST_DOMAIN")
+	if baseDomain == "" {
+		baseDomain = "example.com"
+	}
+	return fmt.Sprintf("%s-%d.%s", prefix, time.Now().UnixNano(), baseDomain)
 }
 
 func testAccProxySiteRuleConfig(domain string) string {

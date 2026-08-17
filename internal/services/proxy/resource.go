@@ -158,6 +158,15 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	// The create response can contain placeholder values for certificate fields
+	// (for example, renewAt may be "datetime"). Read the rule back so the initial
+	// state matches subsequent refreshes and imports.
+	rule, err = proxyClient.GetRule(rule.Id)
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading created proxy rule", common.FormatError(err))
+		return
+	}
+
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(rule, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

@@ -41,6 +41,9 @@ export APPWRITE_API_KEY="your-api-key"
 # Required only for organization-scoped tests such as appwrite_project and
 # appwrite_project_key. Use an organization key with projects/keys scopes:
 export APPWRITE_ORGANIZATION_ID="your-organization-id"
+# Required for proxy-rule tests on Cloud. The domain must be owned by the
+# organization; tests create unique subdomains beneath it:
+export APPWRITE_TEST_DOMAIN="example.com"
 make acceptance-test
 ```
 
