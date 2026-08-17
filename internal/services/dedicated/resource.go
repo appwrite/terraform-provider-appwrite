@@ -109,6 +109,16 @@ func (r *databaseResource) Metadata(_ context.Context, req resource.MetadataRequ
 func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	label := r.engine.Label()
 
+	// The API accepts the SQL API settings on every engine's update route, but
+	// only PostgreSQL and MySQL have an endpoint to execute a statement, so on
+	// MongoDB there is nothing to reach the sidecar with. The attributes are
+	// still exposed because the API documents them, but the caveat belongs in
+	// the docs rather than in a surprise at apply time.
+	sqlAPICaveat := ""
+	if r.engine == EngineMongo {
+		sqlAPICaveat = " Note that MongoDB has no SQL execution endpoint, so these settings are accepted but currently have nothing to act on."
+	}
+
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description:   "The database ID. Must be unique within the project. Generated when omitted.",
@@ -224,7 +234,7 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 		},
 		"sql_api_enabled": schema.BoolAttribute{
-			Description:   "Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API.",
+			Description:   "Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API." + sqlAPICaveat,
 			Optional:      true,
 			Computed:      true,
 			PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},

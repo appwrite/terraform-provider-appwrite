@@ -57,7 +57,7 @@ resource "appwrite_mongo_database" "production" {
 - `replicas` (Number) The number of high availability replicas. High availability is enabled when greater than 0.
 - `specification` (String) The compute specification slug, for example `db-s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
 - `sql_api_allowed_statements` (Set of String) The statement types the SQL API accepts. Defaults to read/write DML only; DDL and DCL types (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `GRANT`, `REVOKE`) are opt-in.
-- `sql_api_enabled` (Boolean) Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API.
+- `sql_api_enabled` (Boolean) Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API. Note that MongoDB has no SQL execution endpoint, so these settings are accepted but currently have nothing to act on.
 - `sql_api_max_bytes` (Number) The maximum serialized SQL API result payload in bytes. Larger results are truncated.
 - `sql_api_max_rows` (Number) The maximum number of rows returned per SQL API execution. Larger results are truncated.
 - `sql_api_timeout_seconds` (Number) The maximum server-side SQL API execution time in seconds before a query is canceled.

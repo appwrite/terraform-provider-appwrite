@@ -25,6 +25,8 @@ func TestResourceSchemas(t *testing.T) {
 	for _, engine := range engines {
 		constructors[string(engine)+"_database"] = dedicated.NewDatabaseResource(engine)
 		constructors[string(engine)+"_backup_policy"] = dedicated.NewBackupPolicyResource(engine)
+		constructors[string(engine)+"_backup_storage"] = dedicated.NewBackupStorageResource(engine)
+		constructors[string(engine)+"_branch"] = dedicated.NewBranchResource(engine)
 	}
 	constructors["postgresql_pooler"] = dedicated.NewPoolerResource(dedicated.EnginePostgresql)
 	constructors["mysql_pooler"] = dedicated.NewPoolerResource(dedicated.EngineMysql)
@@ -58,7 +60,10 @@ func TestDataSourceSchemas(t *testing.T) {
 	constructors := map[string]func() datasource.DataSource{}
 	for _, engine := range engines {
 		constructors[string(engine)+"_database"] = dedicated.NewDatabaseDataSource(engine)
+		constructors[string(engine)+"_databases"] = dedicated.NewDatabasesDataSource(engine)
 		constructors[string(engine)+"_specifications"] = dedicated.NewSpecificationsDataSource(engine)
+		constructors[string(engine)+"_database_status"] = dedicated.NewStatusDataSource(engine)
+		constructors[string(engine)+"_backups"] = dedicated.NewBackupsDataSource(engine)
 	}
 	constructors["postgresql_extensions"] = dedicated.NewExtensionsDataSource(dedicated.EnginePostgresql)
 

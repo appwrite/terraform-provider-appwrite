@@ -82,17 +82,29 @@ Databases running on infrastructure reserved for a single project, as opposed to
 TablesDB's shared infrastructure. Provisioning, resizing and upgrading take
 several minutes; the provider waits for the database to settle before continuing.
 
-| Resource                            | Description                          |
-|-------------------------------------|--------------------------------------|
-| `appwrite_postgresql_database`      | Dedicated PostgreSQL database        |
-| `appwrite_mysql_database`           | Dedicated MySQL database             |
-| `appwrite_mongo_database`           | Dedicated MongoDB database           |
-| `appwrite_postgresql_backup_policy` | Scheduled backup policy (PostgreSQL) |
-| `appwrite_mysql_backup_policy`      | Scheduled backup policy (MySQL)      |
-| `appwrite_mongo_backup_policy`      | Scheduled backup policy (MongoDB)    |
-| `appwrite_postgresql_pooler`        | Connection pooler (PostgreSQL)       |
-| `appwrite_mysql_pooler`             | Connection pooler (MySQL)            |
-| `appwrite_postgresql_extension`     | Installed PostgreSQL extension       |
+| Resource                             | Description                           |
+|--------------------------------------|---------------------------------------|
+| `appwrite_postgresql_database`       | Dedicated PostgreSQL database         |
+| `appwrite_mysql_database`            | Dedicated MySQL database              |
+| `appwrite_mongo_database`            | Dedicated MongoDB database            |
+| `appwrite_postgresql_backup_policy`  | Scheduled backup policy (PostgreSQL)  |
+| `appwrite_mysql_backup_policy`       | Scheduled backup policy (MySQL)       |
+| `appwrite_mongo_backup_policy`       | Scheduled backup policy (MongoDB)     |
+| `appwrite_postgresql_backup_storage` | Custom backup destination (PostgreSQL)|
+| `appwrite_mysql_backup_storage`      | Custom backup destination (MySQL)     |
+| `appwrite_mongo_backup_storage`      | Custom backup destination (MongoDB)   |
+| `appwrite_postgresql_branch`         | Database branch (PostgreSQL)          |
+| `appwrite_mysql_branch`              | Database branch (MySQL)               |
+| `appwrite_mongo_branch`              | Database branch (MongoDB)             |
+| `appwrite_postgresql_pooler`         | Connection pooler (PostgreSQL)        |
+| `appwrite_mysql_pooler`              | Connection pooler (MySQL)             |
+| `appwrite_postgresql_extension`      | Installed PostgreSQL extension        |
+
+Day-2 operations that do not model as declarative state — failover, migration,
+restoration, on-demand backups, credential rotation and running SQL — are not
+exposed as resources; run them through the Console or API. `*_backup_storage`
+has no read route on the API, so Terraform cannot detect drift on it or import
+an existing configuration.
 
 ### Storage
 
@@ -147,9 +159,18 @@ several minutes; the provider waits for the database to settle before continuing
 | `appwrite_postgresql_database`       | Look up a dedicated PostgreSQL database by ID      |
 | `appwrite_mysql_database`            | Look up a dedicated MySQL database by ID           |
 | `appwrite_mongo_database`            | Look up a dedicated MongoDB database by ID         |
+| `appwrite_postgresql_databases`      | List dedicated PostgreSQL databases                |
+| `appwrite_mysql_databases`           | List dedicated MySQL databases                     |
+| `appwrite_mongo_databases`           | List dedicated MongoDB databases                   |
 | `appwrite_postgresql_specifications` | List available PostgreSQL compute specifications   |
 | `appwrite_mysql_specifications`      | List available MySQL compute specifications        |
 | `appwrite_mongo_specifications`      | List available MongoDB compute specifications      |
+| `appwrite_postgresql_database_status`| Live health, replication and storage (PostgreSQL)  |
+| `appwrite_mysql_database_status`     | Live health, replication and storage (MySQL)       |
+| `appwrite_mongo_database_status`     | Live health, replication and storage (MongoDB)     |
+| `appwrite_postgresql_backups`        | List PostgreSQL backups                            |
+| `appwrite_mysql_backups`             | List MySQL backups                                 |
+| `appwrite_mongo_backups`             | List MongoDB backups                               |
 | `appwrite_postgresql_extensions`     | List installed and available PostgreSQL extensions |
 
 ## Example

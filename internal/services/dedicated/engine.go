@@ -99,6 +99,20 @@ type UpdateBackupPolicyOptions struct {
 	Enabled   *bool
 }
 
+// BackupStorageOptions holds the optional arguments for a custom backup
+// destination.
+type BackupStorageOptions struct {
+	Region   *string
+	Prefix   *string
+	Endpoint *string
+}
+
+// CreateBranchOptions holds the optional arguments for a new branch.
+type CreateBranchOptions struct {
+	BranchID *string
+	TTL      *int
+}
+
 // PoolerOptions holds the arguments accepted when updating a connection pooler.
 type PoolerOptions struct {
 	Mode                *string
@@ -114,6 +128,7 @@ type PoolerOptions struct {
 // databaseAPI is the engine-independent surface used by the dedicated database
 // resource, data source and backup policy resource.
 type databaseAPI interface {
+	List(queries []string) (*models.DedicatedDatabaseList, error)
 	Create(databaseID, name string, opts CreateOptions) (*models.DedicatedDatabase, error)
 	Get(databaseID string) (*models.DedicatedDatabase, error)
 	Update(databaseID string, opts UpdateOptions) (*models.DedicatedDatabase, error)
@@ -121,11 +136,21 @@ type databaseAPI interface {
 	UpdateMaintenance(databaseID, day string, hourUTC int) (*models.DedicatedDatabase, error)
 	CreateUpgrade(databaseID, targetVersion string) (*models.DedicatedDatabase, error)
 	ListSpecifications() (*models.DedicatedDatabaseSpecificationList, error)
+	GetStatus(databaseID string) (*models.DatabaseStatus, error)
 
 	CreateBackupPolicy(databaseID, policyID, name, schedule string, retention int, opts CreateBackupPolicyOptions) (*models.BackupPolicy, error)
 	GetBackupPolicy(databaseID, policyID string) (*models.BackupPolicy, error)
 	UpdateBackupPolicy(databaseID, policyID string, opts UpdateBackupPolicyOptions) (*models.BackupPolicy, error)
 	DeleteBackupPolicy(databaseID, policyID string) error
+
+	ListBackups(databaseID string, queries []string) (*models.DedicatedDatabaseBackupList, error)
+	// UpdateBackupStorage has no matching read route, so a configured
+	// destination cannot be refreshed from the server.
+	UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey string, opts BackupStorageOptions) (*models.DedicatedDatabaseBackupStorage, error)
+
+	ListBranches(databaseID string) (*models.DedicatedDatabaseBranchList, error)
+	CreateBranch(databaseID string, opts CreateBranchOptions) (*models.DedicatedDatabase, error)
+	DeleteBranch(databaseID, branchID string) error
 }
 
 // poolerAPI is implemented by the engines that front connections with a
@@ -385,6 +410,60 @@ func (a postgresqlAPI) DeleteExtension(databaseID, extensionName string) (*model
 	return a.srv.DeleteExtension(databaseID, extensionName)
 }
 
+func (a postgresqlAPI) List(queries []string) (*models.DedicatedDatabaseList, error) {
+	var opts []postgresql.ListOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListQueries(queries))
+	}
+	return a.srv.List(opts...)
+}
+
+func (a postgresqlAPI) GetStatus(databaseID string) (*models.DatabaseStatus, error) {
+	return a.srv.GetStatus(databaseID)
+}
+
+func (a postgresqlAPI) ListBackups(databaseID string, queries []string) (*models.DedicatedDatabaseBackupList, error) {
+	var opts []postgresql.ListBackupsOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListBackupsQueries(queries))
+	}
+	return a.srv.ListBackups(databaseID, opts...)
+}
+
+func (a postgresqlAPI) UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey string, o BackupStorageOptions) (*models.DedicatedDatabaseBackupStorage, error) {
+	var opts []postgresql.UpdateBackupStorageOption
+	if o.Region != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageRegion(*o.Region))
+	}
+	if o.Prefix != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStoragePrefix(*o.Prefix))
+	}
+	if o.Endpoint != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageEndpoint(*o.Endpoint))
+	}
+	return a.srv.UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey, opts...)
+}
+
+func (a postgresqlAPI) ListBranches(databaseID string) (*models.DedicatedDatabaseBranchList, error) {
+	return a.srv.ListBranches(databaseID)
+}
+
+func (a postgresqlAPI) CreateBranch(databaseID string, o CreateBranchOptions) (*models.DedicatedDatabase, error) {
+	var opts []postgresql.CreateBranchOption
+	if o.BranchID != nil {
+		opts = append(opts, a.srv.WithCreateBranchBranchId(*o.BranchID))
+	}
+	if o.TTL != nil {
+		opts = append(opts, a.srv.WithCreateBranchTtl(*o.TTL))
+	}
+	return a.srv.CreateBranch(databaseID, opts...)
+}
+
+func (a postgresqlAPI) DeleteBranch(databaseID, branchID string) error {
+	_, err := a.srv.DeleteBranch(databaseID, branchID)
+	return err
+}
+
 // ---------------------------------------------------------------------------
 // MySQL
 // ---------------------------------------------------------------------------
@@ -582,6 +661,60 @@ func (a mysqlAPI) UpdatePooler(databaseID string, o PoolerOptions) (*models.Dedi
 	return a.srv.UpdatePooler(databaseID, opts...)
 }
 
+func (a mysqlAPI) List(queries []string) (*models.DedicatedDatabaseList, error) {
+	var opts []mysql.ListOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListQueries(queries))
+	}
+	return a.srv.List(opts...)
+}
+
+func (a mysqlAPI) GetStatus(databaseID string) (*models.DatabaseStatus, error) {
+	return a.srv.GetStatus(databaseID)
+}
+
+func (a mysqlAPI) ListBackups(databaseID string, queries []string) (*models.DedicatedDatabaseBackupList, error) {
+	var opts []mysql.ListBackupsOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListBackupsQueries(queries))
+	}
+	return a.srv.ListBackups(databaseID, opts...)
+}
+
+func (a mysqlAPI) UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey string, o BackupStorageOptions) (*models.DedicatedDatabaseBackupStorage, error) {
+	var opts []mysql.UpdateBackupStorageOption
+	if o.Region != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageRegion(*o.Region))
+	}
+	if o.Prefix != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStoragePrefix(*o.Prefix))
+	}
+	if o.Endpoint != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageEndpoint(*o.Endpoint))
+	}
+	return a.srv.UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey, opts...)
+}
+
+func (a mysqlAPI) ListBranches(databaseID string) (*models.DedicatedDatabaseBranchList, error) {
+	return a.srv.ListBranches(databaseID)
+}
+
+func (a mysqlAPI) CreateBranch(databaseID string, o CreateBranchOptions) (*models.DedicatedDatabase, error) {
+	var opts []mysql.CreateBranchOption
+	if o.BranchID != nil {
+		opts = append(opts, a.srv.WithCreateBranchBranchId(*o.BranchID))
+	}
+	if o.TTL != nil {
+		opts = append(opts, a.srv.WithCreateBranchTtl(*o.TTL))
+	}
+	return a.srv.CreateBranch(databaseID, opts...)
+}
+
+func (a mysqlAPI) DeleteBranch(databaseID, branchID string) error {
+	_, err := a.srv.DeleteBranch(databaseID, branchID)
+	return err
+}
+
 // ---------------------------------------------------------------------------
 // MongoDB
 // ---------------------------------------------------------------------------
@@ -743,6 +876,60 @@ func (a mongoAPI) UpdateBackupPolicy(databaseID, policyID string, o UpdateBackup
 
 func (a mongoAPI) DeleteBackupPolicy(databaseID, policyID string) error {
 	_, err := a.srv.DeleteBackupPolicy(databaseID, policyID)
+	return err
+}
+
+func (a mongoAPI) List(queries []string) (*models.DedicatedDatabaseList, error) {
+	var opts []mongo.ListOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListQueries(queries))
+	}
+	return a.srv.List(opts...)
+}
+
+func (a mongoAPI) GetStatus(databaseID string) (*models.DatabaseStatus, error) {
+	return a.srv.GetStatus(databaseID)
+}
+
+func (a mongoAPI) ListBackups(databaseID string, queries []string) (*models.DedicatedDatabaseBackupList, error) {
+	var opts []mongo.ListBackupsOption
+	if queries != nil {
+		opts = append(opts, a.srv.WithListBackupsQueries(queries))
+	}
+	return a.srv.ListBackups(databaseID, opts...)
+}
+
+func (a mongoAPI) UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey string, o BackupStorageOptions) (*models.DedicatedDatabaseBackupStorage, error) {
+	var opts []mongo.UpdateBackupStorageOption
+	if o.Region != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageRegion(*o.Region))
+	}
+	if o.Prefix != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStoragePrefix(*o.Prefix))
+	}
+	if o.Endpoint != nil {
+		opts = append(opts, a.srv.WithUpdateBackupStorageEndpoint(*o.Endpoint))
+	}
+	return a.srv.UpdateBackupStorage(databaseID, provider, bucket, accessKey, secretKey, opts...)
+}
+
+func (a mongoAPI) ListBranches(databaseID string) (*models.DedicatedDatabaseBranchList, error) {
+	return a.srv.ListBranches(databaseID)
+}
+
+func (a mongoAPI) CreateBranch(databaseID string, o CreateBranchOptions) (*models.DedicatedDatabase, error) {
+	var opts []mongo.CreateBranchOption
+	if o.BranchID != nil {
+		opts = append(opts, a.srv.WithCreateBranchBranchId(*o.BranchID))
+	}
+	if o.TTL != nil {
+		opts = append(opts, a.srv.WithCreateBranchTtl(*o.TTL))
+	}
+	return a.srv.CreateBranch(databaseID, opts...)
+}
+
+func (a mongoAPI) DeleteBranch(databaseID, branchID string) error {
+	_, err := a.srv.DeleteBranch(databaseID, branchID)
 	return err
 }
 
