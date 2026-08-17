@@ -12,14 +12,16 @@ The Appwrite provider is used to manage resources on [Appwrite](https://appwrite
 
 ~> **NOTE:** Avoid hard-coding credentials in your Terraform configuration. Use environment variables or a secrets manager instead.
 
-The provider supports two authentication methods. Environment variables take precedence when both are set.
+Credentials can be supplied through environment variables or the provider configuration. Explicit provider values take precedence when both are set.
 
 ### Environment Variables (Recommended)
 
 ```shell
 export APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
 export APPWRITE_PROJECT_ID="project-id"
-export APPWRITE_API_KEY="api-key"
+export APPWRITE_ORGANIZATION_ID="organization-id"
+export APPWRITE_API_KEY="project-api-key"
+export APPWRITE_ORGANIZATION_API_KEY="organization-api-key"
 ```
 
 ### Provider Configuration
@@ -31,11 +33,13 @@ export APPWRITE_API_KEY="api-key"
 ### Credential Precedence
 
 1. Values set directly in the provider configuration block
-2. Environment variables (`APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_API_KEY`)
+2. Environment variables (`APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_ORGANIZATION_ID`, `APPWRITE_API_KEY`, `APPWRITE_ORGANIZATION_API_KEY`)
 
-## Project Scoping
+## Resource Scoping
 
-The `project_id` can be set at the provider level as a default for all resources, or overridden per-resource. This is useful when managing resources across multiple projects from a single configuration.
+The `project_id` can be set at the provider level as a default for project-scoped resources, or overridden per-resource. The `organization_id` works the same way for organization-scoped resources such as `appwrite_project`.
+
+Use a standard project key in `api_key` for project resources and an organization key in `organization_api_key` for project and project-key administration. When `organization_api_key` is omitted, it falls back to `api_key` for backwards compatibility. The provider detects modern key prefixes and reports an actionable error when a resource receives an incompatible credential; legacy unprefixed keys are validated by Appwrite.
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -44,6 +48,15 @@ The `project_id` can be set at the provider level as a default for all resources
 TablesDB resources are intended for Appwrite Cloud or Appwrite Community Edition 1.9.0 and later. Earlier self-hosted versions may return `general_route_not_found` errors for TablesDB routes.
 
 ## Resources
+
+### Projects
+
+- [appwrite_project](resources/project.md) - Manage projects
+- [appwrite_project_key](resources/project_key.md) - Manage project API keys
+
+### Proxy
+
+- [appwrite_proxy_rule](resources/proxy_rule.md) - Manage site and function custom domains
 
 ### TablesDB
 

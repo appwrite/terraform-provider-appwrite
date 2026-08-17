@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `appwrite_proxy_rule` resource for site and function custom domains
+- `appwrite_project` resource for organization-scoped project provisioning
+- `appwrite_project_key` resource for provisioning project API keys
+- Provider-level `organization_id` configuration with `APPWRITE_ORGANIZATION_ID` support
+- Separate `organization_api_key` configuration with `APPWRITE_ORGANIZATION_API_KEY` support
+- Resource-specific credential type validation and authentication guidance
+
 ### Changed
 
 - Upgraded `go-sdk` to `v5.1.0`

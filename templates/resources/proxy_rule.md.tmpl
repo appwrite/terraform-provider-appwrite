@@ -1,0 +1,50 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Proxy"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A standard project API key with `rules.read` and `rules.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project and rule ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the rule ID alone can be used:
+
+```shell
+terraform import appwrite_proxy_rule.example d9b2824f455601ef3ff9f8147c5f186c
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_proxy_rule.example
+  id = "project-id/d9b2824f455601ef3ff9f8147c5f186c"
+}
+```
+
+On installations configured to use MD5 rule IDs, the ID is `md5(lower(domain))`. Always prefer the ID returned by the API because some Community Edition installations use generated IDs.
+{{- end }}
+
+## See Also
+
+- [appwrite_site](site.md) - Manage sites
+- [appwrite_function](function.md) - Manage functions

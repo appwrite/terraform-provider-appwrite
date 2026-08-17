@@ -21,12 +21,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// CredentialType identifies the kind of Appwrite API key configured on the
+// provider. Legacy keys without a type prefix are left unknown and validated
+// by the server for backwards compatibility.
+type CredentialType string
+
+const (
+	CredentialTypeUnknown      CredentialType = "unknown"
+	CredentialTypeStandard     CredentialType = "standard"
+	CredentialTypeEphemeral    CredentialType = "ephemeral"
+	CredentialTypeOrganization CredentialType = "organization"
+	CredentialTypeAccount      CredentialType = "account"
+	CredentialTypeOAuth2       CredentialType = "oauth2"
+)
+
 // AppwriteClients holds the base configuration for creating SDK clients.
 type AppwriteClients struct {
-	// BaseOptions contains the client options without a project (endpoint + key + self_signed).
+	// BaseOptions contains the endpoint and project API key options.
 	BaseOptions []client.ClientOption
+	// OrganizationBaseOptions contains the endpoint and organization API key
+	// options. It falls back to BaseOptions for backwards compatibility.
+	OrganizationBaseOptions []client.ClientOption
+	// ProjectCredentialType is the detected type of api_key.
+	ProjectCredentialType CredentialType
+	// OrganizationCredentialType is the detected type of organization_api_key,
+	// or api_key when no dedicated organization key is configured.
+	OrganizationCredentialType CredentialType
 	// ProjectID is the provider-level default project ID.
 	ProjectID string
+	// OrganizationID is the provider-level default organization ID.
+	OrganizationID string
 }
 
 // WithUserAgent returns a ClientOption that sets the User-Agent header to identify
@@ -43,7 +67,97 @@ func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
 	opts := make([]client.ClientOption, 0, len(ac.BaseOptions)+1)
 	opts = append(opts, ac.BaseOptions...)
 	opts = append(opts, appwrite.WithProject(projectID))
-	return appwrite.NewClient(opts...)
+	c := appwrite.NewClient(opts...)
+	if ac.OrganizationID != "" {
+		c.AddHeader("X-Appwrite-Organization", ac.OrganizationID)
+	}
+	return c
+}
+
+// ClientForOrganization creates a client targeting the console project and
+// scopes it to an organization. Organization routes have no organization ID in
+// their path, so Appwrite resolves it from X-Appwrite-Organization.
+func (ac *AppwriteClients) ClientForOrganization(organizationID string) client.Client {
+	return ac.clientWithOrganizationCredential("console", organizationID)
+}
+
+// ClientForOrganizationProject creates a project-targeted client authenticated
+// with the organization credential. Console administration routes such as
+// project API key management need both the project and organization headers.
+func (ac *AppwriteClients) ClientForOrganizationProject(projectID, organizationID string) client.Client {
+	return ac.clientWithOrganizationCredential(projectID, organizationID)
+}
+
+func (ac *AppwriteClients) clientWithOrganizationCredential(projectID, organizationID string) client.Client {
+	baseOptions := ac.OrganizationBaseOptions
+	if len(baseOptions) == 0 {
+		baseOptions = ac.BaseOptions
+	}
+	opts := make([]client.ClientOption, 0, len(baseOptions)+1)
+	opts = append(opts, baseOptions...)
+	opts = append(opts, appwrite.WithProject(projectID))
+	c := appwrite.NewClient(opts...)
+	c.AddHeader("X-Appwrite-Organization", organizationID)
+	return c
+}
+
+// DetectCredentialType returns the type prefix of a modern Appwrite API key.
+// Unknown and legacy key formats are intentionally accepted so the server can
+// validate them.
+func DetectCredentialType(apiKey string) CredentialType {
+	prefix, _, ok := strings.Cut(apiKey, "_")
+	if !ok {
+		return CredentialTypeUnknown
+	}
+	switch CredentialType(prefix) {
+	case CredentialTypeStandard, CredentialTypeEphemeral, CredentialTypeOrganization, CredentialTypeAccount, CredentialTypeOAuth2:
+		return CredentialType(prefix)
+	default:
+		return CredentialTypeUnknown
+	}
+}
+
+// ValidateProjectCredential rejects credentials that are known not to work on
+// project-scoped server routes. Unknown keys are allowed for compatibility with
+// legacy Appwrite key formats.
+func ValidateProjectCredential(clients *AppwriteClients, resourceName string, scopes ...string) error {
+	switch clients.ProjectCredentialType {
+	case CredentialTypeOrganization, CredentialTypeAccount, CredentialTypeOAuth2:
+		return fmt.Errorf("%s; configured api_key has credential type %q", strings.TrimSuffix(ProjectCredentialGuidance(resourceName, scopes...), "."), clients.ProjectCredentialType)
+	default:
+		return nil
+	}
+}
+
+// ValidateOrganizationCredential rejects credentials that are known not to
+// work on organization administration routes. Unknown keys are allowed for
+// compatibility with legacy Appwrite key formats.
+func ValidateOrganizationCredential(clients *AppwriteClients, resourceName string, scopes ...string) error {
+	switch clients.OrganizationCredentialType {
+	case CredentialTypeStandard, CredentialTypeEphemeral, CredentialTypeAccount, CredentialTypeOAuth2:
+		return fmt.Errorf("%s; configured organization credential has type %q", strings.TrimSuffix(OrganizationCredentialGuidance(resourceName, scopes...), "."), clients.OrganizationCredentialType)
+	default:
+		return nil
+	}
+}
+
+// ProjectCredentialGuidance describes the credential required by a
+// project-scoped resource without exposing any credential value.
+func ProjectCredentialGuidance(resourceName string, scopes ...string) string {
+	return fmt.Sprintf("%s requires a standard or ephemeral project API key%s. Configure it with api_key or APPWRITE_API_KEY.", resourceName, formatRequiredScopes(scopes))
+}
+
+// OrganizationCredentialGuidance describes the credential required by an
+// organization administration resource without exposing any credential value.
+func OrganizationCredentialGuidance(resourceName string, scopes ...string) string {
+	return fmt.Sprintf("%s requires an organization API key%s. Configure it with organization_api_key or APPWRITE_ORGANIZATION_API_KEY.", resourceName, formatRequiredScopes(scopes))
+}
+
+func formatRequiredScopes(scopes []string) string {
+	if len(scopes) == 0 {
+		return ""
+	}
+	return fmt.Sprintf(" with the %s scopes", strings.Join(scopes, " and "))
 }
 
 // ResolveProjectID returns the resource-level project_id if set, otherwise the provider default.
@@ -56,6 +170,18 @@ func ResolveProjectID(clients *AppwriteClients, resourceProjectID types.String) 
 		return clients.ProjectID, nil
 	}
 	return "", fmt.Errorf("project_id must be set either on the provider or the resource")
+}
+
+// ResolveOrganizationID returns the resource-level organization_id if set,
+// otherwise the provider default. Returns an error if neither is set.
+func ResolveOrganizationID(clients *AppwriteClients, resourceOrganizationID types.String) (string, error) {
+	if !resourceOrganizationID.IsNull() && !resourceOrganizationID.IsUnknown() && resourceOrganizationID.ValueString() != "" {
+		return resourceOrganizationID.ValueString(), nil
+	}
+	if clients.OrganizationID != "" {
+		return clients.OrganizationID, nil
+	}
+	return "", fmt.Errorf("organization_id must be set either on the provider or the resource")
 }
 
 // variableKeyPattern mirrors the API rule for variable keys: they become
@@ -79,6 +205,17 @@ func VariableKeyValidators() []validator.String {
 func ProjectIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
 		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Optional:      true,
+		Computed:      true,
+		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+	}
+}
+
+// OrganizationIDAttribute returns the shared schema attribute for
+// organization_id on organization-scoped resources.
+func OrganizationIDAttribute() schema.StringAttribute {
+	return schema.StringAttribute{
+		Description:   "The Appwrite organization ID. Defaults to the provider-level organization_id.",
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
@@ -110,6 +247,29 @@ func FormatError(err error) string {
 		return fmt.Sprintf("%s (status: %d, response: %s)", appErr.GetMessage(), appErr.GetStatusCode(), appErr.GetResponse())
 	}
 	return err.Error()
+}
+
+// FormatErrorWithAuthGuidance appends resource-specific credential guidance to
+// authentication and authorization failures returned by Appwrite.
+func FormatErrorWithAuthGuidance(err error, guidance string) string {
+	formatted := FormatError(err)
+	var appErr *client.AppwriteError
+	if !errors.As(err, &appErr) || guidance == "" {
+		return formatted
+	}
+
+	var response struct {
+		Type string `json:"type"`
+	}
+	if json.Unmarshal([]byte(appErr.GetResponse()), &response) != nil {
+		return formatted
+	}
+	switch response.Type {
+	case "general_unauthorized_scope", "user_unauthorized", "key_creation_denied":
+		return formatted + "\n\nAuthentication guidance: " + guidance
+	default:
+		return formatted
+	}
 }
 
 // GetColumnRaw fetches a column using a raw API call, bypassing the SDK's
