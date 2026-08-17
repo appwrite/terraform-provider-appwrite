@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/appwrite/sdk-for-go/v6/appwrite"
 	"github.com/appwrite/sdk-for-go/v6/models"
@@ -216,7 +217,24 @@ func (r *ruleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func (r *ruleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	parts := strings.Split(req.ID, "/")
+	switch len(parts) {
+	case 1:
+		if parts[0] == "" {
+			resp.Diagnostics.AddError("Invalid import ID", "Expected rule_id or project_id/rule_id")
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[0])...)
+	case 2:
+		if parts[0] == "" || parts[1] == "" {
+			resp.Diagnostics.AddError("Invalid import ID", "Expected rule_id or project_id/rule_id")
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), parts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
+	default:
+		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected rule_id or project_id/rule_id, got: %s", req.ID))
+	}
 }
 
 func (r *ruleResource) mapToState(rule *models.ProxyRule, model *ruleResourceModel) {

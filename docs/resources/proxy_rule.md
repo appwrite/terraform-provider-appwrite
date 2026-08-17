@@ -50,7 +50,13 @@ resource "appwrite_proxy_rule" "example" {
 
 ## Import
 
-Using `terraform import`:
+Using `terraform import` with a project and rule ID:
+
+```shell
+terraform import appwrite_proxy_rule.example project-id/d9b2824f455601ef3ff9f8147c5f186c
+```
+
+When `project_id` is configured on the provider, the rule ID alone can be used:
 
 ```shell
 terraform import appwrite_proxy_rule.example d9b2824f455601ef3ff9f8147c5f186c
@@ -61,7 +67,7 @@ Using an import block (Terraform v1.5.0+):
 ```hcl
 import {
   to = appwrite_proxy_rule.example
-  id = "d9b2824f455601ef3ff9f8147c5f186c"
+  id = "project-id/d9b2824f455601ef3ff9f8147c5f186c"
 }
 ```
 

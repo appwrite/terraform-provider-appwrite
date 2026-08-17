@@ -2,15 +2,18 @@ package proxy_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccProxyRuleResource_site(t *testing.T) {
 	domain := fmt.Sprintf("tf-%d.example.com", time.Now().UnixNano())
+	projectID := os.Getenv("APPWRITE_PROJECT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
@@ -27,8 +30,15 @@ func TestAccProxyRuleResource_site(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "appwrite_proxy_rule.test",
-				ImportState:       true,
+				ResourceName: "appwrite_proxy_rule.test",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					rule, ok := state.RootModule().Resources["appwrite_proxy_rule.test"]
+					if !ok || rule.Primary == nil {
+						return "", fmt.Errorf("proxy rule not found in state")
+					}
+					return projectID + "/" + rule.Primary.ID, nil
+				},
 				ImportStateVerify: true,
 			},
 		},
