@@ -40,11 +40,12 @@ type appwriteProvider struct {
 }
 
 type appwriteProviderModel struct {
-	Endpoint       types.String `tfsdk:"endpoint"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	OrganizationID types.String `tfsdk:"organization_id"`
-	APIKey         types.String `tfsdk:"api_key"`
-	SelfSigned     types.Bool   `tfsdk:"self_signed"`
+	Endpoint           types.String `tfsdk:"endpoint"`
+	ProjectID          types.String `tfsdk:"project_id"`
+	OrganizationID     types.String `tfsdk:"organization_id"`
+	APIKey             types.String `tfsdk:"api_key"`
+	OrganizationAPIKey types.String `tfsdk:"organization_api_key"`
+	SelfSigned         types.Bool   `tfsdk:"self_signed"`
 }
 
 func New(version string) func() provider.Provider {
@@ -75,7 +76,12 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 			},
 			"api_key": schema.StringAttribute{
-				Description: "The Appwrite API key. Can also be set with the APPWRITE_API_KEY environment variable.",
+				Description: "The project API key used for project-scoped resources. Can also be set with the APPWRITE_API_KEY environment variable.",
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"organization_api_key": schema.StringAttribute{
+				Description: "The organization API key used for organization-scoped resources and project API key management. Defaults to api_key for backwards compatibility. Can also be set with the APPWRITE_ORGANIZATION_API_KEY environment variable.",
 				Optional:    true,
 				Sensitive:   true,
 			},
@@ -98,6 +104,10 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 	projectID := stringValueOrEnv(config.ProjectID, "APPWRITE_PROJECT_ID")
 	organizationID := stringValueOrEnv(config.OrganizationID, "APPWRITE_ORGANIZATION_ID")
 	apiKey := stringValueOrEnv(config.APIKey, "APPWRITE_API_KEY")
+	organizationAPIKey := stringValueOrEnv(config.OrganizationAPIKey, "APPWRITE_ORGANIZATION_API_KEY")
+	if organizationAPIKey == "" {
+		organizationAPIKey = apiKey
+	}
 
 	if endpoint == "" {
 		resp.Diagnostics.AddError(
@@ -120,14 +130,23 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		appwrite.WithKey(apiKey),
 		common.WithUserAgent(p.version),
 	}
+	organizationBaseOpts := []client.ClientOption{
+		appwrite.WithEndpoint(endpoint),
+		appwrite.WithKey(organizationAPIKey),
+		common.WithUserAgent(p.version),
+	}
 	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {
 		baseOpts = append(baseOpts, appwrite.WithSelfSigned(true))
+		organizationBaseOpts = append(organizationBaseOpts, appwrite.WithSelfSigned(true))
 	}
 
 	clients := &common.AppwriteClients{
-		BaseOptions:    baseOpts,
-		ProjectID:      projectID,
-		OrganizationID: organizationID,
+		BaseOptions:                baseOpts,
+		OrganizationBaseOptions:    organizationBaseOpts,
+		ProjectCredentialType:      common.DetectCredentialType(apiKey),
+		OrganizationCredentialType: common.DetectCredentialType(organizationAPIKey),
+		ProjectID:                  projectID,
+		OrganizationID:             organizationID,
 	}
 
 	resp.DataSourceData = clients

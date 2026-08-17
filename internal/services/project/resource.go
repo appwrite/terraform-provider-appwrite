@@ -121,7 +121,11 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
 		return
 	}
-	organizationClient := appwrite.NewOrganization(r.clients.ClientForOrganization(organizationID))
+	organizationClient, err := r.client(organizationID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	projectID := plan.ID.ValueString()
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
@@ -135,7 +139,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 
 	created, err := organizationClient.CreateProject(projectID, plan.Name.ValueString(), opts...)
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating project", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating project", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project", "projects.read", "projects.write")))
 		return
 	}
 
@@ -156,7 +160,11 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
 		return
 	}
-	organizationClient := appwrite.NewOrganization(r.clients.ClientForOrganization(organizationID))
+	organizationClient, err := r.client(organizationID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	found, err := organizationClient.GetProject(state.ID.ValueString())
 	if err != nil {
@@ -164,7 +172,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading project", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading project", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project", "projects.read", "projects.write")))
 		return
 	}
 
@@ -185,11 +193,15 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
 		return
 	}
-	organizationClient := appwrite.NewOrganization(r.clients.ClientForOrganization(organizationID))
+	organizationClient, err := r.client(organizationID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	updated, err := organizationClient.UpdateProject(plan.ID.ValueString(), plan.Name.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating project", common.FormatError(err))
+		resp.Diagnostics.AddError("Error updating project", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project", "projects.read", "projects.write")))
 		return
 	}
 
@@ -210,11 +222,15 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
 		return
 	}
-	organizationClient := appwrite.NewOrganization(r.clients.ClientForOrganization(organizationID))
+	organizationClient, err := r.client(organizationID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	_, err = organizationClient.DeleteProject(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting project", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting project", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project", "projects.read", "projects.write")))
 	}
 }
 
@@ -237,6 +253,13 @@ func (r *projectResource) ImportState(ctx context.Context, req resource.ImportSt
 	default:
 		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected project_id or organization_id/project_id, got: %s", req.ID))
 	}
+}
+
+func (r *projectResource) client(organizationID string) (*organization.Organization, error) {
+	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project", "projects.read", "projects.write"); err != nil {
+		return nil, err
+	}
+	return appwrite.NewOrganization(r.clients.ClientForOrganization(organizationID)), nil
 }
 
 func (r *projectResource) mapToState(project *models.Project, model *projectResourceModel) {

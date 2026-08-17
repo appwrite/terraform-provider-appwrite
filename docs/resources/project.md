@@ -11,7 +11,7 @@ Manages an Appwrite project within an organization.
 
 ~> **Warning:** Destroying a project also deletes the resources and data contained in it.
 
-An organization-scoped API key with `projects.read` and `projects.write` scopes is required. Set `organization_id` on the provider or on this resource. A provider-level `project_id` is not required.
+An organization API key with `projects.read` and `projects.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource. A provider-level `project_id` is not required.
 
 ## Example Usage
 

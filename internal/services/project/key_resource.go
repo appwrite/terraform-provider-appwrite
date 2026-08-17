@@ -137,6 +137,10 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
+	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project_key", "keys.read", "keys.write"); err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 	projectClient, organizationID, err := r.client(projectID, plan.OrganizationID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
@@ -161,7 +165,7 @@ func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	key, err := projectClient.CreateKey(keyID, plan.Name.ValueString(), scopes, opts...)
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating project API key", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating project API key", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project_key", "keys.read", "keys.write")))
 		return
 	}
 
@@ -183,6 +187,10 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
+	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project_key", "keys.read", "keys.write"); err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 	projectClient, organizationID, err := r.client(projectID, state.OrganizationID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
@@ -195,7 +203,7 @@ func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading project API key", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading project API key", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project_key", "keys.read", "keys.write")))
 		return
 	}
 
@@ -217,6 +225,10 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
+	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project_key", "keys.read", "keys.write"); err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 	projectClient, organizationID, err := r.client(projectID, plan.OrganizationID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
@@ -236,7 +248,7 @@ func (r *keyResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	key, err := projectClient.UpdateKey(plan.ID.ValueString(), plan.Name.ValueString(), scopes, opts...)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating project API key", common.FormatError(err))
+		resp.Diagnostics.AddError("Error updating project API key", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project_key", "keys.read", "keys.write")))
 		return
 	}
 
@@ -258,6 +270,10 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
+	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project_key", "keys.read", "keys.write"); err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 	projectClient, _, err := r.client(projectID, state.OrganizationID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
@@ -266,7 +282,7 @@ func (r *keyResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 	_, err = projectClient.DeleteKey(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting project API key", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting project API key", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project_key", "keys.read", "keys.write")))
 	}
 }
 
@@ -298,8 +314,7 @@ func (r *keyResource) client(projectID string, resourceOrganizationID types.Stri
 	if err != nil {
 		return nil, "", err
 	}
-	client := r.clients.ClientForProject(projectID)
-	client.AddHeader("X-Appwrite-Organization", organizationID)
+	client := r.clients.ClientForOrganizationProject(projectID, organizationID)
 	return appwrite.NewProject(client), organizationID, nil
 }
 

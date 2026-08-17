@@ -9,6 +9,8 @@ description: |-
 
 Manages a custom domain proxy rule for an Appwrite site or function.
 
+A standard project API key with `rules.read` and `rules.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
 ## Example Usage
 
 ```terraform

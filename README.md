@@ -14,9 +14,11 @@ terraform {
 }
 
 provider "appwrite" {
-  endpoint   = "https://cloud.appwrite.io/v1"
-  project_id = "project-id"
-  api_key    = "api-key"
+  endpoint             = "https://cloud.appwrite.io/v1"
+  project_id           = "project-id"
+  organization_id      = "organization-id"
+  api_key              = "project-api-key"
+  organization_api_key = "organization-api-key"
 }
 ```
 
@@ -25,18 +27,21 @@ Configure credentials via environment variables:
 ```bash
 export APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
 export APPWRITE_PROJECT_ID="project-id"
-export APPWRITE_API_KEY="api-key"
+export APPWRITE_ORGANIZATION_ID="organization-id"
+export APPWRITE_API_KEY="project-api-key"
+export APPWRITE_ORGANIZATION_API_KEY="organization-api-key"
 ```
 
 ## Provider Options
 
-| Property        | Environment Variable       | Required | Description                                             |
-|-----------------|----------------------------|----------|---------------------------------------------------------|
-| endpoint        | `APPWRITE_ENDPOINT`        | yes      | The Appwrite API endpoint                               |
-| project_id      | `APPWRITE_PROJECT_ID`      | no       | The default Appwrite project ID                         |
-| organization_id | `APPWRITE_ORGANIZATION_ID` | no       | The default Appwrite organization ID                    |
-| api_key         | `APPWRITE_API_KEY`         | yes      | The Appwrite API key                                    |
-| self_signed     | N/A                        | no       | Accept self-signed certificates (for Community Edition) |
+| Property               | Environment Variable               | Required | Description                                                          |
+|------------------------|------------------------------------|----------|----------------------------------------------------------------------|
+| endpoint               | `APPWRITE_ENDPOINT`                | yes      | The Appwrite API endpoint                                            |
+| project_id             | `APPWRITE_PROJECT_ID`              | no       | The default Appwrite project ID                                      |
+| organization_id        | `APPWRITE_ORGANIZATION_ID`         | no       | The default Appwrite organization ID                                 |
+| api_key                | `APPWRITE_API_KEY`                 | yes      | Project API key for project-scoped resources                         |
+| organization_api_key   | `APPWRITE_ORGANIZATION_API_KEY`    | no       | Organization API key; defaults to `api_key` for backwards compatibility |
+| self_signed            | N/A                                | no       | Accept self-signed certificates (for Community Edition)              |
 
 ## Compatibility
 

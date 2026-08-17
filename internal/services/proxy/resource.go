@@ -133,7 +133,11 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
-	proxyClient := appwrite.NewProxy(r.clients.ClientForProject(projectID))
+	proxyClient, err := r.client(projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	var rule *models.ProxyRule
 	switch plan.Type.ValueString() {
@@ -154,7 +158,7 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating proxy rule", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating proxy rule", common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance("appwrite_proxy_rule", "rules.read", "rules.write")))
 		return
 	}
 
@@ -163,7 +167,7 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	// state matches subsequent refreshes and imports.
 	rule, err = proxyClient.GetRule(rule.Id)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading created proxy rule", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading created proxy rule", common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance("appwrite_proxy_rule", "rules.read", "rules.write")))
 		return
 	}
 
@@ -184,7 +188,11 @@ func (r *ruleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
-	proxyClient := appwrite.NewProxy(r.clients.ClientForProject(projectID))
+	proxyClient, err := r.client(projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	rule, err := proxyClient.GetRule(state.ID.ValueString())
 	if err != nil {
@@ -192,7 +200,7 @@ func (r *ruleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading proxy rule", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading proxy rule", common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance("appwrite_proxy_rule", "rules.read", "rules.write")))
 		return
 	}
 
@@ -217,11 +225,15 @@ func (r *ruleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
 		return
 	}
-	proxyClient := appwrite.NewProxy(r.clients.ClientForProject(projectID))
+	proxyClient, err := r.client(projectID)
+	if err != nil {
+		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
+		return
+	}
 
 	_, err = proxyClient.DeleteRule(state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting proxy rule", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting proxy rule", common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance("appwrite_proxy_rule", "rules.read", "rules.write")))
 	}
 }
 
@@ -244,6 +256,13 @@ func (r *ruleResource) ImportState(ctx context.Context, req resource.ImportState
 	default:
 		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("Expected rule_id or project_id/rule_id, got: %s", req.ID))
 	}
+}
+
+func (r *ruleResource) client(projectID string) (*proxy.Proxy, error) {
+	if err := common.ValidateProjectCredential(r.clients, "appwrite_proxy_rule", "rules.read", "rules.write"); err != nil {
+		return nil, err
+	}
+	return appwrite.NewProxy(r.clients.ClientForProject(projectID)), nil
 }
 
 func (r *ruleResource) mapToState(rule *models.ProxyRule, model *ruleResourceModel) {

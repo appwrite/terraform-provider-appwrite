@@ -9,7 +9,7 @@ description: |-
 
 Manages an Appwrite project API key.
 
-~> **Note:** Creating project API keys requires an organization-scoped or console administrator credential. A standard project API key cannot create another project API key.
+~> **Note:** Managing project API keys requires an organization API key with `keys.read` and `keys.write` scopes. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. A standard project API key cannot create another project API key.
 
 ~> **Warning:** The key secret is stored in Terraform state. Use an encrypted remote state backend and restrict access to it.
 

@@ -16,9 +16,15 @@ func TestOrganizationHelpers(t *testing.T) {
 	clients := &common.AppwriteClients{
 		BaseOptions: []client.ClientOption{
 			appwrite.WithEndpoint("https://example.com/v1"),
-			appwrite.WithKey("test-key"),
+			appwrite.WithKey("standard_project-key"),
 		},
-		OrganizationID: "provider-org",
+		OrganizationBaseOptions: []client.ClientOption{
+			appwrite.WithEndpoint("https://example.com/v1"),
+			appwrite.WithKey("organization_org-key"),
+		},
+		ProjectCredentialType:      common.CredentialTypeStandard,
+		OrganizationCredentialType: common.CredentialTypeOrganization,
+		OrganizationID:             "provider-org",
 	}
 
 	organizationID, err := common.ResolveOrganizationID(clients, types.StringNull())
@@ -44,13 +50,64 @@ func TestOrganizationHelpers(t *testing.T) {
 	if organizationClient.Headers["X-Appwrite-Organization"] != "resource-org" {
 		t.Errorf("organization header = %q, want resource-org", organizationClient.Headers["X-Appwrite-Organization"])
 	}
-	if organizationClient.Headers["X-Appwrite-Key"] != "test-key" {
-		t.Errorf("key header = %q, want test-key", organizationClient.Headers["X-Appwrite-Key"])
+	if organizationClient.Headers["X-Appwrite-Key"] != "organization_org-key" {
+		t.Errorf("key header = %q, want organization_org-key", organizationClient.Headers["X-Appwrite-Key"])
+	}
+
+	organizationProjectClient := clients.ClientForOrganizationProject("project-id", "resource-org")
+	if organizationProjectClient.Config["project"] != "project-id" {
+		t.Errorf("organization project client project = %q, want project-id", organizationProjectClient.Config["project"])
+	}
+	if organizationProjectClient.Headers["X-Appwrite-Key"] != "organization_org-key" {
+		t.Errorf("organization project client key header = %q, want organization_org-key", organizationProjectClient.Headers["X-Appwrite-Key"])
 	}
 
 	projectClient := clients.ClientForProject("project-id")
+	if projectClient.Headers["X-Appwrite-Key"] != "standard_project-key" {
+		t.Errorf("project client key header = %q, want standard_project-key", projectClient.Headers["X-Appwrite-Key"])
+	}
 	if projectClient.Headers["X-Appwrite-Organization"] != "provider-org" {
 		t.Errorf("project client organization header = %q, want provider-org", projectClient.Headers["X-Appwrite-Organization"])
+	}
+}
+
+func TestCredentialTypes(t *testing.T) {
+	tests := map[string]common.CredentialType{
+		"standard_secret":     common.CredentialTypeStandard,
+		"ephemeral_token":     common.CredentialTypeEphemeral,
+		"organization_secret": common.CredentialTypeOrganization,
+		"account_secret":      common.CredentialTypeAccount,
+		"oauth2_secret":       common.CredentialTypeOAuth2,
+		"legacy-key":          common.CredentialTypeUnknown,
+		"SG.legacy":           common.CredentialTypeUnknown,
+		"future_secret":       common.CredentialTypeUnknown,
+	}
+	for key, expected := range tests {
+		if actual := common.DetectCredentialType(key); actual != expected {
+			t.Errorf("DetectCredentialType(%q) = %q, want %q", key, actual, expected)
+		}
+	}
+}
+
+func TestCredentialValidation(t *testing.T) {
+	clients := &common.AppwriteClients{
+		ProjectCredentialType:      common.CredentialTypeOrganization,
+		OrganizationCredentialType: common.CredentialTypeStandard,
+	}
+	if err := common.ValidateProjectCredential(clients, "appwrite_proxy_rule", "rules.write"); err == nil || !strings.Contains(err.Error(), "APPWRITE_API_KEY") {
+		t.Fatalf("expected actionable project credential error, got %v", err)
+	}
+	if err := common.ValidateOrganizationCredential(clients, "appwrite_project", "projects.write"); err == nil || !strings.Contains(err.Error(), "APPWRITE_ORGANIZATION_API_KEY") {
+		t.Fatalf("expected actionable organization credential error, got %v", err)
+	}
+
+	clients.ProjectCredentialType = common.CredentialTypeUnknown
+	clients.OrganizationCredentialType = common.CredentialTypeOrganization
+	if err := common.ValidateProjectCredential(clients, "legacy"); err != nil {
+		t.Fatalf("legacy project credential was rejected: %v", err)
+	}
+	if err := common.ValidateOrganizationCredential(clients, "appwrite_project"); err != nil {
+		t.Fatalf("organization credential was rejected: %v", err)
 	}
 }
 
