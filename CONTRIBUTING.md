@@ -49,6 +49,37 @@ export APPWRITE_TEST_DOMAIN="example.com"
 make acceptance-test
 ```
 
+#### Dedicated database tests
+
+Dedicated database tests provision real, billable infrastructure and take
+several minutes per step, so they are skipped unless explicitly enabled:
+
+```bash
+# Opt in. Without this, every dedicated database test skips:
+export APPWRITE_DEDICATED_DATABASE_TESTS=1
+# Optional. The compute slug to provision with; which slugs exist depends on the
+# organization's billing plan. Defaults to db-s-1vcpu-1gb:
+export APPWRITE_DEDICATED_SPECIFICATION="db-s-1vcpu-1gb"
+
+make acceptance-test TESTARGS='-run TestAccPostgresql'
+```
+
+Run them against a scratch project. A failed run can leave a database behind,
+which keeps billing until it is deleted; check the Console afterwards.
+
+#### Project API key tests
+
+Appwrite removed the endpoint for creating project API keys, so
+`appwrite_project_key` cannot create one and its tests work against a key you
+create in the Console first:
+
+```bash
+export APPWRITE_PROJECT_KEY_ID="existing-key-id"
+```
+
+Without it, the import/update test skips; the test asserting that creation fails
+runs either way.
+
 ### Linting
 
 ```bash

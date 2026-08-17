@@ -17,6 +17,7 @@ import (
 	bucketsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	dedicatedsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -178,6 +179,19 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		sitesvc.NewVariableResource,
 		sitesvc.NewDeploymentResource,
 		functionsvc.NewDeploymentResource,
+
+		// Dedicated databases. Each engine is exposed as its own resource type
+		// because Appwrite routes them separately and only some engines have a
+		// pooler or extensions.
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewPoolerResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewPoolerResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewExtensionResource(dedicatedsvc.EnginePostgresql),
 	}
 }
 
@@ -191,6 +205,14 @@ func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.Da
 		sitesvc.NewSiteDataSource,
 		topicsvc.NewTopicDataSource,
 		webhooksvc.NewWebhookDataSource,
+
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewExtensionsDataSource(dedicatedsvc.EnginePostgresql),
 	}
 }
 

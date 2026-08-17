@@ -1,0 +1,31 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Dedicated Databases"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Import is supported using the following syntax:
+
+{{ codefile "shell" .ImportFile }}
+{{- end }}
+
+## See Also
+
+- [appwrite_mysql_database](mysql_database.md) - Manage the database this policy backs up
+- [appwrite_backup_policy](backup_policy.md) - Back up shared-infrastructure databases

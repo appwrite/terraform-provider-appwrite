@@ -9,19 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Dedicated database support, backed by the new `Postgresql`, `Mysql` and `Mongo` SDK services. Each engine gets its own resource and data source because Appwrite routes them separately and only some engines have a pooler or extensions:
+  - `appwrite_postgresql_database`, `appwrite_mysql_database` and `appwrite_mongo_database` resources, covering provisioning, in-place resize, major version upgrade, replicas, point-in-time recovery, storage autoscaling, network allowlists, idle timeouts, maintenance windows and the SQL API. Create and update wait for the database to leave its transitional state, so dependent resources are never handed a half-built database
+  - `appwrite_postgresql_backup_policy`, `appwrite_mysql_backup_policy` and `appwrite_mongo_backup_policy` resources for scheduled backups of a dedicated database
+  - `appwrite_postgresql_pooler` and `appwrite_mysql_pooler` resources for connection pooling
+  - `appwrite_postgresql_extension` resource for installing PostgreSQL extensions
+  - `appwrite_postgresql_database`, `appwrite_mysql_database` and `appwrite_mongo_database` data sources
+  - `appwrite_postgresql_specifications`, `appwrite_mysql_specifications` and `appwrite_mongo_specifications` data sources, so a compute slug can be selected from what the billing plan allows instead of hardcoded
+  - `appwrite_postgresql_extensions` data source listing installed and available extensions
 - `appwrite_proxy_rule` resource for site and function custom domains
 - `appwrite_project` resource for organization-scoped project provisioning
-- `appwrite_project_key` resource for provisioning project API keys
+- `appwrite_project_key` resource for managing project API keys. Keys are created in the Appwrite Console and imported; see the note under Changed
 - Provider-level `organization_id` configuration with `APPWRITE_ORGANIZATION_ID` support
 - Separate `organization_api_key` configuration with `APPWRITE_ORGANIZATION_API_KEY` support
 - Resource-specific credential type validation and authentication guidance
 
 ### Changed
 
-- Upgraded `go-sdk` to `v5.1.0`
+- Upgraded `go-sdk` to `v7.2.0-rc.1`
+- **Breaking:** `appwrite_project_key` can no longer create keys. Appwrite removed the create-project-key endpoint so that a leaked API key cannot mint further keys and outlive its own revocation, and there is no server-side replacement. A plan that would create a key now fails with guidance to create it in the Console and `terraform import` it; read, update, delete and import are unaffected. The `secret` attribute is only populated for keys created before this change, since the API only returns a secret at creation time
 
 ### Fixed
 
+- `appwrite_tablesdb_column`: reading a column no longer fails against SDK v6.5.0 and later, where a JSON response body is `[]byte` rather than `string`
 - `appwrite_tablesdb_column`: `size` is no longer ignored for `type = "string"` — create/update call the string column endpoints again instead of the text endpoints, so columns materialize as `string(size)` (indexable) rather than unbounded TEXT ([#31](https://github.com/appwrite/terraform-provider-appwrite/issues/31))
 
 ## [1.6.0] - 2026-06-04
