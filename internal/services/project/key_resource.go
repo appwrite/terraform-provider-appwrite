@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appwrite/sdk-for-go/v6/appwrite"
-	"github.com/appwrite/sdk-for-go/v6/id"
-	"github.com/appwrite/sdk-for-go/v6/models"
-	sdkproject "github.com/appwrite/sdk-for-go/v6/project"
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/models"
+	sdkproject "github.com/appwrite/sdk-for-go/v7/project"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -125,54 +124,20 @@ func (r *keyResource) Configure(_ context.Context, req resource.ConfigureRequest
 	r.clients = clients
 }
 
-func (r *keyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan keyResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
-	if err != nil {
-		resp.Diagnostics.AddError("Error resolving project ID", err.Error())
-		return
-	}
-	if err := common.ValidateOrganizationCredential(r.clients, "appwrite_project_key", "keys.read", "keys.write"); err != nil {
-		resp.Diagnostics.AddError("Unsupported Appwrite credential", err.Error())
-		return
-	}
-	projectClient, organizationID, err := r.client(projectID, plan.OrganizationID)
-	if err != nil {
-		resp.Diagnostics.AddError("Error resolving organization ID", err.Error())
-		return
-	}
-
-	keyID := plan.ID.ValueString()
-	if plan.ID.IsNull() || plan.ID.IsUnknown() {
-		keyID = id.Unique()
-	}
-
-	var scopes []string
-	resp.Diagnostics.Append(plan.Scopes.ElementsAs(ctx, &scopes, false)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var opts []sdkproject.CreateKeyOption
-	if !plan.Expire.IsNull() && !plan.Expire.IsUnknown() {
-		opts = append(opts, projectClient.WithCreateKeyExpire(plan.Expire.ValueString()))
-	}
-
-	key, err := projectClient.CreateKey(keyID, plan.Name.ValueString(), scopes, opts...)
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating project API key", common.FormatErrorWithAuthGuidance(err, common.OrganizationCredentialGuidance("appwrite_project_key", "keys.read", "keys.write")))
-		return
-	}
-
-	plan.ProjectID = types.StringValue(projectID)
-	plan.OrganizationID = types.StringValue(organizationID)
-	r.mapToState(ctx, key, &plan, &resp.Diagnostics)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+// Create always fails. Appwrite removed the create-project-key endpoint so that
+// a leaked API key cannot mint further keys and outlive its own revocation, and
+// there is no server-side replacement to call. The remaining CRUD operations
+// still work, so an existing key can be imported and then managed as usual.
+func (r *keyResource) Create(_ context.Context, _ resource.CreateRequest, resp *resource.CreateResponse) {
+	resp.Diagnostics.AddError(
+		"Creating project API keys is not supported",
+		"The Appwrite API no longer exposes an endpoint for creating project API keys, so this provider cannot create one. "+
+			"An API key that could mint further keys would let a compromise outlive the revocation of the leaked key.\n\n"+
+			"Create the key in the Appwrite Console, then bring it under Terraform management with:\n"+
+			"    terraform import appwrite_project_key.<name> <project_id>/<key_id>\n\n"+
+			"Imported keys support read, update and delete as before. Note that the secret is only shown at creation "+
+			"time, so the `secret` attribute is unavailable on imported keys.",
+	)
 }
 
 func (r *keyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

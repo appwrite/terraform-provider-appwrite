@@ -9,13 +9,20 @@ description: |-
 
 Manages an Appwrite project API key.
 
-~> **Note:** Managing project API keys requires an organization API key with `keys.read` and `keys.write` scopes. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. A standard project API key cannot create another project API key.
+!> **Breaking change:** Appwrite removed the endpoint for creating project API keys, so this resource can no longer create one — an API key that could mint further keys would let a compromise outlive the revocation of the leaked key. Create the key in the Appwrite Console and then `terraform import` it. Imported keys still support read, update and delete.
 
-~> **Warning:** The key secret is stored in Terraform state. Use an encrypted remote state backend and restrict access to it.
+~> **Note:** Managing project API keys requires an organization API key with `keys.read` and `keys.write` scopes. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`.
+
+~> **Warning:** The key secret is stored in Terraform state. Use an encrypted remote state backend and restrict access to it. The secret is only returned when the key is created, so it is unavailable on imported keys.
 
 ## Example Usage
 
 ```terraform
+# Appwrite no longer exposes an endpoint for creating project API keys, so this
+# resource cannot create one. Create the key in the Appwrite Console, import it,
+# and Terraform then manages its name, scopes and expiry from here on.
+#
+#   terraform import appwrite_project_key.deployments organization-id/project-id/deployments
 resource "appwrite_project_key" "deployments" {
   id              = "deployments"
   project_id      = "project-id"
@@ -24,6 +31,8 @@ resource "appwrite_project_key" "deployments" {
   scopes          = ["functions.read", "functions.write", "sites.read", "sites.write"]
 }
 
+# The secret is only returned at creation time, so it is empty on an imported
+# key. Read it from the Console instead of from state.
 output "deployment_api_key" {
   value     = appwrite_project_key.deployments.secret
   sensitive = true

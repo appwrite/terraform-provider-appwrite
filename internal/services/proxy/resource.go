@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appwrite/sdk-for-go/v6/appwrite"
-	"github.com/appwrite/sdk-for-go/v6/models"
-	"github.com/appwrite/sdk-for-go/v6/proxy"
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/models"
+	"github.com/appwrite/sdk-for-go/v7/proxy"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
