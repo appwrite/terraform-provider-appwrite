@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0-beta.1] - 2026-08-18
+
+A prerelease. Pin it exactly (`version = "2.0.0-beta.1"`); ordinary constraints
+will not select it.
 
 ### Added
 
@@ -22,22 +25,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `appwrite_postgresql_database_status`, `appwrite_mysql_database_status` and `appwrite_mongo_database_status` data sources reporting live health, replication, connection counts and storage volumes
   - `appwrite_postgresql_backups`, `appwrite_mysql_backups` and `appwrite_mongo_backups` data sources for finding a backup ID to restore from outside Terraform
   - `appwrite_postgresql_extensions` data source listing installed and available extensions
-- `appwrite_proxy_rule` resource for site and function custom domains
-- `appwrite_project` resource for organization-scoped project provisioning
-- `appwrite_project_key` resource for managing project API keys. Keys are created in the Appwrite Console and imported; see the note under Changed
-- Provider-level `organization_id` configuration with `APPWRITE_ORGANIZATION_ID` support
-- Separate `organization_api_key` configuration with `APPWRITE_ORGANIZATION_API_KEY` support
-- Resource-specific credential type validation and authentication guidance
+- Provider-level `http_timeout_seconds` for tuning how long a single API response is waited for
 
 ### Changed
 
-- Upgraded `go-sdk` to `v7.2.0-rc.1`
+- Upgraded `sdk-for-go` to `v7.2.0-rc.1`
 - **Breaking:** `appwrite_project_key` can no longer create keys. Appwrite removed the create-project-key endpoint so that a leaked API key cannot mint further keys and outlive its own revocation, and there is no server-side replacement. A plan that would create a key now fails with guidance to create it in the Console and `terraform import` it; read, update, delete and import are unaffected. The `secret` attribute is only populated for keys created before this change, since the API only returns a secret at creation time
+- The default per-request HTTP timeout is now 120 seconds, raised from the SDK's 10. Some endpoints complete their work inline rather than asynchronously -- updating a connection pooler restarts the sidecar -- and timing out after the server has already applied a change made Terraform report a failure for work that succeeded
 
 ### Fixed
 
 - `appwrite_tablesdb_column`: reading a column no longer fails against SDK v6.5.0 and later, where a JSON response body is `[]byte` rather than `string`
+- Examples and documentation used `db-s-1vcpu-1gb` as the illustrative compute specification slug. The real slugs carry no `db-` prefix (`s-1vcpu-1gb` through `s-8vcpu-64gb`), so an example copied verbatim failed
+
+## [1.8.0] - 2026-08-17
+
+### Added
+
+- `appwrite_project` resource for organization-scoped project provisioning
+- `appwrite_project_key` resource for project API keys
+- `appwrite_proxy_rule` resource for site and function custom domains
+- Provider-level `organization_id` configuration with `APPWRITE_ORGANIZATION_ID` support
+- Separate `organization_api_key` configuration with `APPWRITE_ORGANIZATION_API_KEY` support
+- Resource-specific credential type validation and authentication guidance
+
+## [1.7.1] - 2026-08-12
+
+### Added
+
+- Variable keys are validated at plan time, so a key that cannot become an environment variable fails before the apply
+
+## [1.7.0] - 2026-07-17
+
+### Changed
+
+- Upgraded `sdk-for-go` to `v6.0.0`
+
+### Fixed
+
 - `appwrite_tablesdb_column`: `size` is no longer ignored for `type = "string"` — create/update call the string column endpoints again instead of the text endpoints, so columns materialize as `string(size)` (indexable) rather than unbounded TEXT ([#31](https://github.com/appwrite/terraform-provider-appwrite/issues/31))
+- `appwrite_tablesdb_column`: the `X-Appwrite-Project` header is sent on raw column reads, which previously failed with `project_id_missing`
 
 ## [1.6.0] - 2026-06-04
 
