@@ -175,7 +175,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		Orders:  orders,
 		Lengths: lengths,
 	}); err != nil {
-		resp.Diagnostics.AddError("Error creating index", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating index", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_index", r.product), "collections.write")))
 		return
 	}
 
@@ -194,7 +194,7 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	index, err := api.GetIndex(databaseID, collectionID, key)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading created index", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading created index", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_index", r.product), "collections.write")))
 		return
 	}
 
@@ -223,7 +223,7 @@ func (r *indexResource) Read(ctx context.Context, req resource.ReadRequest, resp
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading index", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading index", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_index", r.product), "collections.write")))
 		return
 	}
 
@@ -255,7 +255,7 @@ func (r *indexResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	err = apiFor(r.clients, r.product, projectID).
 		DeleteIndex(state.DatabaseID.ValueString(), state.CollectionID.ValueString(), state.Key.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting index", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting index", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_index", r.product), "collections.write")))
 	}
 }
 

@@ -162,7 +162,7 @@ func (r *documentResource) Create(ctx context.Context, req resource.CreateReques
 	document, err := apiFor(r.clients, r.product, projectID).
 		CreateDocument(plan.DatabaseID.ValueString(), plan.CollectionID.ValueString(), documentID, data, permissions)
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating document", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating document", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_document", r.product), "documents.write")))
 		return
 	}
 
@@ -191,7 +191,7 @@ func (r *documentResource) Read(ctx context.Context, req resource.ReadRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading document", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading document", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_document", r.product), "documents.write")))
 		return
 	}
 
@@ -227,7 +227,7 @@ func (r *documentResource) Update(ctx context.Context, req resource.UpdateReques
 	document, err := apiFor(r.clients, r.product, projectID).
 		UpdateDocument(plan.DatabaseID.ValueString(), plan.CollectionID.ValueString(), plan.ID.ValueString(), data, permissions)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating document", common.FormatError(err))
+		resp.Diagnostics.AddError("Error updating document", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_document", r.product), "documents.write")))
 		return
 	}
 
@@ -252,7 +252,7 @@ func (r *documentResource) Delete(ctx context.Context, req resource.DeleteReques
 	err = apiFor(r.clients, r.product, projectID).
 		DeleteDocument(state.DatabaseID.ValueString(), state.CollectionID.ValueString(), state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting document", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting document", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_document", r.product), "documents.write")))
 	}
 }
 

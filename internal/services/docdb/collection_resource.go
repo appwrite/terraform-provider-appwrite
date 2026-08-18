@@ -185,7 +185,7 @@ func (r *collectionResource) Create(ctx context.Context, req resource.CreateRequ
 	collection, err := apiFor(r.clients, r.product, projectID).
 		CreateCollection(plan.DatabaseID.ValueString(), collectionID, plan.Name.ValueString(), opts)
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating collection", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating collection", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_collection", r.product), "collections.write")))
 		return
 	}
 
@@ -214,7 +214,7 @@ func (r *collectionResource) Read(ctx context.Context, req resource.ReadRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading collection", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading collection", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_collection", r.product), "collections.write")))
 		return
 	}
 
@@ -244,7 +244,7 @@ func (r *collectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	collection, err := apiFor(r.clients, r.product, projectID).
 		UpdateCollection(plan.DatabaseID.ValueString(), plan.ID.ValueString(), plan.Name.ValueString(), opts)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating collection", common.FormatError(err))
+		resp.Diagnostics.AddError("Error updating collection", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_collection", r.product), "collections.write")))
 		return
 	}
 
@@ -268,7 +268,7 @@ func (r *collectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	err = apiFor(r.clients, r.product, projectID).DeleteCollection(state.DatabaseID.ValueString(), state.ID.ValueString())
 	if err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting collection", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting collection", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s_collection", r.product), "collections.write")))
 	}
 }
 

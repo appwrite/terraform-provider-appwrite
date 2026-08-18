@@ -169,7 +169,7 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 		SyncMode:      optString(plan.SyncMode),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating database", common.FormatError(err))
+		resp.Diagnostics.AddError("Error creating database", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s", r.product), "databases.write")))
 		return
 	}
 
@@ -209,7 +209,7 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Error reading database", common.FormatError(err))
+		resp.Diagnostics.AddError("Error reading database", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s", r.product), "databases.write")))
 		return
 	}
 
@@ -238,7 +238,7 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 		SyncMode:      optString(plan.SyncMode),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating database", common.FormatError(err))
+		resp.Diagnostics.AddError("Error updating database", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s", r.product), "databases.write")))
 		return
 	}
 
@@ -261,7 +261,7 @@ func (r *databaseResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	if err := apiFor(r.clients, r.product, projectID).Delete(state.ID.ValueString()); err != nil && !common.IsNotFoundError(err) {
-		resp.Diagnostics.AddError("Error deleting database", common.FormatError(err))
+		resp.Diagnostics.AddError("Error deleting database", common.FormatErrorWithAuthGuidance(err, common.DatabaseProductGuidance(fmt.Sprintf("appwrite_%s", r.product), "databases.write")))
 	}
 }
 
