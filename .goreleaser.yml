@@ -50,6 +50,10 @@ release:
     - glob: terraform-registry-manifest.json
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
   draft: false
+  # Mark any hyphenated tag (v2.0.0-beta.1, v2.0.0-rc.1) as a GitHub
+  # prerelease. Without this a beta tag publishes as a normal release and
+  # shows up as the latest version. Tags without a hyphen are unaffected.
+  prerelease: auto
 
 changelog:
   sort: asc

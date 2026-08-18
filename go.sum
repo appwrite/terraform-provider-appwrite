@@ -19,8 +19,8 @@ github.com/agext/levenshtein v1.2.2/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki
 github.com/apparentlymart/go-textseg/v12 v12.0.0/go.mod h1:S/4uRK2UtaQttw1GenVJEynmyUenKwP++x/+DdGV/Ec=
 github.com/apparentlymart/go-textseg/v15 v15.0.0 h1:uYvfpb3DyLSCGWnctWKGj857c6ew1u1fNQOlOtuGxQY=
 github.com/apparentlymart/go-textseg/v15 v15.0.0/go.mod h1:K8XmNZdhEBkdlyDdvbmmsvpAG721bKi0joRfFdHIWJ4=
-github.com/appwrite/sdk-for-go/v6 v6.0.0 h1:npGhGJNhvWx8DN7OdxTap5g22wknVSTUHAkpdjz4Yak=
-github.com/appwrite/sdk-for-go/v6 v6.0.0/go.mod h1:5oTdAwNsSNCY0FxwUzs1J0XAgxue2veWSdVcCSsKg8I=
+github.com/appwrite/sdk-for-go/v7 v7.2.0-rc.1 h1:sY6je7tmJHw0EBm7vlNXFr/+sXEogl3LOfUMI51X7Ek=
+github.com/appwrite/sdk-for-go/v7 v7.2.0-rc.1/go.mod h1:gs7R/l/x852w53TdpjUQOdwU41y3iMxhtlaPhL83RRs=
 github.com/armon/go-radix v1.0.0 h1:F4z6KzEeeQIMeLFa97iZU6vupzoecKdU5TX24SNppXI=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/bgentry/speakeasy v0.1.0 h1:ByYyxL9InA1OWqxJqqp2A5pYHUrCiAL6K3J+LKSsQkY=

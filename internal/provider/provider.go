@@ -3,9 +3,10 @@ package provider
 import (
 	"context"
 	"os"
+	"time"
 
-	"github.com/appwrite/sdk-for-go/v6/appwrite"
-	"github.com/appwrite/sdk-for-go/v6/client"
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -17,6 +18,7 @@ import (
 	bucketsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
+	dedicatedsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -33,6 +35,10 @@ import (
 	webhooksvc "github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
 )
 
+// defaultHTTPTimeout is the per-request ceiling. It has to clear the slowest
+// operation the server performs inline rather than asynchronously.
+const defaultHTTPTimeout = 120 * time.Second
+
 var _ provider.Provider = &appwriteProvider{}
 
 type appwriteProvider struct {
@@ -46,6 +52,7 @@ type appwriteProviderModel struct {
 	APIKey             types.String `tfsdk:"api_key"`
 	OrganizationAPIKey types.String `tfsdk:"organization_api_key"`
 	SelfSigned         types.Bool   `tfsdk:"self_signed"`
+	HTTPTimeoutSeconds types.Int64  `tfsdk:"http_timeout_seconds"`
 }
 
 func New(version string) func() provider.Provider {
@@ -89,6 +96,10 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "Accept self-signed SSL certificates. Useful for Appwrite Community Edition with self-signed certs. Defaults to false.",
 				Optional:    true,
 			},
+			"http_timeout_seconds": schema.Int64Attribute{
+				Description: "How long to wait for a single API response before giving up. Defaults to 120. The SDK's own default is 10 seconds, which is too short for operations the server completes inline, such as updating a connection pooler.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -125,14 +136,26 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
+	// The SDK defaults to a 10 second timeout, which some Appwrite operations
+	// exceed while the server works inline -- updating a connection pooler
+	// restarts the sidecar and routinely takes longer. A request that times out
+	// after the server already applied the change leaves Terraform reporting a
+	// failure for work that succeeded, so the ceiling is raised well clear of it.
+	httpTimeout := defaultHTTPTimeout
+	if !config.HTTPTimeoutSeconds.IsNull() && !config.HTTPTimeoutSeconds.IsUnknown() {
+		httpTimeout = time.Duration(config.HTTPTimeoutSeconds.ValueInt64()) * time.Second
+	}
+
 	baseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(apiKey),
+		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
 	}
 	organizationBaseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(organizationAPIKey),
+		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
 	}
 	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {
@@ -178,6 +201,25 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		sitesvc.NewVariableResource,
 		sitesvc.NewDeploymentResource,
 		functionsvc.NewDeploymentResource,
+
+		// Dedicated databases. Each engine is exposed as its own resource type
+		// because Appwrite routes them separately and only some engines have a
+		// pooler or extensions.
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewDatabaseResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBackupPolicyResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewBackupStorageResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBackupStorageResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBackupStorageResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewBranchResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBranchResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBranchResource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewPoolerResource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewPoolerResource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewExtensionResource(dedicatedsvc.EnginePostgresql),
 	}
 }
 
@@ -191,6 +233,23 @@ func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.Da
 		sitesvc.NewSiteDataSource,
 		topicsvc.NewTopicDataSource,
 		webhooksvc.NewWebhookDataSource,
+
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewDatabasesDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewDatabasesDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewDatabasesDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewSpecificationsDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewStatusDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewStatusDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewStatusDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewBackupsDataSource(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBackupsDataSource(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBackupsDataSource(dedicatedsvc.EngineMongo),
+		dedicatedsvc.NewExtensionsDataSource(dedicatedsvc.EnginePostgresql),
 	}
 }
 

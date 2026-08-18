@@ -1,0 +1,25 @@
+# Copy to terraform.tfvars and edit. terraform.tfvars is gitignored.
+
+# prefix               = "tf-sandbox"
+# idle_timeout_minutes = 15
+# self_signed          = false
+
+# Pin a slug instead of letting the config pick the cheapest enabled one.
+# Run `terraform plan` first: the plan shows which slug it would choose, and
+# the available_specifications output lists them all.
+# postgresql_specification = "db-s-1vcpu-1gb"
+# mysql_specification      = "db-s-1vcpu-1gb"
+# mongo_specification      = "db-s-1vcpu-1gb"
+
+# Branches cost extra, so they are off by default.
+# create_branches = true
+
+# A custom backup destination needs real bucket credentials. The API has no
+# route to read this back, so Terraform cannot detect drift on it.
+# backup_storage = {
+#   storage_provider = "s3"
+#   bucket           = "acme-backups"
+#   access_key       = "..."
+#   secret_key       = "..."
+#   region           = "eu-west-1"
+# }

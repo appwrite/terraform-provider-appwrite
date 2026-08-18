@@ -54,6 +54,7 @@ Use a standard project key in `api_key` for project resources and an organizatio
 
 - `api_key` (String, Sensitive) The project API key used for project-scoped resources. Can also be set with the APPWRITE_API_KEY environment variable.
 - `endpoint` (String) The Appwrite API endpoint (e.g. https://cloud.appwrite.io/v1). Can also be set with the APPWRITE_ENDPOINT environment variable.
+- `http_timeout_seconds` (Number) How long to wait for a single API response before giving up. Defaults to 120. The SDK's own default is 10 seconds, which is too short for operations the server completes inline, such as updating a connection pooler.
 - `organization_api_key` (String, Sensitive) The organization API key used for organization-scoped resources and project API key management. Defaults to api_key for backwards compatibility. Can also be set with the APPWRITE_ORGANIZATION_API_KEY environment variable.
 - `organization_id` (String) The default Appwrite organization ID for organization-scoped resources. Can also be set with the APPWRITE_ORGANIZATION_ID environment variable. Can be overridden per-resource.
 - `project_id` (String) The default Appwrite project ID for all resources. Can also be set with the APPWRITE_PROJECT_ID environment variable. Can be overridden per-resource.

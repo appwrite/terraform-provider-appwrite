@@ -1,0 +1,22 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Dedicated Databases"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## See Also
+
+- [appwrite_postgresql_database](postgresql_database.md) - Look up a single database, including connection credentials

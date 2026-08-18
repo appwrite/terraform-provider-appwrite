@@ -1,0 +1,22 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Dedicated Databases"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## See Also
+
+- [appwrite_mongo_database](../resources/mongo_database.md) - Manage the database this reports on

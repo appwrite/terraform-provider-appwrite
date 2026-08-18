@@ -30,6 +30,17 @@ func OrganizationPreCheck(t *testing.T) {
 	}
 }
 
+// DedicatedPreCheck gates the dedicated database tests. They provision real,
+// billable infrastructure and take minutes per step, so they stay off unless
+// explicitly asked for.
+func DedicatedPreCheck(t *testing.T) {
+	t.Helper()
+	PreCheck(t)
+	if os.Getenv("APPWRITE_DEDICATED_DATABASE_TESTS") == "" {
+		t.Skip("APPWRITE_DEDICATED_DATABASE_TESTS must be set to run dedicated database acceptance tests; they provision billable infrastructure")
+	}
+}
+
 func preCheckBase(t *testing.T) {
 	t.Helper()
 	if os.Getenv("APPWRITE_ENDPOINT") == "" {

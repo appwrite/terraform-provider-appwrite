@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appwrite/sdk-for-go/v6/appwrite"
-	"github.com/appwrite/sdk-for-go/v6/client"
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -296,12 +296,14 @@ func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]
 	if !strings.HasPrefix(resp.Type, "application/json") {
 		return nil, fmt.Errorf("unexpected response type: %s", resp.Type)
 	}
-	resultStr, ok := resp.Result.(string)
-	if !ok {
-		return nil, fmt.Errorf("unexpected response result type: %T", resp.Result)
+	// The SDK hands back []byte for JSON responses since v6.5.0, and string
+	// before that; ResponseBody accepts either.
+	body, err := client.ResponseBody(resp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read column response: %w", err)
 	}
 	var result map[string]interface{}
-	if err := json.Unmarshal([]byte(resultStr), &result); err != nil {
+	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal column response: %w", err)
 	}
 	return result, nil

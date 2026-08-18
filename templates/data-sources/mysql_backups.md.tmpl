@@ -1,0 +1,22 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Dedicated Databases"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## See Also
+
+- [appwrite_mysql_backup_policy](../resources/mysql_backup_policy.md) - Schedule the backups this lists

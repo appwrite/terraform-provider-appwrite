@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/appwrite/sdk-for-go/v6/appwrite"
-	"github.com/appwrite/sdk-for-go/v6/id"
-	"github.com/appwrite/sdk-for-go/v6/tablesdb"
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/id"
+	"github.com/appwrite/sdk-for-go/v7/tablesdb"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
