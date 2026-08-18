@@ -1,0 +1,32 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "VectorsDB"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Import is supported using the following syntax:
+
+{{ codefile "shell" .ImportFile }}
+{{- end }}
+
+## See Also
+
+- [appwrite_vectorsdb](vectorsdb.md) - Manage the database this collection lives in
+- [appwrite_vectorsdb_index](vectorsdb_index.md) - Index this collection
+- [appwrite_vectorsdb_document](vectorsdb_document.md) - Manage documents in this collection
