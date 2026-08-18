@@ -29,7 +29,7 @@ will not select it.
 
 ### Changed
 
-- Upgraded `sdk-for-go` to `v7.2.0-rc.1`
+- Upgraded `sdk-for-go` to `v7.2.0-rc.2`
 - **Breaking:** `appwrite_project_key` can no longer create keys. Appwrite removed the create-project-key endpoint so that a leaked API key cannot mint further keys and outlive its own revocation, and there is no server-side replacement. A plan that would create a key now fails with guidance to create it in the Console and `terraform import` it; read, update, delete and import are unaffected. The `secret` attribute is only populated for keys created before this change, since the API only returns a secret at creation time
 - The default per-request HTTP timeout is now 120 seconds, raised from the SDK's 10. Some endpoints complete their work inline rather than asynchronously -- updating a connection pooler restarts the sidecar -- and timing out after the server has already applied a change made Terraform report a failure for work that succeeded
 
