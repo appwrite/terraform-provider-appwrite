@@ -18,7 +18,7 @@ The API offers no route to read this configuration back, so Terraform cannot det
 ```terraform
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 # Send backups to a bucket you control, so they survive the Appwrite project and

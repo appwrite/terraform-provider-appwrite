@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/client"
@@ -34,6 +35,10 @@ import (
 	webhooksvc "github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
 )
 
+// defaultHTTPTimeout is the per-request ceiling. It has to clear the slowest
+// operation the server performs inline rather than asynchronously.
+const defaultHTTPTimeout = 120 * time.Second
+
 var _ provider.Provider = &appwriteProvider{}
 
 type appwriteProvider struct {
@@ -47,6 +52,7 @@ type appwriteProviderModel struct {
 	APIKey             types.String `tfsdk:"api_key"`
 	OrganizationAPIKey types.String `tfsdk:"organization_api_key"`
 	SelfSigned         types.Bool   `tfsdk:"self_signed"`
+	HTTPTimeoutSeconds types.Int64  `tfsdk:"http_timeout_seconds"`
 }
 
 func New(version string) func() provider.Provider {
@@ -90,6 +96,10 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "Accept self-signed SSL certificates. Useful for Appwrite Community Edition with self-signed certs. Defaults to false.",
 				Optional:    true,
 			},
+			"http_timeout_seconds": schema.Int64Attribute{
+				Description: "How long to wait for a single API response before giving up. Defaults to 120. The SDK's own default is 10 seconds, which is too short for operations the server completes inline, such as updating a connection pooler.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -126,14 +136,26 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
+	// The SDK defaults to a 10 second timeout, which some Appwrite operations
+	// exceed while the server works inline -- updating a connection pooler
+	// restarts the sidecar and routinely takes longer. A request that times out
+	// after the server already applied the change leaves Terraform reporting a
+	// failure for work that succeeded, so the ceiling is raised well clear of it.
+	httpTimeout := defaultHTTPTimeout
+	if !config.HTTPTimeoutSeconds.IsNull() && !config.HTTPTimeoutSeconds.IsUnknown() {
+		httpTimeout = time.Duration(config.HTTPTimeoutSeconds.ValueInt64()) * time.Second
+	}
+
 	baseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(apiKey),
+		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
 	}
 	organizationBaseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(organizationAPIKey),
+		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
 	}
 	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {

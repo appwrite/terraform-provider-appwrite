@@ -4,7 +4,7 @@
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
   version       = "17"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 # Pick the specification from the API instead of hardcoding a slug that may not
@@ -41,7 +41,7 @@ resource "appwrite_postgresql_database" "production" {
 # that can be paused entirely without losing its data.
 resource "appwrite_postgresql_database" "development" {
   name                 = "development"
-  specification        = "db-s-1vcpu-1gb"
+  specification        = "s-1vcpu-1gb"
   idle_timeout_minutes = 15
   status               = "ready"
 }
@@ -50,7 +50,7 @@ resource "appwrite_postgresql_database" "development" {
 # connection. Statement types beyond SELECT have to be opted into explicitly.
 resource "appwrite_postgresql_database" "analytics" {
   name          = "analytics"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 
   sql_api_enabled            = true
   sql_api_allowed_statements = ["SELECT"]

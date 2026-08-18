@@ -23,7 +23,7 @@ func specification() string {
 	if slug := os.Getenv("APPWRITE_DEDICATED_SPECIFICATION"); slug != "" {
 		return slug
 	}
-	return "db-s-1vcpu-1gb"
+	return "s-1vcpu-1gb"
 }
 
 func TestAccPostgresqlDatabaseResource_basic(t *testing.T) {

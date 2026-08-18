@@ -137,7 +137,7 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
 		"specification": schema.StringAttribute{
-			Description:   "The compute specification slug, for example `db-s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.",
+			Description:   "The compute specification slug, for example `s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.",
 			Optional:      true,
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},

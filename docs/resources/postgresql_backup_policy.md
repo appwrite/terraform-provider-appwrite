@@ -14,7 +14,7 @@ Manages a scheduled backup policy for a dedicated Appwrite PostgreSQL database. 
 ```terraform
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 # A full snapshot every night, kept for a week.

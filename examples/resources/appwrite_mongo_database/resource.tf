@@ -1,11 +1,11 @@
 resource "appwrite_mongo_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 resource "appwrite_mongo_database" "production" {
   name          = "production"
-  specification = "db-s-2vcpu-4gb"
+  specification = "s-2vcpu-4gb"
 
   replicas  = 2
   sync_mode = "quorum"

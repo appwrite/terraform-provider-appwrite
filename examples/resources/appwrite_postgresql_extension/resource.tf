@@ -1,6 +1,6 @@
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 resource "appwrite_postgresql_extension" "postgis" {

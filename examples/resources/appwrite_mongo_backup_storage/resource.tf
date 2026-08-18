@@ -1,6 +1,6 @@
 resource "appwrite_mongo_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 # Appwrite exposes no route to read this configuration back, so Terraform cannot

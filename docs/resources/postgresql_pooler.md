@@ -14,7 +14,7 @@ Configures the connection pooler of a dedicated Appwrite PostgreSQL database. Th
 ```terraform
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
-  specification = "db-s-2vcpu-4gb"
+  specification = "s-2vcpu-4gb"
   replicas      = 1
 }
 

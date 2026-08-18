@@ -14,12 +14,12 @@ Manages a dedicated Appwrite MongoDB database. A dedicated database runs on infr
 ```terraform
 resource "appwrite_mongo_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 resource "appwrite_mongo_database" "production" {
   name          = "production"
-  specification = "db-s-2vcpu-4gb"
+  specification = "s-2vcpu-4gb"
 
   replicas  = 2
   sync_mode = "quorum"
@@ -55,7 +55,7 @@ resource "appwrite_mongo_database" "production" {
 - `pitr_retention_days` (Number) How many days of point-in-time recovery data to retain.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `replicas` (Number) The number of high availability replicas. High availability is enabled when greater than 0.
-- `specification` (String) The compute specification slug, for example `db-s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
+- `specification` (String) The compute specification slug, for example `s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
 - `sql_api_allowed_statements` (Set of String) The statement types the SQL API accepts. Defaults to read/write DML only; DDL and DCL types (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `GRANT`, `REVOKE`) are opt-in.
 - `sql_api_enabled` (Boolean) Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API. Note that MongoDB has no SQL execution endpoint, so these settings are accepted but currently have nothing to act on.
 - `sql_api_max_bytes` (Number) The maximum serialized SQL API result payload in bytes. Larger results are truncated.

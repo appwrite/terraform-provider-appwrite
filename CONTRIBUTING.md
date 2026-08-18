@@ -58,8 +58,8 @@ several minutes per step, so they are skipped unless explicitly enabled:
 # Opt in. Without this, every dedicated database test skips:
 export APPWRITE_DEDICATED_DATABASE_TESTS=1
 # Optional. The compute slug to provision with; which slugs exist depends on the
-# organization's billing plan. Defaults to db-s-1vcpu-1gb:
-export APPWRITE_DEDICATED_SPECIFICATION="db-s-1vcpu-1gb"
+# organization's billing plan. Defaults to s-1vcpu-1gb:
+export APPWRITE_DEDICATED_SPECIFICATION="s-1vcpu-1gb"
 
 make acceptance-test TESTARGS='-run TestAccPostgresql'
 ```

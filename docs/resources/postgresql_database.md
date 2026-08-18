@@ -18,7 +18,7 @@ Manages a dedicated Appwrite PostgreSQL database. A dedicated database runs on i
 resource "appwrite_postgresql_database" "main" {
   name          = "main"
   version       = "17"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 # Pick the specification from the API instead of hardcoding a slug that may not
@@ -55,7 +55,7 @@ resource "appwrite_postgresql_database" "production" {
 # that can be paused entirely without losing its data.
 resource "appwrite_postgresql_database" "development" {
   name                 = "development"
-  specification        = "db-s-1vcpu-1gb"
+  specification        = "s-1vcpu-1gb"
   idle_timeout_minutes = 15
   status               = "ready"
 }
@@ -64,7 +64,7 @@ resource "appwrite_postgresql_database" "development" {
 # connection. Statement types beyond SELECT have to be opted into explicitly.
 resource "appwrite_postgresql_database" "analytics" {
   name          = "analytics"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 
   sql_api_enabled            = true
   sql_api_allowed_statements = ["SELECT"]
@@ -92,7 +92,7 @@ resource "appwrite_postgresql_database" "analytics" {
 - `pitr_retention_days` (Number) How many days of point-in-time recovery data to retain.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
 - `replicas` (Number) The number of high availability replicas. High availability is enabled when greater than 0.
-- `specification` (String) The compute specification slug, for example `db-s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
+- `specification` (String) The compute specification slug, for example `s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
 - `sql_api_allowed_statements` (Set of String) The statement types the SQL API accepts. Defaults to read/write DML only; DDL and DCL types (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `GRANT`, `REVOKE`) are opt-in.
 - `sql_api_enabled` (Boolean) Whether the SQL API sidecar is enabled, allowing statements to be run over the Appwrite API.
 - `sql_api_max_bytes` (Number) The maximum serialized SQL API result payload in bytes. Larger results are truncated.

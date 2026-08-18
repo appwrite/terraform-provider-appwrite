@@ -1,12 +1,12 @@
 resource "appwrite_mysql_database" "main" {
   name          = "main"
   version       = "8"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 resource "appwrite_mysql_database" "production" {
   name          = "production"
-  specification = "db-s-2vcpu-4gb"
+  specification = "s-2vcpu-4gb"
 
   replicas  = 1
   sync_mode = "sync"

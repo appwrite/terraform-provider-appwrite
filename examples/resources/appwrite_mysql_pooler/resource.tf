@@ -1,6 +1,6 @@
 resource "appwrite_mysql_database" "main" {
   name          = "main"
-  specification = "db-s-2vcpu-4gb"
+  specification = "s-2vcpu-4gb"
 }
 
 resource "appwrite_mysql_pooler" "main" {

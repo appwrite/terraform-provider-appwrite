@@ -14,7 +14,7 @@ Manages a scheduled backup policy for a dedicated Appwrite MySQL database. Use `
 ```terraform
 resource "appwrite_mysql_database" "main" {
   name          = "main"
-  specification = "db-s-1vcpu-1gb"
+  specification = "s-1vcpu-1gb"
 }
 
 resource "appwrite_mysql_backup_policy" "nightly" {
