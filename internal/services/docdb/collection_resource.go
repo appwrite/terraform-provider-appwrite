@@ -2,6 +2,7 @@ package docdb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/appwrite/sdk-for-go/v7/id"
@@ -37,6 +38,7 @@ type collectionResourceModel struct {
 	DocumentSecurity types.Bool   `tfsdk:"document_security"`
 	Permissions      types.Set    `tfsdk:"permissions"`
 	Dimension        types.Int64  `tfsdk:"dimension"`
+	Attributes       types.String `tfsdk:"attributes"`
 
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
@@ -102,6 +104,28 @@ func (r *collectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		"project_id": common.ProjectIDAttribute(),
 	}
 
+	// Attributes can only be declared when the collection is created: there is
+	// no route to add, change or remove one afterwards. Changing them therefore
+	// replaces the collection, and the value is never refreshed from the server
+	// -- the API returns its own normalised form with fields the configuration
+	// never mentioned, which would read as drift on every plan.
+	if r.product.SupportsAttributes() {
+		attributes["attributes"] = schema.StringAttribute{
+			Description: "Typed attribute definitions as a JSON array string, for example " +
+				"`jsonencode([{ key = \"slug\", type = \"string\", size = 255, required = true }])`. " +
+				"Applied only when the collection is created, so changing this replaces the collection. " +
+				"An index can only be built on a declared attribute, so declare here anything you intend to index. " +
+				"Not refreshed from the server, so drift on it is not detected.",
+			Optional:      true,
+			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+		}
+	} else {
+		attributes["attributes"] = schema.StringAttribute{
+			Description: "Not applicable to VectorsDB collections, which take no typed attribute definitions. Present only so both products share one state shape.",
+			Computed:    true,
+		}
+	}
+
 	// Only VectorsDB collections carry an embedding dimension. Exposing it on
 	// DocumentsDB would let a user configure something the route does not take.
 	if r.product.SupportsDimension() {
@@ -139,7 +163,11 @@ func (r *collectionResource) Configure(_ context.Context, req resource.Configure
 	r.clients = clients
 }
 
-func (r *collectionResource) options(ctx context.Context, plan collectionResourceModel, diagnostics *diag.Diagnostics) CollectionOptions {
+// options builds the request. sendDimension is false on update unless the
+// dimension actually changed: it is required in configuration, so it is always
+// present in the plan, and resending it on an unrelated rename would put a
+// re-index request in front of the server for no reason.
+func (r *collectionResource) options(ctx context.Context, plan collectionResourceModel, sendDimension bool, diagnostics *diag.Diagnostics) CollectionOptions {
 	var permissions []string
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		diagnostics.Append(plan.Permissions.ElementsAs(ctx, &permissions, false)...)
@@ -153,8 +181,16 @@ func (r *collectionResource) options(ctx context.Context, plan collectionResourc
 		DocumentSecurity: optBool(plan.DocumentSecurity),
 		Enabled:          optBool(plan.Enabled),
 	}
-	if r.product.SupportsDimension() {
+	if r.product.SupportsDimension() && sendDimension {
 		opts.Dimension = optInt(plan.Dimension)
+	}
+	if r.product.SupportsAttributes() && !plan.Attributes.IsNull() && !plan.Attributes.IsUnknown() {
+		var declared []interface{}
+		if err := json.Unmarshal([]byte(plan.Attributes.ValueString()), &declared); err != nil {
+			diagnostics.AddError("Invalid attributes", fmt.Sprintf("attributes must be a JSON array: %s", err))
+			return opts
+		}
+		opts.Attributes = declared
 	}
 	return opts
 }
@@ -177,7 +213,7 @@ func (r *collectionResource) Create(ctx context.Context, req resource.CreateRequ
 		collectionID = id.Unique()
 	}
 
-	opts := r.options(ctx, plan, &resp.Diagnostics)
+	opts := r.options(ctx, plan, true, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -224,8 +260,9 @@ func (r *collectionResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *collectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan collectionResourceModel
+	var plan, state collectionResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -236,7 +273,8 @@ func (r *collectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	opts := r.options(ctx, plan, &resp.Diagnostics)
+	dimensionChanged := !plan.Dimension.Equal(state.Dimension)
+	opts := r.options(ctx, plan, dimensionChanged, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -289,6 +327,11 @@ func (r *collectionResource) mapToState(ctx context.Context, collection *Collect
 	model.Enabled = types.BoolValue(collection.Enabled)
 	model.DocumentSecurity = types.BoolValue(collection.DocumentSecurity)
 	model.Dimension = types.Int64Value(int64(collection.Dimension))
+	// attributes is deliberately not mapped: it is create-only and the server
+	// returns a normalised form that would read as drift.
+	if !r.product.SupportsAttributes() {
+		model.Attributes = types.StringNull()
+	}
 	model.CreatedAt = types.StringValue(collection.CreatedAt)
 	model.UpdatedAt = types.StringValue(collection.UpdatedAt)
 

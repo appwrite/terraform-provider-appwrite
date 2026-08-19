@@ -48,6 +48,7 @@ resource "appwrite_vectorsdb_collection" "articles" {
 
 ### Read-Only
 
+- `attributes` (String) Not applicable to VectorsDB collections, which take no typed attribute definitions. Present only so both products share one state shape.
 - `created_at` (String) The collection creation timestamp in ISO 8601 format.
 - `updated_at` (String) The collection last update timestamp in ISO 8601 format.
 

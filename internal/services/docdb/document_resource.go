@@ -1,6 +1,7 @@
 package docdb
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -280,7 +281,11 @@ func (r *documentResource) mapToState(ctx context.Context, document *models.Docu
 
 	// The typed model carries no body, so the full response is decoded and the
 	// $-prefixed system fields dropped.
-	var raw map[string]interface{}
+	//
+	// Values are kept as raw JSON rather than decoded into interface{}: doing
+	// the latter turns every number into a float64, which silently rounds an
+	// integer beyond 2^53 and would rewrite it in state on each refresh.
+	var raw map[string]json.RawMessage
 	if err := document.Decode(&raw); err != nil {
 		diagnostics.AddError("Error decoding document data", err.Error())
 		return
@@ -289,26 +294,32 @@ func (r *documentResource) mapToState(ctx context.Context, document *models.Docu
 	// Track only the keys the configuration mentions. A collection may hold
 	// fields written by the application, and adopting those would show as drift
 	// on every plan.
-	var configured map[string]interface{}
+	var configured map[string]json.RawMessage
 	if !model.Data.IsNull() && !model.Data.IsUnknown() {
 		if err := json.Unmarshal([]byte(model.Data.ValueString()), &configured); err != nil {
 			configured = nil
 		}
 	}
 
-	filtered := make(map[string]interface{})
+	filtered := make(map[string]json.RawMessage, len(raw))
 	for key, value := range raw {
 		if strings.HasPrefix(key, "$") {
 			continue
 		}
 		// On import there is no prior configuration, so everything is adopted.
-		if configured == nil {
-			filtered[key] = value
-			continue
+		if configured != nil {
+			if _, ok := configured[key]; !ok {
+				continue
+			}
 		}
-		if _, ok := configured[key]; ok {
-			filtered[key] = value
+		// Whitespace in the response would otherwise land in state and read as
+		// a difference against the compact form jsonencode produces.
+		var compact bytes.Buffer
+		if err := json.Compact(&compact, value); err != nil {
+			diagnostics.AddError("Error normalising document data", err.Error())
+			return
 		}
+		filtered[key] = json.RawMessage(compact.Bytes())
 	}
 
 	encoded, err := json.Marshal(filtered)

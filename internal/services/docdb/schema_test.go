@@ -1,6 +1,7 @@
 package docdb_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/docdb"
@@ -102,6 +103,36 @@ func TestProductLabels(t *testing.T) {
 	} {
 		if got := product.Label(); got != want {
 			t.Errorf("Label(%q) = %q, want %q", product, got, want)
+		}
+	}
+}
+
+// Attributes can only be declared when a collection is created, and only on
+// DocumentsDB. Exposing them as configurable on VectorsDB would accept input
+// the route never sends; leaving out RequiresReplace would silently drop a
+// changed definition, since there is no route to alter one in place.
+func TestCollectionAttributesAreCreateOnlyAndProductSpecific(t *testing.T) {
+	ctx := t.Context()
+
+	for product, wantConfigurable := range map[docdb.Product]bool{
+		docdb.ProductDocumentsDB: true,
+		docdb.ProductVectorsDB:   false,
+	} {
+		schemaResp := &resource.SchemaResponse{}
+		docdb.NewCollectionResource(product)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
+
+		attribute, ok := schemaResp.Schema.Attributes["attributes"]
+		if !ok {
+			t.Fatalf("%s collection has no attributes field", product)
+		}
+		if got := attribute.IsOptional(); got != wantConfigurable {
+			t.Errorf("%s attributes IsOptional() = %v, want %v", product, got, wantConfigurable)
+		}
+		if got := attribute.IsComputed(); got == wantConfigurable {
+			t.Errorf("%s attributes IsComputed() = %v, want %v", product, got, !wantConfigurable)
+		}
+		if wantConfigurable && !strings.Contains(attribute.GetDescription(), "replaces the collection") {
+			t.Errorf("%s attributes description should say it is create-only", product)
 		}
 	}
 }

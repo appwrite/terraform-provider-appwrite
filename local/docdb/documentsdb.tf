@@ -17,6 +17,28 @@ resource "appwrite_documentsdb_collection" "articles" {
   name              = "Articles"
   permissions       = ["read(\"any\")"]
   document_security = true
+
+  # Attributes are create-only: there is no route to add one afterwards, so
+  # anything to be indexed has to be declared here.
+  attributes = jsonencode([
+    {
+      key      = "slug"
+      type     = "string"
+      size     = 255
+      required = true
+    },
+    {
+      key      = "title"
+      type     = "string"
+      size     = 512
+      required = false
+    },
+    {
+      key      = "views"
+      type     = "integer"
+      required = false
+    },
+  ])
 }
 
 resource "appwrite_documentsdb_index" "by_slug" {

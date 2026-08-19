@@ -56,6 +56,10 @@ type CollectionOptions struct {
 	Enabled          *bool
 	Dimension        *int
 	Purge            *bool
+
+	// Attributes are accepted only when the collection is created, and only by
+	// DocumentsDB. There is no attribute route to add them afterwards.
+	Attributes []interface{}
 }
 
 // IndexOptions holds the optional arguments for a new index.
@@ -109,6 +113,12 @@ func apiFor(clients *common.AppwriteClients, product Product, projectID string) 
 		return vectorsAPI{srv: appwrite.NewVectorsDB(clt)}
 	}
 	return documentsAPI{srv: appwrite.NewDocumentsDB(clt)}
+}
+
+// SupportsAttributes reports whether a product's collections accept typed
+// attribute definitions. Only DocumentsDB does, and only at creation time.
+func (p Product) SupportsAttributes() bool {
+	return p == ProductDocumentsDB
 }
 
 // SupportsDimension reports whether a product's collections carry an embedding
@@ -181,6 +191,9 @@ func (a documentsAPI) CreateCollection(databaseID, collectionID, name string, o 
 	}
 	if o.Enabled != nil {
 		opts = append(opts, a.srv.WithCreateCollectionEnabled(*o.Enabled))
+	}
+	if o.Attributes != nil {
+		opts = append(opts, a.srv.WithCreateCollectionAttributes(o.Attributes))
 	}
 	collection, err := a.srv.CreateCollection(databaseID, collectionID, name, opts...)
 	if err != nil {

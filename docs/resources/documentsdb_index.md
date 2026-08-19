@@ -16,9 +16,16 @@ resource "appwrite_documentsdb" "main" {
   name = "main"
 }
 
+# An index can only be built on a declared attribute, and attributes are
+# create-only, so they are declared alongside the collection.
 resource "appwrite_documentsdb_collection" "articles" {
   database_id = appwrite_documentsdb.main.id
   name        = "Articles"
+
+  attributes = jsonencode([
+    { key = "slug", type = "string", size = 255, required = true },
+    { key = "published_at", type = "datetime", required = false },
+  ])
 }
 
 # Indexes have no update route, so changing any argument replaces the index.
