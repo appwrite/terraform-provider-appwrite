@@ -19,6 +19,7 @@ import (
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	dedicatedsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
+	docdbsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/docdb"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -220,6 +221,17 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		dedicatedsvc.NewPoolerResource(dedicatedsvc.EnginePostgresql),
 		dedicatedsvc.NewPoolerResource(dedicatedsvc.EngineMysql),
 		dedicatedsvc.NewExtensionResource(dedicatedsvc.EnginePostgresql),
+
+		// DocumentsDB and VectorsDB. Two products, one implementation: only the
+		// embedding dimension differs, and it is exposed on VectorsDB alone.
+		docdbsvc.NewDatabaseResource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewDatabaseResource(docdbsvc.ProductVectorsDB),
+		docdbsvc.NewCollectionResource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewCollectionResource(docdbsvc.ProductVectorsDB),
+		docdbsvc.NewIndexResource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewIndexResource(docdbsvc.ProductVectorsDB),
+		docdbsvc.NewDocumentResource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewDocumentResource(docdbsvc.ProductVectorsDB),
 	}
 }
 
@@ -250,6 +262,11 @@ func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.Da
 		dedicatedsvc.NewBackupsDataSource(dedicatedsvc.EngineMysql),
 		dedicatedsvc.NewBackupsDataSource(dedicatedsvc.EngineMongo),
 		dedicatedsvc.NewExtensionsDataSource(dedicatedsvc.EnginePostgresql),
+
+		docdbsvc.NewDatabaseDataSource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewDatabaseDataSource(docdbsvc.ProductVectorsDB),
+		docdbsvc.NewSpecificationsDataSource(docdbsvc.ProductDocumentsDB),
+		docdbsvc.NewSpecificationsDataSource(docdbsvc.ProductVectorsDB),
 	}
 }
 

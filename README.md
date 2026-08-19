@@ -106,6 +106,23 @@ exposed as resources; run them through the Console or API. `*_backup_storage`
 has no read route on the API, so Terraform cannot detect drift on it or import
 an existing configuration.
 
+### DocumentsDB and VectorsDB
+
+Schemaless document storage, and embeddings searched by vector similarity. Both
+run on a shared pool where the deployment configures one; otherwise a
+`specification` is required and the database is billed as dedicated.
+
+| Resource                            | Description                          |
+|-------------------------------------|--------------------------------------|
+| `appwrite_documentsdb`              | DocumentsDB database                 |
+| `appwrite_documentsdb_collection`   | Collection of JSON documents         |
+| `appwrite_documentsdb_index`        | Index on a DocumentsDB collection    |
+| `appwrite_documentsdb_document`     | Document (seed and reference data)   |
+| `appwrite_vectorsdb`                | VectorsDB database                   |
+| `appwrite_vectorsdb_collection`     | Collection of embeddings             |
+| `appwrite_vectorsdb_index`          | Index on a VectorsDB collection      |
+| `appwrite_vectorsdb_document`       | Embedding document                   |
+
 ### Storage
 
 | Resource                  | Description    |
@@ -172,6 +189,10 @@ an existing configuration.
 | `appwrite_mysql_backups`             | List MySQL backups                                 |
 | `appwrite_mongo_backups`             | List MongoDB backups                               |
 | `appwrite_postgresql_extensions`     | List installed and available PostgreSQL extensions |
+| `appwrite_documentsdb`               | Look up a DocumentsDB database by ID               |
+| `appwrite_vectorsdb`                 | Look up a VectorsDB database by ID                 |
+| `appwrite_documentsdb_specifications`| List available DocumentsDB compute specifications  |
+| `appwrite_vectorsdb_specifications`  | List available VectorsDB compute specifications    |
 
 ## Example
 

@@ -1,0 +1,22 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "VectorsDB"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## See Also
+
+- [appwrite_vectorsdb](../resources/vectorsdb.md) - Manage a VectorsDB database

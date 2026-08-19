@@ -25,6 +25,12 @@ will not select it.
   - `appwrite_postgresql_database_status`, `appwrite_mysql_database_status` and `appwrite_mongo_database_status` data sources reporting live health, replication, connection counts and storage volumes
   - `appwrite_postgresql_backups`, `appwrite_mysql_backups` and `appwrite_mongo_backups` data sources for finding a backup ID to restore from outside Terraform
   - `appwrite_postgresql_extensions` data source listing installed and available extensions
+- DocumentsDB and VectorsDB support, backed by the `DocumentsDB` and `VectorsDB` SDK services added in `v7.2.0-rc.2`. The two products share one implementation because only the embedding dimension differs:
+  - `appwrite_documentsdb` and `appwrite_vectorsdb` resources and data sources. Create waits for a dedicated backing to finish provisioning, so a collection is never created against a database that is still coming up
+  - `appwrite_documentsdb_collection` and `appwrite_vectorsdb_collection` resources. `dimension` is required on VectorsDB and rejected at plan time on DocumentsDB, which has no such concept
+  - `appwrite_documentsdb_index` and `appwrite_vectorsdb_index` resources. Indexes have no update route, so every argument forces replacement, and creation waits for the index to become available
+  - `appwrite_documentsdb_document` and `appwrite_vectorsdb_document` resources for seed and reference records. Only the keys present in `data` are tracked, so fields written by an application do not show as drift
+  - `appwrite_documentsdb_specifications` and `appwrite_vectorsdb_specifications` data sources. A deployment with no shared pool rejects a database created without a `specification`, so the available slugs are worth reading rather than guessing
 - Provider-level `http_timeout_seconds` for tuning how long a single API response is waited for
 
 ### Changed

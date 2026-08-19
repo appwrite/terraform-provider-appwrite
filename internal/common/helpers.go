@@ -430,3 +430,20 @@ func WaitForColumnAvailable(ctx context.Context, getColumn func() (interface{}, 
 		time.Sleep(1 * time.Second)
 	}
 }
+
+// DatabaseProductGuidance describes the API key scopes a DocumentsDB or
+// VectorsDB resource needs.
+//
+// These products are gated behind the legacy Databases scopes (collections.*,
+// documents.*) rather than the TablesDB ones (tables.*, rows.*), which is not
+// obvious from their names and which the Appwrite Console does not always
+// surface. Where the Console offers no such checkbox the scopes can still be
+// set through the project keys API, since a key's scope list accepts names the
+// Console does not render.
+func DatabaseProductGuidance(resourceName string, scopes ...string) string {
+	return fmt.Sprintf(
+		"%s requires a project API key%s. These are the legacy Databases scopes, not the TablesDB ones; "+
+			"if the Appwrite Console does not offer them, set them on the key through the project keys API instead.",
+		resourceName, formatRequiredScopes(scopes),
+	)
+}
