@@ -136,3 +136,32 @@ func TestCollectionAttributesAreCreateOnlyAndProductSpecific(t *testing.T) {
 		}
 	}
 }
+
+// An index exists remotely the moment CreateIndex returns, but the build is
+// asynchronous. Create must therefore write the index's identity to state
+// before waiting: a wait that times out, or reports a stuck or failed build,
+// would otherwise leave Terraform with no record of an index that exists.
+// Every attribute making up that identity has to be settable independently of
+// the wait, so none of them may be read-only.
+func TestIndexIdentityAttributesAreWritableBeforeTheWait(t *testing.T) {
+	ctx := t.Context()
+
+	for _, product := range products {
+		schemaResp := &resource.SchemaResponse{}
+		docdb.NewIndexResource(product)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
+
+		for _, name := range []string{"database_id", "collection_id", "key"} {
+			attribute, ok := schemaResp.Schema.Attributes[name]
+			if !ok {
+				t.Errorf("%s index is missing %q", product, name)
+				continue
+			}
+			if !attribute.IsRequired() {
+				t.Errorf("%s index %q should be required so identity is known before the wait", product, name)
+			}
+		}
+		if id, ok := schemaResp.Schema.Attributes["id"]; !ok || !id.IsComputed() {
+			t.Errorf("%s index id should be computed", product)
+		}
+	}
+}

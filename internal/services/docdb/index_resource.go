@@ -179,6 +179,18 @@ func (r *indexResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	// The index now exists remotely. Persist its identity before waiting, so a
+	// wait that times out or reports a failed build leaves a resource Terraform
+	// can refresh or destroy rather than an index it has forgotten about.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("database_id"), databaseID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("collection_id"), collectionID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), key)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("project_id"), projectID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), indexID(databaseID, collectionID, key))...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Index builds are asynchronous. Waiting keeps a dependent resource from
 	// querying an index that is still processing.
 	if err := common.WaitForColumnAvailable(ctx, func() (interface{}, error) {
@@ -268,7 +280,7 @@ func (r *indexResource) ImportState(ctx context.Context, req resource.ImportStat
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("database_id"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("collection_id"), parts[1])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), indexID(parts[0], parts[1], parts[2]))...)
 }
 
 func (r *indexResource) mapToState(ctx context.Context, index *models.Index, model *indexResourceModel, diagnostics *diag.Diagnostics) {
@@ -278,7 +290,7 @@ func (r *indexResource) mapToState(ctx context.Context, index *models.Index, mod
 	model.Error = types.StringValue(index.Error)
 	model.CreatedAt = types.StringValue(index.CreatedAt)
 	model.UpdatedAt = types.StringValue(index.UpdatedAt)
-	model.ID = types.StringValue(fmt.Sprintf("%s/%s/%s",
+	model.ID = types.StringValue(indexID(
 		model.DatabaseID.ValueString(), model.CollectionID.ValueString(), index.Key))
 
 	attributes, diags := types.ListValueFrom(ctx, types.StringType, nonNilStrings(index.Attributes))
@@ -292,4 +304,8 @@ func (r *indexResource) mapToState(ctx context.Context, index *models.Index, mod
 	lengths, diags := types.ListValueFrom(ctx, types.Int64Type, nonNilInts(index.Lengths))
 	diagnostics.Append(diags...)
 	model.Lengths = lengths
+}
+
+func indexID(databaseID, collectionID, key string) string {
+	return fmt.Sprintf("%s/%s/%s", databaseID, collectionID, key)
 }
