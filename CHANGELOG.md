@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-beta.2] - 2026-08-19
+
+A prerelease. Pin it exactly (`version = "2.0.0-beta.2"`); ordinary constraints
+will not select it.
+
+Still a beta rather than a release candidate: the DocumentsDB and VectorsDB
+collection, index and document resources have not been exercised against a live
+server, because the API key available for testing lacked the `collections.write`
+scope. The database resources of both products, and everything in
+`2.0.0-beta.1`, were verified live.
+
+### Added
+
+- DocumentsDB and VectorsDB support, backed by the `DocumentsDB` and `VectorsDB` SDK services added in `v7.2.0-rc.2`. The two products share one implementation because only the embedding dimension and typed attributes differ:
+  - `appwrite_documentsdb` and `appwrite_vectorsdb` resources and data sources. Create waits for a dedicated backing to finish provisioning, so a collection is never created against a database that is still coming up
+  - `appwrite_documentsdb_collection` and `appwrite_vectorsdb_collection` resources. `dimension` is required on VectorsDB and rejected at plan time on DocumentsDB; typed `attributes` are the reverse. Attributes are create-only, since the API has no route to alter one afterwards
+  - `appwrite_documentsdb_index` and `appwrite_vectorsdb_index` resources. Indexes have no update route, so every argument forces replacement, and creation waits for the index to become available
+  - `appwrite_documentsdb_document` and `appwrite_vectorsdb_document` resources for seed and reference records. Only the keys present in `data` are tracked, so fields written by an application do not show as drift
+  - `appwrite_documentsdb_specifications` and `appwrite_vectorsdb_specifications` data sources. A deployment with no shared pool rejects a database created without a `specification`, so the available slugs are worth reading rather than guessing
+- Authentication guidance on DocumentsDB and VectorsDB errors. Both products are gated behind the legacy Databases scopes (`collections.*`, `documents.*`) rather than the TablesDB ones (`tables.*`, `rows.*`), which is not derivable from their names and which the Appwrite Console does not always offer; the guidance names the scope and points at the project keys API
+
+### Fixed
+
+- `appwrite_documentsdb_index` and `appwrite_vectorsdb_index`: a created index is recorded in state before the availability wait, so a wait that times out or reports a failed build no longer leaves Terraform with no record of an index that exists
+- Document bodies are held as raw JSON rather than decoded into `interface{}`, so an integer beyond 2^53 is no longer silently rounded and rewritten in state on each refresh
+- The `appwrite_documentsdb` example sized its database from the PostgreSQL specifications catalogue; each product publishes its own
+
 ## [2.0.0-beta.1] - 2026-08-18
 
 A prerelease. Pin it exactly (`version = "2.0.0-beta.1"`); ordinary constraints
