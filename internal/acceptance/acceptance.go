@@ -123,3 +123,15 @@ func ClientWithKey(t *testing.T, apiKey string) sdkclient.Client {
 		appwrite.WithProject(os.Getenv("APPWRITE_PROJECT_ID")),
 	)
 }
+
+// ClientWithJWT returns an SDK client authenticating as the user the JWT was
+// minted for, so a test can show the token actually works rather than that it
+// merely looks like a token.
+func ClientWithJWT(t *testing.T, jwt string) sdkclient.Client {
+	t.Helper()
+	return appwrite.NewClient(
+		appwrite.WithEndpoint(os.Getenv("APPWRITE_ENDPOINT")),
+		appwrite.WithProject(os.Getenv("APPWRITE_PROJECT_ID")),
+		appwrite.WithJWT(jwt),
+	)
+}

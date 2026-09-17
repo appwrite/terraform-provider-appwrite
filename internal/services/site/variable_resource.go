@@ -291,7 +291,12 @@ func (r *variableResource) mapToState(variable *models.Variable, model *variable
 	model.Key = types.StringValue(variable.Key)
 	model.CreatedAt = types.StringValue(variable.CreatedAt)
 	model.UpdatedAt = types.StringValue(variable.UpdatedAt)
-	if variable.Value != "" {
+	// Only refresh `value` when the configuration owns it. A non-secret
+	// variable has its value returned by the API on both create and read, so
+	// copying it unconditionally would write a value_wo secret into state and
+	// break the guarantee the write-only argument exists to make. A secret
+	// variable comes back empty, so that path was never the risk.
+	if variable.Value != "" && !model.Value.IsNull() {
 		model.Value = types.StringValue(variable.Value)
 	}
 }

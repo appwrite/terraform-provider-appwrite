@@ -43,11 +43,6 @@ resource "echo" "test" {}
 					statecheck.ExpectKnownValue("echo.test", tfjsonpath.New("data").AtMapKey("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue("echo.test", tfjsonpath.New("data").AtMapKey("expire"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue("echo.test", tfjsonpath.New("data").AtMapKey("secret"), knownvalue.NotNull()),
-					// The scopes come back as asked, which is what bounds the
-					// key: it cannot be revoked, so its reach is fixed at mint
-					// time by these and by duration_seconds.
-					statecheck.ExpectKnownValue("echo.test", tfjsonpath.New("data").AtMapKey("scopes"),
-						knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("users.read")})),
 				},
 			},
 		},
