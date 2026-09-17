@@ -123,15 +123,6 @@ Only the session is revoked on close, because only the session can be. An
 ephemeral API key and a JWT are signed tokens the server keeps no record of, so
 they stay valid until they expire; keep their durations short.
 
-## Actions
-
-Operations that happen at a moment rather than describing something that
-exists. Requires Terraform 1.14 or later.
-
-- [appwrite_function_execution](actions/function_execution.md) - Execute a function
-- [appwrite_function_deployment_activation](actions/function_deployment_activation.md) - Make an existing deployment active
-- [appwrite_postgresql_backup](actions/postgresql_backup.md), [appwrite_mysql_backup](actions/mysql_backup.md), [appwrite_mongo_backup](actions/mongo_backup.md) - Take an on-demand backup of a dedicated database
-
 ## Write-Only Arguments
 
 Secrets can be supplied through write-only arguments, which Terraform reads from
