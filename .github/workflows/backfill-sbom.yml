@@ -1,0 +1,93 @@
+name: Backfill SBOM
+
+# Generates SBOMs for a release that was published before SBOMs were part of
+# the release pipeline, and attaches them to it.
+#
+# The SBOMs are built by scanning the archives that release actually published,
+# not by rebuilding the provider. Go embeds its build metadata in the binary, so
+# scanning the shipped artifact describes precisely what shipped -- a rebuild
+# years later could resolve different dependencies and would be a different
+# claim about a release that is already out in the world.
+#
+# This workflow never touches the release's existing SHA256SUMS or its
+# signature. The Terraform Registry recorded those checksums when the version
+# was published and verifies downloads against them; rewriting the file would
+# invalidate the signature and risk breaking `terraform init` for anyone
+# pinning that version. The backfilled SBOMs therefore get their own checksum
+# file, signed with the same GPG key, so they are still verifiable.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to backfill, e.g. v1.8.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    name: Backfill SBOM for ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Download the release archives
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          mkdir -p backfill && cd backfill
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.zip'
+          echo "Downloaded:"
+          ls -1
+
+      - name: Generate an SBOM per archive
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          cd backfill
+          for archive in *.zip; do
+            echo "Cataloging ${archive}..."
+            syft scan "file:${archive}" -o spdx-json > "${archive}.sbom.json"
+          done
+          # Checksums for the SBOMs alone. Deliberately a separate file: the
+          # release's own SHA256SUMS is already signed and already ingested by
+          # the Terraform Registry, and must stay byte-for-byte as published.
+          sha256sum ./*.sbom.json | sed 's| \./| |' \
+            > "terraform-provider-appwrite_${TAG#v}_SBOMS_SHA256SUMS"
+          cat "terraform-provider-appwrite_${TAG#v}_SBOMS_SHA256SUMS"
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Sign the SBOM checksums
+        env:
+          TAG: ${{ inputs.tag }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        run: |
+          cd backfill
+          sums="terraform-provider-appwrite_${TAG#v}_SBOMS_SHA256SUMS"
+          gpg --batch --local-user "$GPG_FINGERPRINT" \
+              --output "${sums}.sig" --detach-sign "$sums"
+
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          cd backfill
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
+            ./*.sbom.json \
+            "terraform-provider-appwrite_${TAG#v}_SBOMS_SHA256SUMS" \
+            "terraform-provider-appwrite_${TAG#v}_SBOMS_SHA256SUMS.sig"
+          echo "Attached $(ls -1 ./*.sbom.json | wc -l) SBOMs to ${TAG}"
