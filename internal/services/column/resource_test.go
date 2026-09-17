@@ -45,10 +45,12 @@ resource "appwrite_tablesdb_column" "test" {
 				),
 			},
 			{
-				ResourceName:      "appwrite_tablesdb_column.test",
-				ImportState:       true,
-				ImportStateId:     "blog/articles/title",
-				ImportStateVerify: true,
+				ResourceName:                         "appwrite_tablesdb_column.test",
+				ImportState:                          true,
+				ImportStateId:                        "blog/articles/title",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "key",
+				ImportStateVerifyIgnore:              []string{"updated_at"},
 			},
 		},
 	})
@@ -92,10 +94,12 @@ resource "appwrite_tablesdb_index" "test" {
 				),
 			},
 			{
-				ResourceName:      "appwrite_tablesdb_column.test",
-				ImportState:       true,
-				ImportStateId:     "blog/articles/slug",
-				ImportStateVerify: true,
+				ResourceName:                         "appwrite_tablesdb_column.test",
+				ImportState:                          true,
+				ImportStateId:                        "blog/articles/slug",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "key",
+				ImportStateVerifyIgnore:              []string{"updated_at"},
 			},
 		},
 	})

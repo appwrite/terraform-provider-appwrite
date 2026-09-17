@@ -51,10 +51,12 @@ resource "appwrite_tablesdb_index" "test" {
 				),
 			},
 			{
-				ResourceName:      "appwrite_tablesdb_index.test",
-				ImportState:       true,
-				ImportStateId:     "shop/orders/customer_name_index",
-				ImportStateVerify: true,
+				ResourceName:                         "appwrite_tablesdb_index.test",
+				ImportState:                          true,
+				ImportStateId:                        "shop/orders/customer_name_index",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "key",
+				ImportStateVerifyIgnore:              []string{"updated_at"},
 			},
 		},
 	})

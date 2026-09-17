@@ -1,10 +1,12 @@
 package row_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccTablesDBRowResource_basic(t *testing.T) {
@@ -20,8 +22,23 @@ func TestAccTablesDBRowResource_basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "appwrite_tablesdb_row.test",
-				ImportState:       true,
+				ResourceName: "appwrite_tablesdb_row.test",
+				ImportState:  true,
+				// The database and table IDs are server-generated here, so the
+				// composite import ID has to be built from state rather than
+				// written as a literal. Without this the framework passes the
+				// bare row ID and the import is rejected.
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["appwrite_tablesdb_row.test"]
+					if !ok {
+						return "", fmt.Errorf("resource appwrite_tablesdb_row.test not found in state")
+					}
+					return fmt.Sprintf("%s/%s/%s",
+						rs.Primary.Attributes["database_id"],
+						rs.Primary.Attributes["table_id"],
+						rs.Primary.Attributes["id"],
+					), nil
+				},
 				ImportStateVerify: true,
 			},
 			{

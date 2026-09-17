@@ -1,47 +1,110 @@
 name: Acceptance Tests
 
 on:
+  # The Partner program requires the provider's tests to run nightly.
+  schedule:
+    - cron: "0 3 * * *"
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      appwrite_version:
+        description: "Appwrite version to test against. Defaults to the pinned version."
+        required: false
+        type: string
+      appwrite_commit:
+        description: "Commit SHA that appwrite_version points at. Required with appwrite_version."
+        required: false
+        type: string
+
+# The suite creates and destroys resources in a shared project, so two runs
+# must not interleave. Queue them rather than cancelling: a cancelled run
+# leaves its resources behind.
+concurrency:
+  group: acceptance-tests
+  cancel-in-progress: false
+
+env:
+  # Pinned deliberately. The compose file defaults to :latest, and a nightly
+  # job must not start failing because upstream published a release overnight.
+  # A manual run can override the pair to try the provider against a newer
+  # Appwrite before committing to the bump.
+  APPWRITE_VERSION: ${{ inputs.appwrite_version || '2.2.0' }}
+  # The commit the version points at. The compose file and .env are fetched by
+  # SHA rather than by tag, because a tag can be repointed and those two files
+  # decide what runs on the runner. Bump alongside APPWRITE_VERSION.
+  APPWRITE_COMMIT: ${{ inputs.appwrite_commit || '51055258e99ba4b96398c7fc1180afb281fe3402' }}
 
 jobs:
   acceptance-tests:
     name: Acceptance Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: go.mod
           cache: true
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_wrapper: false
 
-      - name: Verify required secrets
+      # terraform-plugin-testing otherwise falls back to downloading Terraform
+      # through hc-install, which currently fails verifying the release
+      # checksums ("openpgp: key expired"). Pointing it at the binary
+      # setup-terraform already installed skips that path entirely.
+      - name: Pin Terraform binary for the test framework
+        run: echo "TF_ACC_TERRAFORM_PATH=$(which terraform)" >> "$GITHUB_ENV"
+
+      # The version and its commit describe the same release, so accepting one
+      # without the other would run a new server against an old compose file.
+      - name: Validate version override
+        if: inputs.appwrite_version != '' || inputs.appwrite_commit != ''
+        env:
+          VERSION: ${{ inputs.appwrite_version }}
+          COMMIT: ${{ inputs.appwrite_commit }}
         run: |
-          missing=()
-          [ -z "$APPWRITE_ENDPOINT" ] && missing+=("APPWRITE_ENDPOINT")
-          [ -z "$APPWRITE_PROJECT_ID" ] && missing+=("APPWRITE_PROJECT_ID")
-          [ -z "$APPWRITE_API_KEY" ] && missing+=("APPWRITE_API_KEY")
-          if [ ${#missing[@]} -ne 0 ]; then
-            echo "::error::Missing required secrets: ${missing[*]}"
+          if [ -z "$VERSION" ] || [ -z "$COMMIT" ]; then
+            echo "::error::appwrite_version and appwrite_commit must be given together"
             exit 1
           fi
-        env:
-          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          if ! printf '%s' "$COMMIT" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "::error::appwrite_commit must be a full 40-character commit SHA"
+            exit 1
+          fi
+
+      - name: Start Appwrite
+        run: .github/scripts/appwrite-up.sh
+
+      - name: Bootstrap Appwrite project and credentials
+        run: .github/scripts/appwrite-bootstrap.sh
 
       - name: Run acceptance tests
         run: make acceptance-test
-        timeout-minutes: 20
+        timeout-minutes: 30
         env:
           TF_ACC: "1"
-          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+
+      # Without these a nightly failure is undiagnosable: the test output shows
+      # an HTTP error, and the reason for it is only in the server logs.
+      - name: Collect Appwrite logs
+        if: failure()
+        run: |
+          mkdir -p appwrite-logs
+          # -a, not plain ps: a container that crashed or was OOM-killed is
+          # exactly the failure these logs exist to explain, and it is no longer
+          # running by the time this step executes.
+          for c in $(docker ps -a --format '{{.Names}}'); do
+            docker logs "$c" > "appwrite-logs/${c}.log" 2>&1 || true
+          done
+
+      - name: Upload Appwrite logs
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: appwrite-logs
+          path: appwrite-logs/
+          retention-days: 7

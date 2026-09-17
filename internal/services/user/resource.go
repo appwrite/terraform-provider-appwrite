@@ -305,7 +305,10 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			return
 		}
 	}
-	if !plan.Labels.IsNull() {
+	// labels is computed as well as optional, so an update that leaves it out
+	// of the config plans it as unknown rather than null. ElementsAs cannot
+	// represent an unknown value in a []string and fails the apply.
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
 		var labels []string
 		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
 		if resp.Diagnostics.HasError() {
