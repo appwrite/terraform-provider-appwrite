@@ -19,6 +19,10 @@ env:
   # Pinned deliberately. The compose file defaults to :latest, and a nightly
   # job must not start failing because upstream published a release overnight.
   APPWRITE_VERSION: "2.2.0"
+  # The commit 2.2.0 points at. The compose file and .env are fetched by SHA
+  # rather than by tag, because a tag can be repointed and those two files
+  # decide what runs on the runner. Bump alongside APPWRITE_VERSION.
+  APPWRITE_COMMIT: "51055258e99ba4b96398c7fc1180afb281fe3402"
 
 jobs:
   acceptance-tests:
@@ -62,7 +66,10 @@ jobs:
         if: failure()
         run: |
           mkdir -p appwrite-logs
-          for c in $(docker ps --format '{{.Names}}'); do
+          # -a, not plain ps: a container that crashed or was OOM-killed is
+          # exactly the failure these logs exist to explain, and it is no longer
+          # running by the time this step executes.
+          for c in $(docker ps -a --format '{{.Names}}'); do
             docker logs "$c" > "appwrite-logs/${c}.log" 2>&1 || true
           done
 

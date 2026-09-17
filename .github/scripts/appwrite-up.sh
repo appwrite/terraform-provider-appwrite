@@ -2,9 +2,14 @@
 #
 # Boots a self-hosted Appwrite for the acceptance tests to run against.
 #
-# The compose file and its .env are downloaded from the pinned upstream tag
-# rather than vendored here: they are ~2000 lines that have to stay consistent
-# with the server image, and pinning the tag makes them immutable anyway.
+# The compose file and its .env are downloaded from upstream rather than
+# vendored here: they are ~2000 lines that have to stay consistent with the
+# server image.
+#
+# They are fetched by commit SHA, not by tag. A Git tag is a mutable pointer the
+# upstream owner can move, and these two files decide which images run, with
+# which commands and host mounts, on every nightly runner. The commit SHA is
+# immutable, so what is fetched today is what was reviewed.
 #
 # Only a subset of the ~30 upstream services is started. Compose pulls in
 # whatever those depend on (the database, redis, geo, autogravity), which is
@@ -13,8 +18,11 @@
 set -euo pipefail
 
 APPWRITE_VERSION="${APPWRITE_VERSION:?APPWRITE_VERSION must be set}"
+# Commit that APPWRITE_VERSION pointed at when it was adopted. Bump both
+# together.
+APPWRITE_COMMIT="${APPWRITE_COMMIT:?APPWRITE_COMMIT must be set}"
 WORKDIR="${APPWRITE_WORKDIR:-/tmp/appwrite-ci}"
-BASE_URL="https://raw.githubusercontent.com/appwrite/appwrite/${APPWRITE_VERSION}"
+BASE_URL="https://raw.githubusercontent.com/appwrite/appwrite/${APPWRITE_COMMIT}"
 
 # The API plus the workers the acceptance tests actually wait on. Resources are
 # created synchronously, but deletes and column/index creation are queued, so
