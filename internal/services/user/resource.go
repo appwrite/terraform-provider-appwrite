@@ -9,6 +9,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/sdk-for-go/v7/users"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -35,6 +37,8 @@ type userResourceModel struct {
 	Email             types.String `tfsdk:"email"`
 	Phone             types.String `tfsdk:"phone"`
 	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int64  `tfsdk:"password_wo_version"`
 	Status            types.Bool   `tfsdk:"status"`
 	Labels            types.List   `tfsdk:"labels"`
 	EmailVerification types.Bool   `tfsdk:"email_verification"`
@@ -75,9 +79,24 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:    true,
 			},
 			"password": schema.StringAttribute{
-				Description: "The user password. Write-only, not returned by the API.",
+				Description: "The user password. Not returned by the API, but stored in Terraform state. " +
+					"Prefer password_wo, which is never written to state at all.",
+				Optional:   true,
+				Sensitive:  true,
+				Validators: []validator.String{stringvalidator.ConflictsWith(path.MatchRoot("password_wo"))},
+			},
+			"password_wo": schema.StringAttribute{
+				Description: "The user password, as a write-only argument. Terraform reads it from the " +
+					"configuration during apply and never persists it. Change password_wo_version to apply a " +
+					"new password, since Terraform cannot detect a change in a value it does not store. " +
+					"Requires Terraform 1.11 or later.",
+				Optional:  true,
+				Sensitive: true,
+				WriteOnly: true,
+			},
+			"password_wo_version": schema.Int64Attribute{
+				Description: "Increment to apply a changed password_wo.",
 				Optional:    true,
-				Sensitive:   true,
 			},
 			"status": schema.BoolAttribute{
 				Description: "Whether the user account is enabled. Defaults to true.",
@@ -152,7 +171,17 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if !plan.Phone.IsNull() {
 		opts = append(opts, usersClient.WithCreatePhone(plan.Phone.ValueString()))
 	}
-	if !plan.Password.IsNull() {
+	// A write-only argument never reaches the plan, so it has to be read from
+	// the configuration.
+	var passwordWO types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("password_wo"), &passwordWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	switch {
+	case !passwordWO.IsNull():
+		opts = append(opts, usersClient.WithCreatePassword(passwordWO.ValueString()))
+	case !plan.Password.IsNull():
 		opts = append(opts, usersClient.WithCreatePassword(plan.Password.ValueString()))
 	}
 	if !plan.Name.IsNull() {
@@ -291,8 +320,23 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			return
 		}
 	}
-	if !plan.Password.IsNull() && plan.Password != current.Password {
-		user, err = usersClient.UpdatePassword(id, plan.Password.ValueString())
+	// password_wo is absent from both plan and state, so nothing about it can
+	// be compared. password_wo_version is the declared signal that it changed.
+	var passwordWO types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("password_wo"), &passwordWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	updatePassword := !plan.Password.IsNull() && plan.Password != current.Password
+	if !passwordWO.IsNull() && plan.PasswordWOVersion != current.PasswordWOVersion {
+		updatePassword = true
+	}
+	if updatePassword {
+		password := plan.Password.ValueString()
+		if !passwordWO.IsNull() {
+			password = passwordWO.ValueString()
+		}
+		user, err = usersClient.UpdatePassword(id, password)
 		if err != nil {
 			resp.Diagnostics.AddError("Error updating user password", common.FormatError(err))
 			return
@@ -305,7 +349,15 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			return
 		}
 	}
-	if !plan.Labels.IsNull() {
+	// labels is computed as well as optional, so an update that leaves it out
+	// of the config plans it as unknown rather than null. ElementsAs cannot
+	// represent an unknown value in a []string and fails the apply.
+	//
+	// The same one-line fix is in the acceptance-pipeline PR, which found this
+	// bug; it is repeated here because that branch is not an ancestor of this
+	// one and the write-only test cannot pass without it. The two changes are
+	// identical, so they merge without conflict.
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
 		var labels []string
 		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
 		if resp.Diagnostics.HasError() {

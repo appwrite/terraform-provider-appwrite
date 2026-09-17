@@ -143,6 +143,7 @@ type databaseAPI interface {
 	UpdateBackupPolicy(databaseID, policyID string, opts UpdateBackupPolicyOptions) (*models.BackupPolicy, error)
 	DeleteBackupPolicy(databaseID, policyID string) error
 
+	CreateBackup(databaseID string, backupType *string) (*models.DedicatedDatabaseBackup, error)
 	ListBackups(databaseID string, queries []string) (*models.DedicatedDatabaseBackupList, error)
 	// UpdateBackupStorage has no matching read route, so a configured
 	// destination cannot be refreshed from the server.
@@ -326,6 +327,14 @@ func (a postgresqlAPI) CreateUpgrade(databaseID, targetVersion string) (*models.
 
 func (a postgresqlAPI) ListSpecifications() (*models.DedicatedDatabaseSpecificationList, error) {
 	return a.srv.ListSpecifications()
+}
+
+func (a postgresqlAPI) CreateBackup(databaseID string, backupType *string) (*models.DedicatedDatabaseBackup, error) {
+	var opts []postgresql.CreateBackupOption
+	if backupType != nil {
+		opts = append(opts, a.srv.WithCreateBackupType(*backupType))
+	}
+	return a.srv.CreateBackup(databaseID, opts...)
 }
 
 func (a postgresqlAPI) CreateBackupPolicy(databaseID, policyID, name, schedule string, retention int, o CreateBackupPolicyOptions) (*models.BackupPolicy, error) {
@@ -591,6 +600,14 @@ func (a mysqlAPI) ListSpecifications() (*models.DedicatedDatabaseSpecificationLi
 	return a.srv.ListSpecifications()
 }
 
+func (a mysqlAPI) CreateBackup(databaseID string, backupType *string) (*models.DedicatedDatabaseBackup, error) {
+	var opts []mysql.CreateBackupOption
+	if backupType != nil {
+		opts = append(opts, a.srv.WithCreateBackupType(*backupType))
+	}
+	return a.srv.CreateBackup(databaseID, opts...)
+}
+
 func (a mysqlAPI) CreateBackupPolicy(databaseID, policyID, name, schedule string, retention int, o CreateBackupPolicyOptions) (*models.BackupPolicy, error) {
 	var opts []mysql.CreateBackupPolicyOption
 	if o.Type != nil {
@@ -840,6 +857,14 @@ func (a mongoAPI) CreateUpgrade(databaseID, targetVersion string) (*models.Dedic
 
 func (a mongoAPI) ListSpecifications() (*models.DedicatedDatabaseSpecificationList, error) {
 	return a.srv.ListSpecifications()
+}
+
+func (a mongoAPI) CreateBackup(databaseID string, backupType *string) (*models.DedicatedDatabaseBackup, error) {
+	var opts []mongo.CreateBackupOption
+	if backupType != nil {
+		opts = append(opts, a.srv.WithCreateBackupType(*backupType))
+	}
+	return a.srv.CreateBackup(databaseID, opts...)
 }
 
 func (a mongoAPI) CreateBackupPolicy(databaseID, policyID, name, schedule string, retention int, o CreateBackupPolicyOptions) (*models.BackupPolicy, error) {

@@ -9,6 +9,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/sdk-for-go/v7/webhooks"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -30,18 +32,20 @@ type webhookResource struct {
 }
 
 type webhookResourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	URL          types.String `tfsdk:"url"`
-	Events       types.List   `tfsdk:"events"`
-	Enabled      types.Bool   `tfsdk:"enabled"`
-	TLS          types.Bool   `tfsdk:"tls"`
-	AuthUsername types.String `tfsdk:"auth_username"`
-	AuthPassword types.String `tfsdk:"auth_password"`
-	Secret       types.String `tfsdk:"secret"`
-	CreatedAt    types.String `tfsdk:"created_at"`
-	UpdatedAt    types.String `tfsdk:"updated_at"`
-	ProjectID    types.String `tfsdk:"project_id"`
+	ID                    types.String `tfsdk:"id"`
+	Name                  types.String `tfsdk:"name"`
+	URL                   types.String `tfsdk:"url"`
+	Events                types.List   `tfsdk:"events"`
+	Enabled               types.Bool   `tfsdk:"enabled"`
+	TLS                   types.Bool   `tfsdk:"tls"`
+	AuthUsername          types.String `tfsdk:"auth_username"`
+	AuthPassword          types.String `tfsdk:"auth_password"`
+	AuthPasswordWO        types.String `tfsdk:"auth_password_wo"`
+	AuthPasswordWOVersion types.Int64  `tfsdk:"auth_password_wo_version"`
+	Secret                types.String `tfsdk:"secret"`
+	CreatedAt             types.String `tfsdk:"created_at"`
+	UpdatedAt             types.String `tfsdk:"updated_at"`
+	ProjectID             types.String `tfsdk:"project_id"`
 }
 
 func NewWebhookResource() resource.Resource {
@@ -92,9 +96,23 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 			},
 			"auth_password": schema.StringAttribute{
-				Description: "HTTP basic authentication password.",
+				Description: "HTTP basic authentication password. Stored in Terraform state; prefer " +
+					"auth_password_wo, which is not.",
+				Optional:   true,
+				Sensitive:  true,
+				Validators: []validator.String{stringvalidator.ConflictsWith(path.MatchRoot("auth_password_wo"))},
+			},
+			"auth_password_wo": schema.StringAttribute{
+				Description: "HTTP basic authentication password, as a write-only argument. Read from the " +
+					"configuration during apply and never persisted. Change auth_password_wo_version to apply a " +
+					"new value. Requires Terraform 1.11 or later.",
+				Optional:  true,
+				Sensitive: true,
+				WriteOnly: true,
+			},
+			"auth_password_wo_version": schema.Int64Attribute{
+				Description: "Increment to apply a changed auth_password_wo.",
 				Optional:    true,
-				Sensitive:   true,
 			},
 			"secret": schema.StringAttribute{
 				Description: "Secret key for validating incoming webhooks.",
@@ -164,7 +182,16 @@ func (r *webhookResource) Create(ctx context.Context, req resource.CreateRequest
 	if !plan.AuthUsername.IsNull() {
 		opts = append(opts, webhooksClient.WithCreateAuthUsername(plan.AuthUsername.ValueString()))
 	}
-	if !plan.AuthPassword.IsNull() {
+	// A write-only argument never reaches the plan, so it is read from config.
+	var authPasswordWO types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("auth_password_wo"), &authPasswordWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	switch {
+	case !authPasswordWO.IsNull():
+		opts = append(opts, webhooksClient.WithCreateAuthPassword(authPasswordWO.ValueString()))
+	case !plan.AuthPassword.IsNull():
 		opts = append(opts, webhooksClient.WithCreateAuthPassword(plan.AuthPassword.ValueString()))
 	}
 
@@ -238,7 +265,15 @@ func (r *webhookResource) Update(ctx context.Context, req resource.UpdateRequest
 	if !plan.AuthUsername.IsNull() {
 		opts = append(opts, webhooksClient.WithUpdateAuthUsername(plan.AuthUsername.ValueString()))
 	}
-	if !plan.AuthPassword.IsNull() {
+	var authPasswordWO types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("auth_password_wo"), &authPasswordWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	switch {
+	case !authPasswordWO.IsNull():
+		opts = append(opts, webhooksClient.WithUpdateAuthPassword(authPasswordWO.ValueString()))
+	case !plan.AuthPassword.IsNull():
 		opts = append(opts, webhooksClient.WithUpdateAuthPassword(plan.AuthPassword.ValueString()))
 	}
 

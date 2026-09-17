@@ -31,12 +31,16 @@ resource "appwrite_auth_user" "admin" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `email` (String) The user email address.
 - `email_verification` (Boolean) Whether the user email is verified.
 - `id` (String) The user ID.
 - `labels` (List of String) User labels.
 - `name` (String) The user name.
-- `password` (String, Sensitive) The user password. Write-only, not returned by the API.
+- `password` (String, Sensitive) The user password. Not returned by the API, but stored in Terraform state. Prefer password_wo, which is never written to state at all.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The user password, as a write-only argument. Terraform reads it from the configuration during apply and never persists it. Change password_wo_version to apply a new password, since Terraform cannot detect a change in a value it does not store. Requires Terraform 1.11 or later.
+- `password_wo_version` (Number) Increment to apply a changed password_wo.
 - `phone` (String) The user phone number in E.164 format.
 - `phone_verification` (Boolean) Whether the user phone is verified.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.

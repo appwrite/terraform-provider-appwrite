@@ -126,3 +126,37 @@ TablesDB resources are intended for Appwrite Cloud or Appwrite Community Edition
 - [appwrite_site](data-sources/site.md) - Fetch a site by ID
 - [appwrite_messaging_topic](data-sources/messaging_topic.md) - Fetch a messaging topic by ID
 - [appwrite_webhook](data-sources/webhook.md) - Fetch a webhook by ID
+
+## Ephemeral Resources
+
+Values handed to a configuration without ever being written to state. Each one
+is a credential. Requires Terraform 1.10 or later.
+
+- [appwrite_project_ephemeral_key](ephemeral-resources/project_ephemeral_key.md) - Mint a scoped, short-lived project API key
+- [appwrite_auth_session](ephemeral-resources/auth_session.md) - Open a user session, deleted when Terraform finishes
+- [appwrite_auth_jwt](ephemeral-resources/auth_jwt.md) - Mint a short-lived JWT for a user
+
+Only the session is revoked on close, because only the session can be. An
+ephemeral API key and a JWT are signed tokens the server keeps no record of, so
+they stay valid until they expire; keep their durations short.
+
+## Actions
+
+Operations that happen at a moment rather than describing something that
+exists. Requires Terraform 1.14 or later.
+
+- [appwrite_function_execution](actions/function_execution.md) - Execute a function
+- [appwrite_function_deployment_activation](actions/function_deployment_activation.md) - Make an existing deployment active
+- [appwrite_postgresql_backup](actions/postgresql_backup.md), [appwrite_mysql_backup](actions/mysql_backup.md), [appwrite_mongo_backup](actions/mongo_backup.md) - Take an on-demand backup of a dedicated database
+
+## Write-Only Arguments
+
+Secrets can be supplied through write-only arguments, which Terraform reads from
+the configuration during apply and never persists. Requires Terraform 1.11 or
+later. Because Terraform cannot detect a change in a value it does not store,
+each is paired with a `_wo_version` argument to increment when the secret
+changes.
+
+Available on `appwrite_auth_user` (`password_wo`), `appwrite_webhook`
+(`auth_password_wo`), `appwrite_function_variable` and `appwrite_site_variable`
+(`value_wo`).

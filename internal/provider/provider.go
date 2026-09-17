@@ -7,6 +7,7 @@ import (
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/client"
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -44,6 +45,7 @@ const defaultHTTPTimeout = 120 * time.Second
 var (
 	_ provider.Provider                       = &appwriteProvider{}
 	_ provider.ProviderWithEphemeralResources = &appwriteProvider{}
+	_ provider.ProviderWithActions            = &appwriteProvider{}
 )
 
 type appwriteProvider struct {
@@ -252,6 +254,21 @@ func (p *appwriteProvider) EphemeralResources(_ context.Context) []func() epheme
 		projectsvc.NewEphemeralKeyEphemeralResource,
 		usersvc.NewJWTEphemeralResource,
 		usersvc.NewSessionEphemeralResource,
+	}
+}
+
+// Actions are the operations that happen at a moment rather than describing
+// something that exists: running a function, promoting a deployment, taking a
+// backup now. Modelling those as resources would mean inventing state for
+// something that has none, and a destroy for something that cannot be undone.
+func (p *appwriteProvider) Actions(_ context.Context) []func() action.Action {
+	return []func() action.Action{
+		functionsvc.NewExecutionAction,
+		functionsvc.NewDeploymentActivationAction,
+
+		dedicatedsvc.NewBackupAction(dedicatedsvc.EnginePostgresql),
+		dedicatedsvc.NewBackupAction(dedicatedsvc.EngineMysql),
+		dedicatedsvc.NewBackupAction(dedicatedsvc.EngineMongo),
 	}
 }
 
