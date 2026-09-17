@@ -109,6 +109,14 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:  true,
 				Sensitive: true,
 				WriteOnly: true,
+				// The version is what makes a changed secret visible to
+				// Terraform. Without it, switching an existing resource from
+				// the stored attribute to this one leaves both versions null,
+				// nothing compares unequal, and the apply reports success while
+				// the old secret stays in place.
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("auth_password_wo_version")),
+				},
 			},
 			"auth_password_wo_version": schema.Int64Attribute{
 				Description: "Increment to apply a changed auth_password_wo.",

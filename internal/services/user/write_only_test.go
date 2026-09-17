@@ -2,6 +2,7 @@ package user_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
@@ -52,4 +53,55 @@ resource "appwrite_auth_user" "wo" {
   password_wo_version = %d
 }
 `, password, version)
+}
+
+// Moving an existing user from `password` to `password_wo` must actually change
+// the password. Before the version became mandatory, both versions were null on
+// that transition, nothing compared unequal, and the apply reported success
+// while Appwrite kept the old password.
+func TestAccUserResource_migrateToWriteOnlyPassword(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acceptance.PreCheck(t) },
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_11_0),
+		},
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "appwrite_auth_user" "migrate" {
+  id       = "wo-migrate"
+  email    = "wo-migrate@example.com"
+  password = "S3cret-stored!"
+}
+`,
+			},
+			{
+				// Omitting password_wo_version here is rejected by the schema,
+				// which is what stops the silent no-op.
+				Config: `
+resource "appwrite_auth_user" "migrate" {
+  id          = "wo-migrate"
+  email       = "wo-migrate@example.com"
+  password_wo = "S3cret-writeonly!"
+}
+`,
+				ExpectError: regexp.MustCompile(`password_wo_version`),
+			},
+			{
+				Config: `
+resource "appwrite_auth_user" "migrate" {
+  id                  = "wo-migrate"
+  email               = "wo-migrate@example.com"
+  password_wo         = "S3cret-writeonly!"
+  password_wo_version = 1
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_auth_user.migrate", "password_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("appwrite_auth_user.migrate", "password"),
+				),
+			},
+		},
+	})
 }

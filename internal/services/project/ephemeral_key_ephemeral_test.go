@@ -1,8 +1,12 @@
 package project_test
 
 import (
-	"regexp"
+	"fmt"
 	"testing"
+
+	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/id"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -50,11 +54,11 @@ resource "echo" "test" {}
 	})
 }
 
-// TestAccProjectEphemeralKey_secretStaysOutOfState is the claim the whole
-// resource exists to make: the secret reaches the configuration but no state
-// file of the resource under test. The echo resource opts in to holding it, so
-// it is checked from there rather than asserted to be absent everywhere.
-func TestAccProjectEphemeralKey_secretStaysOutOfState(t *testing.T) {
+// TestAccProjectEphemeralKey_secretIsUsableWithinItsScopes checks the two
+// things a caller depends on: the minted key actually authenticates, and it
+// cannot reach past the scopes it was asked for. Matching the token's format
+// instead would pass for a key that authenticates nowhere.
+func TestAccProjectEphemeralKey_secretIsUsableWithinItsScopes(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -74,15 +78,26 @@ provider "echo" {
 
 resource "echo" "test" {}
 `,
-				ConfigStateChecks: []statecheck.StateCheck{
-					// An ephemeral key secret is recognisable by its prefix; the
-					// provider's own credential detection keys off the same one.
-					statecheck.ExpectKnownValue("echo.test", tfjsonpath.New("data"),
-						knownvalue.StringRegexp(regexpEphemeralSecret)),
+				Check: func(st *terraform.State) error {
+					secret := st.RootModule().Resources["echo.test"].Primary.Attributes["data"]
+					if secret == "" {
+						return fmt.Errorf("no secret was echoed")
+					}
+
+					clt := acceptance.ClientWithKey(t, secret)
+
+					// users.read was granted, so this must work.
+					if _, err := appwrite.NewUsers(clt).List(); err != nil {
+						return fmt.Errorf("granted scope users.read was refused: %w", err)
+					}
+
+					// buckets.write was not, so this must not.
+					if _, err := appwrite.NewStorage(clt).CreateBucket(id.Unique(), "should-not-exist"); err == nil {
+						return fmt.Errorf("key created a bucket despite not being granted buckets.write")
+					}
+					return nil
 				},
 			},
 		},
 	})
 }
-
-var regexpEphemeralSecret = regexp.MustCompile(`^ephemeral_`)

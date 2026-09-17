@@ -11,11 +11,13 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/sites"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -82,6 +84,14 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:  true,
 				Sensitive: true,
 				WriteOnly: true,
+				// The version is what makes a changed secret visible to
+				// Terraform. Without it, switching an existing resource from
+				// the stored attribute to this one leaves both versions null,
+				// nothing compares unequal, and the apply reports success while
+				// the old secret stays in place.
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("value_wo_version")),
+				},
 			},
 			"value_wo_version": schema.Int64Attribute{
 				Description: "Increment to apply a changed value_wo.",

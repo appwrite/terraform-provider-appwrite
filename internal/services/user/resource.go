@@ -93,6 +93,14 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:  true,
 				Sensitive: true,
 				WriteOnly: true,
+				// The version is what makes a changed secret visible to
+				// Terraform. Without it, switching an existing resource from
+				// the stored attribute to this one leaves both versions null,
+				// nothing compares unequal, and the apply reports success while
+				// the old secret stays in place.
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
+				},
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Description: "Increment to apply a changed password_wo.",

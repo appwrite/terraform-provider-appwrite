@@ -111,3 +111,15 @@ func User(t *testing.T) (userID string, cleanup func()) {
 		}
 	}
 }
+
+// ClientWithKey returns an SDK client authenticating with the given key rather
+// than the one from the environment. Tests use it to exercise a credential a
+// resource just produced, which is the only way to show the credential works.
+func ClientWithKey(t *testing.T, apiKey string) sdkclient.Client {
+	t.Helper()
+	return appwrite.NewClient(
+		appwrite.WithEndpoint(os.Getenv("APPWRITE_ENDPOINT")),
+		appwrite.WithKey(apiKey),
+		appwrite.WithProject(os.Getenv("APPWRITE_PROJECT_ID")),
+	)
+}
