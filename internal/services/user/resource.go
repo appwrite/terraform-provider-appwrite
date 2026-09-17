@@ -360,11 +360,6 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	// labels is computed as well as optional, so an update that leaves it out
 	// of the config plans it as unknown rather than null. ElementsAs cannot
 	// represent an unknown value in a []string and fails the apply.
-	//
-	// The same one-line fix is in the acceptance-pipeline PR, which found this
-	// bug; it is repeated here because that branch is not an ancestor of this
-	// one and the write-only test cannot pass without it. The two changes are
-	// identical, so they merge without conflict.
 	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
 		var labels []string
 		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)

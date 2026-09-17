@@ -126,6 +126,12 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Description: "Secret key for validating incoming webhooks.",
 				Computed:    true,
 				Sensitive:   true,
+				// The server issues the secret once, at create, and never
+				// returns it again. Keeping the known value across a plan stops
+				// an update leaving it unknown with nothing to resolve it from.
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"created_at": schema.StringAttribute{
 				Description: "The webhook creation timestamp in ISO 8601 format.",
@@ -326,7 +332,12 @@ func (r *webhookResource) mapToState(ctx context.Context, webhook *models.Webhoo
 	model.URL = types.StringValue(webhook.Url)
 	model.Enabled = types.BoolValue(webhook.Enabled)
 	model.TLS = types.BoolValue(webhook.Tls)
-	model.Secret = types.StringValue(webhook.Secret)
+	// The signature secret comes back only from create. Every later read
+	// returns it empty, so overwriting unconditionally would blank it in state
+	// on the first refresh and break anything referencing it.
+	if webhook.Secret != "" {
+		model.Secret = types.StringValue(webhook.Secret)
+	}
 	model.CreatedAt = types.StringValue(webhook.CreatedAt)
 	model.UpdatedAt = types.StringValue(webhook.UpdatedAt)
 

@@ -13,10 +13,6 @@ test:
 acceptance-test:
 	TF_ACC=1 go test ./... -v -count=1 $(TESTARGS) -timeout 120m
 
-sweep:
-	@echo "WARNING: This will destroy infrastructure. Use only in development."
-	go test ./... -v -sweep=all $(SWEEPARGS) -timeout 60m
-
 test-compile:
 	go test -c ./... -o /dev/null
 
@@ -42,4 +38,4 @@ clean:
 docs:
 	go generate ./...
 
-.PHONY: build install test acceptance-test sweep test-compile vet fmt fmt-check lint clean docs
+.PHONY: build install test acceptance-test test-compile vet fmt fmt-check lint clean docs

@@ -33,7 +33,7 @@ resource "appwrite_webhook" "test" {
 				ResourceName:            "appwrite_webhook.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"auth_password"},
+				ImportStateVerifyIgnore: []string{"auth_password", "secret"},
 			},
 			{
 				Config: `
