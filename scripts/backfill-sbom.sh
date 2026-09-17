@@ -3,7 +3,7 @@
 # Generates SBOMs for a release published before SBOMs were part of the release
 # pipeline, and attaches them to that release.
 #
-#     scripts/backfill-sbom.sh v1.8.0
+#     GPG_FINGERPRINT=<release key> scripts/backfill-sbom.sh v1.8.0
 #
 # Deliberately a local maintainer script rather than a workflow. Signing needs
 # the release GPG key, and a manually-dispatchable workflow holding that key
@@ -36,9 +36,20 @@ REPO="${REPO:-appwrite/terraform-provider-appwrite}"
 VERSION="${TAG#v}"
 SUMS="terraform-provider-appwrite_${VERSION}_SBOMS_SHA256SUMS"
 
+# The release key is selected explicitly, exactly as the release workflow does.
+# Falling back to gpg's default key would sign with whatever the maintainer
+# happens to have first in their keyring, and consumers verifying against the
+# documented release key would find the signature unauthenticatable.
+GPG_FINGERPRINT="${GPG_FINGERPRINT:?GPG_FINGERPRINT must be set to the release signing key}"
+
 for tool in gh syft gpg; do
   command -v "$tool" >/dev/null 2>&1 || { echo "error: $tool is required" >&2; exit 1; }
 done
+
+if ! gpg --list-secret-keys "$GPG_FINGERPRINT" >/dev/null 2>&1; then
+  echo "error: no secret key for ${GPG_FINGERPRINT} in this keyring" >&2
+  exit 1
+fi
 
 # sha256sum is GNU; macOS ships shasum instead.
 if command -v sha256sum >/dev/null 2>&1; then
@@ -60,7 +71,8 @@ for archive in *.zip; do
 done
 
 sha256 ./*.sbom.json | sed 's| \./| |' > "$SUMS"
-gpg --output "${SUMS}.sig" --detach-sign "$SUMS"
+gpg --batch --local-user "$GPG_FINGERPRINT" \
+    --output "${SUMS}.sig" --detach-sign "$SUMS"
 
 echo
 echo "Generated $(find . -name '*.sbom.json' | wc -l | tr -d ' ') SBOMs for ${TAG}:"
