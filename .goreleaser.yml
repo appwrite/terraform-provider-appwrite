@@ -24,8 +24,16 @@ builds:
         goarch: "386"
 
 archives:
-  - format: zip
+  # `format` was deprecated in GoReleaser v2 in favour of `formats`.
+  - formats: [zip]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+# An SBOM per released archive, which the HashiCorp Partner Premier tag
+# requires for security transparency. Syft is not bundled with the GoReleaser
+# action, so the release workflow installs it first.
+sboms:
+  - id: archive
+    artifacts: archive
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
