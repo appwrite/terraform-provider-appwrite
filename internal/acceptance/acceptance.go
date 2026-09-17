@@ -10,6 +10,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/id"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/provider"
 )
@@ -102,6 +103,14 @@ func newClient(t *testing.T) sdkclient.Client {
 // resource under test rather than skipping its coverage.
 func MessagingTarget(t *testing.T) (targetID string, cleanup func()) {
 	t.Helper()
+
+	// Fixtures run before resource.Test, so they sit outside the TF_ACC gate it
+	// applies. Without this check a plain `go test ./...` would fail on missing
+	// credentials rather than skipping, and with credentials present it would
+	// create a live user for a test that is not going to run.
+	if os.Getenv(resource.EnvTfAcc) == "" {
+		t.Skipf("acceptance tests skipped unless %s is set", resource.EnvTfAcc)
+	}
 	PreCheck(t)
 
 	users := appwrite.NewUsers(newClient(t))
