@@ -22,6 +22,11 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      # GoReleaser shells out to syft to build the SBOMs, and the GoReleaser
+      # action does not bundle it.
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         id: import_gpg
