@@ -8,6 +8,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -40,7 +41,10 @@ import (
 // operation the server performs inline rather than asynchronously.
 const defaultHTTPTimeout = 120 * time.Second
 
-var _ provider.Provider = &appwriteProvider{}
+var (
+	_ provider.Provider                       = &appwriteProvider{}
+	_ provider.ProviderWithEphemeralResources = &appwriteProvider{}
+)
 
 type appwriteProvider struct {
 	version string
@@ -175,6 +179,10 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 
 	resp.DataSourceData = clients
 	resp.ResourceData = clients
+	// Ephemeral resources receive provider data through their own field.
+	// Omitting it leaves their Configure with nil provider data, which only
+	// shows up as a nil dereference at Open.
+	resp.EphemeralResourceData = clients
 }
 
 func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resource {
@@ -232,6 +240,17 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		docdbsvc.NewIndexResource(docdbsvc.ProductVectorsDB),
 		docdbsvc.NewDocumentResource(docdbsvc.ProductDocumentsDB),
 		docdbsvc.NewDocumentResource(docdbsvc.ProductVectorsDB),
+	}
+}
+
+// EphemeralResources returns the values the provider can hand to a
+// configuration without ever writing them to state. Each one is a credential,
+// which is the case the Terraform feature exists for.
+func (p *appwriteProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{
+		projectsvc.NewEphemeralKeyEphemeralResource,
+		usersvc.NewJWTEphemeralResource,
+		usersvc.NewSessionEphemeralResource,
 	}
 }
 

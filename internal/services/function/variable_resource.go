@@ -10,11 +10,14 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/id"
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -29,14 +32,16 @@ type variableResource struct {
 }
 
 type variableResourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	FunctionID types.String `tfsdk:"function_id"`
-	Key        types.String `tfsdk:"key"`
-	Value      types.String `tfsdk:"value"`
-	Secret     types.Bool   `tfsdk:"secret"`
-	CreatedAt  types.String `tfsdk:"created_at"`
-	UpdatedAt  types.String `tfsdk:"updated_at"`
-	ProjectID  types.String `tfsdk:"project_id"`
+	ID             types.String `tfsdk:"id"`
+	FunctionID     types.String `tfsdk:"function_id"`
+	Key            types.String `tfsdk:"key"`
+	Value          types.String `tfsdk:"value"`
+	ValueWO        types.String `tfsdk:"value_wo"`
+	ValueWOVersion types.Int64  `tfsdk:"value_wo_version"`
+	Secret         types.Bool   `tfsdk:"secret"`
+	CreatedAt      types.String `tfsdk:"created_at"`
+	UpdatedAt      types.String `tfsdk:"updated_at"`
+	ProjectID      types.String `tfsdk:"project_id"`
 }
 
 func NewVariableResource() resource.Resource {
@@ -67,9 +72,30 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Validators:  common.VariableKeyValidators(),
 			},
 			"value": schema.StringAttribute{
-				Description: "The variable value.",
-				Required:    true,
-				Sensitive:   true,
+				Description: "The variable value. Stored in Terraform state; prefer value_wo, which is not. " +
+					"Exactly one of value or value_wo must be set.",
+				Optional:  true,
+				Sensitive: true,
+			},
+			"value_wo": schema.StringAttribute{
+				Description: "The variable value, as a write-only argument. Read from the configuration during " +
+					"apply and never persisted. Change value_wo_version to apply a new value, since Terraform " +
+					"cannot detect a change in a value it does not store. Requires Terraform 1.11 or later.",
+				Optional:  true,
+				Sensitive: true,
+				WriteOnly: true,
+				// The version is what makes a changed secret visible to
+				// Terraform. Without it, switching an existing resource from
+				// the stored attribute to this one leaves both versions null,
+				// nothing compares unequal, and the apply reports success while
+				// the old secret stays in place.
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("value_wo_version")),
+				},
+			},
+			"value_wo_version": schema.Int64Attribute{
+				Description: "Increment to apply a changed value_wo.",
+				Optional:    true,
 			},
 			"secret": schema.BoolAttribute{
 				Description: "Whether the variable is secret. Secret variables can only be updated or deleted, never read.",
@@ -89,6 +115,18 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},
+	}
+}
+
+// ConfigValidators enforces that a value arrives exactly one way. Making
+// `value` optional to admit `value_wo` would otherwise allow a variable with no
+// value at all, which the API rejects with a less obvious message.
+func (r *variableResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("value"),
+			path.MatchRoot("value_wo"),
+		),
 	}
 }
 
@@ -123,11 +161,17 @@ func (r *variableResource) Create(ctx context.Context, req resource.CreateReques
 		createOpts = append(createOpts, functionsClient.WithCreateVariableSecret(plan.Secret.ValueBool()))
 	}
 
+	valueWO := common.WriteOnlyValue(ctx, req.Config, "value_wo", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	value := common.ResolveSecret(valueWO, plan.Value)
+
 	variable, err := functionsClient.CreateVariable(
 		plan.FunctionID.ValueString(),
 		id.Unique(),
 		plan.Key.ValueString(),
-		plan.Value.ValueString(),
+		value,
 		createOpts...,
 	)
 	if err != nil {
@@ -183,9 +227,15 @@ func (r *variableResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 	functionsClient := appwrite.NewFunctions(r.clients.ClientForProject(projectID))
 
+	valueWO := common.WriteOnlyValue(ctx, req.Config, "value_wo", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	updateValue := common.ResolveSecret(valueWO, plan.Value)
+
 	updateOpts := []functions.UpdateVariableOption{
 		functionsClient.WithUpdateVariableKey(plan.Key.ValueString()),
-		functionsClient.WithUpdateVariableValue(plan.Value.ValueString()),
+		functionsClient.WithUpdateVariableValue(updateValue),
 	}
 	if !plan.Secret.IsNull() {
 		updateOpts = append(updateOpts, functionsClient.WithUpdateVariableSecret(plan.Secret.ValueBool()))
@@ -241,7 +291,12 @@ func (r *variableResource) mapToState(variable *models.Variable, model *variable
 	model.Key = types.StringValue(variable.Key)
 	model.CreatedAt = types.StringValue(variable.CreatedAt)
 	model.UpdatedAt = types.StringValue(variable.UpdatedAt)
-	if variable.Value != "" {
+	// Only refresh `value` when the configuration owns it. A non-secret
+	// variable has its value returned by the API on both create and read, so
+	// copying it unconditionally would write a value_wo secret into state and
+	// break the guarantee the write-only argument exists to make. A secret
+	// variable comes back empty, so that path was never the risk.
+	if variable.Value != "" && !model.Value.IsNull() {
 		model.Value = types.StringValue(variable.Value)
 	}
 }

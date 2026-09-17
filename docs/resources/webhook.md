@@ -46,7 +46,11 @@ resource "appwrite_webhook" "authenticated" {
 
 ### Optional
 
-- `auth_password` (String, Sensitive) HTTP basic authentication password.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `auth_password` (String, Sensitive) HTTP basic authentication password. Stored in Terraform state; prefer auth_password_wo, which is not.
+- `auth_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) HTTP basic authentication password, as a write-only argument. Read from the configuration during apply and never persisted. Change auth_password_wo_version to apply a new value. Requires Terraform 1.11 or later.
+- `auth_password_wo_version` (Number) Increment to apply a changed auth_password_wo.
 - `auth_username` (String) HTTP basic authentication username.
 - `enabled` (Boolean) Whether the webhook is enabled. Defaults to true.
 - `id` (String) The webhook ID.
