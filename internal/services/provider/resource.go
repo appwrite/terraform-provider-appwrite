@@ -852,8 +852,22 @@ func (r *providerResource) mapToState(prov *models.Provider, model *providerReso
 	model.UpdatedAt = types.StringValue(prov.UpdatedAt)
 	// Don't overwrite type when already set — preserve the user's value.
 	// During import, type is not yet in state, so populate it from the API.
-	// Provider types (sendgrid, smtp, twilio, etc.) match between API and schema.
+	//
+	// This schema's `type` is the provider service (sendgrid, smtp, twilio),
+	// which the API returns as `provider`. The API's own `type` field is the
+	// message category (email, sms, push) and is a different thing entirely.
 	if model.Type.IsNull() || model.Type.IsUnknown() {
-		model.Type = types.StringValue(prov.Type)
+		model.Type = types.StringValue(prov.Provider)
+	}
+
+	// from_email and from_name are optional rather than computed, so they are
+	// only filled in when state has nothing -- that is, on import. Setting them
+	// on every read would manufacture a value the config never asked for.
+	options, _ := prov.Options.(map[string]interface{})
+	if s, ok := options["fromEmail"].(string); ok && s != "" && model.FromEmail.IsNull() {
+		model.FromEmail = types.StringValue(s)
+	}
+	if s, ok := options["fromName"].(string); ok && s != "" && model.FromName.IsNull() {
+		model.FromName = types.StringValue(s)
 	}
 }

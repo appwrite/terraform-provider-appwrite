@@ -41,6 +41,31 @@ func DedicatedPreCheck(t *testing.T) {
 	}
 }
 
+// CloudPreCheck gates tests for features that only Appwrite Cloud serves. The
+// backups API, for one, is not routed at all on a self-hosted install, so the
+// requests come back as 404 HTML rather than an API error. CI runs against
+// self-hosted Appwrite, so these stay off unless explicitly asked for.
+func CloudPreCheck(t *testing.T) {
+	t.Helper()
+	PreCheck(t)
+	if os.Getenv("APPWRITE_CLOUD_TESTS") == "" {
+		t.Skip("APPWRITE_CLOUD_TESTS must be set to run tests for Cloud-only features")
+	}
+}
+
+// BuildPreCheck gates tests that make Appwrite build a deployment. Those need
+// the orchestrator and runtime executor running alongside the API, and they
+// fetch a template repository over the network and build it, which takes
+// minutes and fails whenever the upstream repository or registry is having a
+// bad day. Too slow and too flaky to sit in the nightly.
+func BuildPreCheck(t *testing.T) {
+	t.Helper()
+	PreCheck(t)
+	if os.Getenv("APPWRITE_BUILD_TESTS") == "" {
+		t.Skip("APPWRITE_BUILD_TESTS must be set to run deployment build tests; they require the build stack and take minutes")
+	}
+}
+
 func preCheckBase(t *testing.T) {
 	t.Helper()
 	if os.Getenv("APPWRITE_ENDPOINT") == "" {

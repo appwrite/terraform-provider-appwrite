@@ -9,7 +9,7 @@ import (
 
 func TestAccSiteDeploymentResource_template(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.BuildPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

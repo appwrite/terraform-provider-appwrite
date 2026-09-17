@@ -76,6 +76,8 @@ resource "appwrite_messaging_provider" "test" {
   id   = "twilio-test"
   name = "Twilio"
   type = "twilio"
+  account_sid = "ACtestaccountsid"
+  auth_token  = "testauthtoken"
   from = "+1234567890"
 }
 `,
