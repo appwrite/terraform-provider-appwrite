@@ -59,17 +59,24 @@ api POST /account/sessions/email "$(jq -nc --arg e "$EMAIL" --arg p "$PASSWORD" 
   -H 'X-Appwrite-Project: console' > /dev/null
 
 # A self-hosted instance permits exactly one organization, created by whoever
-# signs up first. On the fresh instance CI boots that is this account, but reuse
-# whatever is already there so the script also works against a running
-# development instance.
+# signs up first. On the fresh instance CI boots, that is this account.
+#
+# Re-running against an instance that already has an organization does not work:
+# this run signs up a new account, which is not a member of that organization,
+# cannot see it, and is refused when it tries to create one ("This self-hosted
+# instance already has an organization"). Start from a clean instance instead of
+# pointing this at a development one.
 echo "Resolving organization..."
 ORGANIZATION_ID="$(curl -fsS -m 30 "${ENDPOINT}/v1/teams" -b "$COOKIES" -c "$COOKIES" \
   -H 'Accept: application/json' -H 'X-Appwrite-Project: console' \
   | jq -r '.teams[0]."$id" // empty')"
 
 if [ -z "$ORGANIZATION_ID" ]; then
-  ORGANIZATION_ID="$(api POST /teams '{"teamId":"unique()","name":"terraform-acceptance"}' \
-    -H 'X-Appwrite-Project: console' | jq -r '."$id"')"
+  if ! ORGANIZATION_ID="$(api POST /teams '{"teamId":"unique()","name":"terraform-acceptance"}' \
+    -H 'X-Appwrite-Project: console' | jq -r '."$id"')"; then
+    echo "::error::Could not create an organization. A self-hosted instance allows only one, and a freshly signed-up account cannot join an existing one -- start from a clean instance." >&2
+    exit 1
+  fi
 fi
 require "$ORGANIZATION_ID" "the organization ID"
 
