@@ -25,19 +25,25 @@ builds:
 
 archives:
   # `format` was deprecated in GoReleaser v2 in favour of `formats`.
-  - formats: [zip]
+  - id: provider
+    formats: [zip]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 # An SBOM per released archive, which the HashiCorp Partner Premier tag
 # requires for security transparency. Syft is not bundled with the GoReleaser
 # action, so the release workflow installs it first.
 sboms:
-  - id: archive
+  - id: sbom
     artifacts: archive
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
+  # The Terraform Registry rejects a release whose SHA256SUMS lists files it
+  # does not ingest, so keep the SBOMs out of it: they stay release assets but
+  # are not checksummed. Only the archives are.
+  ids:
+    - provider
   extra_files:
     - glob: terraform-registry-manifest.json
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
