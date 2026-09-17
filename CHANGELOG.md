@@ -9,9 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Upgraded `sdk-for-go` to `v7.2.0`. The DocumentsDB and VectorsDB services the
-  new resources are built on are no longer carried on a release candidate, so an
-  install no longer resolves a prerelease dependency
+- Upgraded `sdk-for-go` to `v7.3.0`, which targets Appwrite `2.0.x`. Required
+  path parameters are now validated before a request leaves the client, and
+  responses decoded as JSON are requested with an explicit `accept` header
+- The SDK removed `DedicatedDatabaseSpecificationList.Pricing` and moved the
+  rates onto each specification. The provider never exposed pricing, so no
+  resource or data source schema changes
 
 ## [2.0.0-beta.2] - 2026-08-19
 
