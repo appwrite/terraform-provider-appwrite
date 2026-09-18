@@ -7,7 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `max_retries` on the provider. Requests that failed for a reason likely to
+  pass -- `429`, `408`, and the gateway `5xx` codes -- are now retried with
+  jittered exponential backoff, honoring `Retry-After` when Appwrite sends it.
+  Defaults to 5; set to 0 to disable. Raising it while also raising
+  `-parallelism` against a rate-limited endpoint makes throttling more likely,
+  not less
+- A `timeouts` block on `appwrite_function_deployment` and
+  `appwrite_site_deployment`, with a 30 minute default for the build wait. The
+  wait previously had no deadline at all, so a build that never finished left
+  Terraform polling until it was killed -- which loses the deployment from state
+- Request and response logging under `TF_LOG=DEBUG`, with API keys, JWTs,
+  session cookies and dev keys redacted. Response bodies are deliberately not
+  logged
+- `TF_APPEND_USER_AGENT` is now honored, so Terraform Cloud, Terragrunt and
+  in-house wrappers are distinguishable from a developer's laptop in Appwrite's
+  logs. A framework-only provider has to implement this itself, so it previously
+  had no effect
+- Guides for [API key scopes](docs/guides/api-key-scopes.md) and
+  [debugging](docs/guides/debugging.md)
+
 ### Changed
+
+- Every argument that cannot be changed in place now says so in its
+  documentation, with the sentence "Changing this forces a new resource to be
+  created." 170 attributes were affected and none of them mentioned it, so the
+  only way to discover that an edit would recreate a database was to read the
+  plan carefully enough
+- `appwrite_tablesdb_index` documents its `created_at` and `updated_at`
+  attributes, which were published with blank descriptions
+- The column build wait is no longer capped at a hard-coded five minutes, which
+  was too short for a backfill on a large table
+
+### Fixed
+
+- Errors reporting that a column is still being built are now recognised from
+  Appwrite's structured error `type` rather than by matching the prose of the
+  message, which silently turned a poll into a hard failure whenever the message
+  was reworded
 
 - Upgraded `sdk-for-go` to `v7.3.0`, which targets Appwrite `2.0.x`. Required
   path parameters are now validated before a request leaves the client, and

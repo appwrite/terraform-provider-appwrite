@@ -86,6 +86,24 @@ runs either way.
 make lint
 ```
 
+`make lint` runs `go vet`, the formatting check, and golangci-lint at the version
+pinned in the Makefile. Pinned deliberately: a floating linter changes what
+passes review without anyone committing anything.
+
+### Running everything CI runs
+
+```bash
+make ci
+```
+
+This is the same set CI runs, in one target, so a green local run means a green
+pull request. It covers linting, the repository checks, `go mod tidy`, the unit
+suite, both sweeper-linkage assertions, and the documentation diff.
+
+`make depscheck` compares the working tree against the index, so it reports a
+difference whenever `go.mod` has uncommitted changes -- including correct ones.
+That is intentional for CI, where the committed `go.mod` is what matters.
+
 ### Generating Documentation
 
 ```bash
@@ -102,8 +120,49 @@ Documentation is auto-generated from schema definitions and examples using [terr
 4. Create an example in `examples/resources/appwrite_<resource_name>/resource.tf`
 5. Create an import example in `examples/resources/appwrite_<resource_name>/import.sh`
 6. Create a doc template in `templates/resources/<resource_name>.md.tmpl`
-7. Write acceptance tests in `resource_test.go`
-8. Run `make docs` to generate documentation
+7. Write acceptance tests in `resource_test.go`, calling
+   `acceptance.ResourceTest` rather than `resource.Test` -- see below
+8. Register a destroy check for the new type in
+   `internal/acceptance/destroy.go`, or record why it cannot have one
+9. Add a sweeper in `internal/sweep/sweepers.go` if the resource can be left
+   behind by an interrupted run
+10. Append `common.ForcesReplacementNote` to the description of every argument
+    that forces replacement
+11. Run `make docs` to generate documentation
+12. Refresh the schema baseline:
+    `APPWRITE_UPDATE_SCHEMA_BASELINE=1 go test ./internal/provider/`
+
+### Tests must go through the shared harness
+
+Acceptance tests call `acceptance.ResourceTest`, not `resource.Test`. The wrapper
+injects three things no test should be without:
+
+- a **destroy check** against the server. The framework only verifies that
+  Terraform removed the resource from state, so a `Delete` that returns success
+  without deleting anything passes an unguarded test.
+- a **no-replace plan check** on every configuration step, so a resource cannot
+  quietly start recreating itself. If the test's subject *is* replacement, use
+  `acceptance.ResourceTestAllowingReplace`.
+- **refresh-after-apply**, which catches `Create` writing a value to state that
+  `Read` does not produce -- otherwise seen only as a perpetual diff for users.
+
+`scripts/checks/no-direct-resource-test.sh` enforces this, because a guard that
+can be bypassed by writing the obvious thing instead is not a guard.
+
+### Sweepers
+
+`internal/sweep` deletes resources an interrupted run left behind. It only
+touches resources whose name or ID contains `tf-acc-test`, and it refuses to run
+unless `APPWRITE_SWEEP_PROJECT_ID` names the project explicitly -- it will not
+fall back to `APPWRITE_PROJECT_ID`, because that holds whatever the last run
+exported.
+
+```bash
+APPWRITE_SWEEP_PROJECT_ID=<disposable project> make sweep
+```
+
+Sweeper code must stay reachable only from test files. `make sweeper-unlinked`
+asserts it is absent from the provider binary users install.
 
 ## Adding a New Data Source
 
@@ -113,9 +172,19 @@ Follow the same pattern as resources, but use `datasource.DataSource` interface 
 
 1. Fork the repository and create a feature branch
 2. Write or update tests for your changes
-3. Run `make lint` and `make test` to verify your changes
+3. Run `make ci` to verify them the way CI will
 4. Run `make docs` and commit any generated documentation changes
-5. Open a pull request with a clear description of the changes
+5. Add a `CHANGELOG.md` entry, or apply the `skip-changelog` label if the change
+   genuinely alters nothing a user would notice
+6. Open a pull request with a clear description of the changes
+
+### Breaking changes
+
+Breaking changes are not allowed within a major version, and `v2.1.0` has
+shipped. `contributing/breaking-changes.md` has the full list of what counts and
+the deprecate-then-remove sequence to follow instead. The schema is compared
+against a committed baseline on every pull request, so most of it is enforced
+rather than remembered.
 
 ## Code Style
 
@@ -124,3 +193,8 @@ Follow the same pattern as resources, but use `datasource.DataSource` interface 
 - Keep resource implementations consistent with existing patterns
 - Mark sensitive fields with `Sensitive: true`
 - Handle 404 errors in Read by calling `resp.State.RemoveResource(ctx)`
+- Match errors on Appwrite's structured `type` field via `common.ErrorType`, not
+  on the prose of the message. Messages get reworded; types are contractual
+- Every attribute needs a description, ending in a full stop
+- Wrap errors with `%w`, and do not begin a wrapped message with "failed" or
+  "error" -- a caller will prefix it

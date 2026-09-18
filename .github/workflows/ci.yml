@@ -174,13 +174,50 @@ jobs:
       - name: shellcheck the CI scripts
         run: shellcheck .github/scripts/*.sh scripts/*.sh scripts/checks/*.sh
 
+  changelog:
+    name: Changelog Entry
+    # Only meaningful on a pull request: a push to main has no PR to inspect.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          # Needs the base commit to diff against.
+          fetch-depth: 0
+
+      # A user-visible change with no changelog entry is a change nobody outside
+      # this repository will ever hear about. The escape hatch is a label rather
+      # than a convention in the description, so that skipping it is a visible,
+      # attributable act.
+      - name: Require a changelog entry or the skip-changelog label
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if printf '%s' "$LABELS" | grep -q '"skip-changelog"'; then
+            echo "skip-changelog label is present; not requiring an entry."
+            exit 0
+          fi
+          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md was updated."
+            exit 0
+          fi
+          echo "::error::This pull request does not touch CHANGELOG.md."
+          echo
+          echo "Add an entry describing the change from a user's point of view, or apply the"
+          echo "skip-changelog label if it genuinely changes nothing a user would notice"
+          echo "(internal refactors, CI, tests)."
+          exit 1
+
   # One job to require in branch protection. Without it, adding a job above
   # means remembering to add it to the required list, and forgetting means the
   # new check never actually gates anything.
   check:
     name: CI
     if: always()
-    needs: [build, lint, unit-test, checks, docs, vulncheck, workflow-lint]
+    needs: [build, lint, unit-test, checks, docs, vulncheck, workflow-lint, changelog]
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any job failed or was skipped
@@ -188,7 +225,9 @@ jobs:
           results='${{ join(needs.*.result, ' ') }}'
           echo "job results: $results"
           for result in $results; do
-            if [ "$result" != "success" ]; then
+            # "skipped" is allowed: the changelog job does not run on a push to
+            # main, and treating that as a failure would make every merge red.
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               echo "::error::a required job did not succeed"
               exit 1
             fi
