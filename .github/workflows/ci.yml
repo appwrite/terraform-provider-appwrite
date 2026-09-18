@@ -6,18 +6,36 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege by default. Nothing in this workflow writes to the repository,
+# and a job that needs more should ask for it rather than inherit it.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  # Every tool version lives here so a floating tag cannot change what passes
+  # review. The linter is deliberately not @latest: CI used to install the v1
+  # module path, whose @latest is the end-of-life v1.64.8.
+  GOLANGCI_LINT_VERSION: v2.13.2
+  ACTIONLINT_VERSION: v1.7.12
+  GOVULNCHECK_VERSION: v1.8.0
+  ZIZMOR_VERSION: 1.30.1
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
-
       - name: Build
         run: go build -o terraform-provider-appwrite .
 
@@ -26,64 +44,153 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
-
-      - name: golangci-lint
-        run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-          golangci-lint run
-
+      - name: go vet
+        run: make vet
       - name: Check formatting
-        run: |
-          gofmt_output=$(gofmt -l .)
-          if [ -n "$gofmt_output" ]; then
-            echo "Files not formatted:"
-            echo "$gofmt_output"
-            exit 1
-          fi
+        run: make fmt-check
+      - name: golangci-lint
+        run: make golangci-lint
+        env:
+          GOLANGCI_LINT_VERSION: ${{ env.GOLANGCI_LINT_VERSION }}
 
   unit-test:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
-
+      # Short timeout on purpose: nothing in the unit suite may touch the
+      # network, and a deadline is the only structural way to enforce that.
       - name: Run unit tests
-        run: go test ./... -v -count=1
+        run: make test
+
+  checks:
+    name: Repository Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_wrapper: false
+
+      # The example-formatting check skips itself when terraform is missing so a
+      # developer without it can still run `make checks`. This makes that
+      # impossible here.
+      - name: Run repository checks
+        run: make checks
+        env:
+          REQUIRE_TERRAFORM: "1"
+
+      - name: go.mod is tidy
+        run: make depscheck
+
+      # Sweeper code deletes infrastructure with no plan in front of it. These
+      # assert it reaches the test binary and not the release binary.
+      - name: Sweepers are linked into tests
+        run: make sweeper-linked
+      - name: Sweepers are absent from the release binary
+        run: make sweeper-unlinked
 
   docs:
     name: Docs Up To Date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_wrapper: false
+      - name: Generate docs and check for a diff
+        run: make docs-check
 
+  vulncheck:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      # Reports only vulnerabilities on a code path the provider actually
+      # reaches, so it is quiet enough to gate on rather than advisory.
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@"${GOVULNCHECK_VERSION}" ./...
+
+  workflow-lint:
+    name: Workflow Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
           cache: true
 
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-        with:
-          terraform_wrapper: false
+      # Installed as tools rather than as third-party actions on purpose: an
+      # action would be one more SHA to pin and one more supply-chain edge for a
+      # job whose entire job is checking the supply chain.
+      - name: actionlint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@"${ACTIONLINT_VERSION}" -color
 
-      - name: Generate docs
-        run: make docs
-
-      - name: Check for uncommitted changes
+      # zizmor finds Actions-specific security problems actionlint does not:
+      # injectable ${{ }} interpolation into run blocks, over-broad permissions,
+      # unpinned actions, dangerous triggers.
+      - name: zizmor
         run: |
-          if [ -n "$(git diff --name-only)" ]; then
-            echo "Documentation is out of date. Run 'make docs' and commit the changes."
-            echo ""
-            echo "Changed files:"
-            git diff --name-only
-            exit 1
-          fi
+          pipx install "zizmor==${ZIZMOR_VERSION}"
+          # --offline keeps the run deterministic and tokenless. The online
+          # audits check whether a pinned action SHA still exists upstream,
+          # which is a useful thing to know but not a reason for CI to fail on
+          # a pull request that did not touch workflows.
+          zizmor --offline --persona=regular .github/workflows/
+
+      - name: shellcheck the CI scripts
+        run: shellcheck .github/scripts/*.sh scripts/*.sh scripts/checks/*.sh
+
+  # One job to require in branch protection. Without it, adding a job above
+  # means remembering to add it to the required list, and forgetting means the
+  # new check never actually gates anything.
+  check:
+    name: CI
+    if: always()
+    needs: [build, lint, unit-test, checks, docs, vulncheck, workflow-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job failed or was skipped
+        run: |
+          results='${{ join(needs.*.result, ' ') }}'
+          echo "job results: $results"
+          for result in $results; do
+            if [ "$result" != "success" ]; then
+              echo "::error::a required job did not succeed"
+              exit 1
+            fi
+          done
+          echo "all required jobs succeeded"

@@ -86,6 +86,7 @@ lint: vet fmt-check golangci-lint
 # developer run exactly the same thing.
 checks:
 	@scripts/checks/no-direct-resource-test.sh
+	@scripts/checks/examples-format.sh
 
 # go.mod and go.sum drifting from what the code imports is a supply-chain
 # problem rather than a tidiness one: it decides what a release builds from.
