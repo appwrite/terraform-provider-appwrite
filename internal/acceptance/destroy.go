@@ -3,6 +3,7 @@ package acceptance
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
@@ -183,6 +184,14 @@ func CheckDestroy(t *testing.T) func(*terraform.State) error {
 		for _, ms := range state.Modules {
 			for name, rs := range ms.Resources {
 				if rs.Primary == nil || rs.Primary.ID == "" {
+					continue
+				}
+
+				// Only this provider's resources are ours to verify. The echo
+				// provider the ephemeral tests use to surface a value into
+				// state also leaves a resource behind, and it has no server
+				// side to ask about.
+				if !strings.HasPrefix(rs.Type, "appwrite_") {
 					continue
 				}
 

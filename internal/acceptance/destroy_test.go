@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	sdkresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/provider"
 )
@@ -72,4 +74,27 @@ func registeredResourceTypes(t *testing.T) []string {
 	}
 	sort.Strings(types)
 	return types
+}
+
+// TestCheckDestroyIgnoresForeignResources pins the behavior that broke the
+// ephemeral tests: the echo provider leaves a resource in state that has no
+// server side, and reporting it as unchecked failed every test using it.
+func TestCheckDestroyIgnoresForeignResources(t *testing.T) {
+	t.Setenv(sdkresource.EnvTfAcc, "1")
+
+	state := &terraform.State{
+		Modules: []*terraform.ModuleState{{
+			Path: []string{"root"},
+			Resources: map[string]*terraform.ResourceState{
+				"echo.test": {
+					Type:    "echo",
+					Primary: &terraform.InstanceState{ID: "echo", Attributes: map[string]string{}},
+				},
+			},
+		}},
+	}
+
+	if err := CheckDestroy(t)(state); err != nil {
+		t.Fatalf("a resource from another provider was reported: %v", err)
+	}
 }
