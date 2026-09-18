@@ -54,7 +54,7 @@ resource "appwrite_function_deployment" "from_template" {
 - `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash). Changing this forces a new resource to be created.
 - `repository` (String) Repository name for template deployments. Changing this forces a new resource to be created.
 - `root_directory` (String) Root directory in the repository for template deployments. Changing this forces a new resource to be created.
-- `timeouts` (Block, Optional) (see below for nested schema)
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit"). Changing this forces a new resource to be created.
 - `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to true.
 

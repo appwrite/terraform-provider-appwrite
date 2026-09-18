@@ -41,8 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The column build wait is no longer capped at a hard-coded five minutes, which
   was too short for a backfill on a large table
 
+### Security
+
+- Updated `grpc` to `v1.83.2`, `golang.org/x/net` to `v0.56.0`,
+  `golang.org/x/text` to `v0.39.0` and `cloudflare/circl` to `v1.6.3`, and the
+  Go directive to `1.26.6`, clearing ten vulnerabilities reachable from provider
+  code. One of them, in grpc's HTTP/2 server, was reachable from `main.go`
+
 ### Fixed
 
+- Example configuration for `appwrite_storage_bucket` was not `terraform fmt`
+  clean
 - Errors reporting that a column is still being built are now recognised from
   Appwrite's structured error `type` rather than by matching the prose of the
   message, which silently turned a poll into a hard failure whenever the message
