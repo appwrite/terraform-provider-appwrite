@@ -416,13 +416,25 @@ func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
 }
 
+// DefaultDeploymentTimeout bounds a deployment wait when the configuration sets
+// no timeouts block.
+//
+// The wait previously had no deadline of any kind. A build that never finished --
+// a runtime that cannot start, an upstream repository that hangs -- left
+// Terraform polling forever with no output, and the only way out was to kill it,
+// which leaves the deployment unrecorded in state. Thirty minutes is well clear
+// of a slow build and still terminates.
+const DefaultDeploymentTimeout = 30 * time.Minute
+
 // WaitForDeploymentReady polls a deployment until its status becomes "ready",
 // "failed", or "canceled". Returns nil on "ready", error otherwise.
+//
+// Bounded by ctx, which the caller should derive from its timeouts block.
 func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, error), deploymentID string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("timed out waiting for deployment %q to become ready", deploymentID)
+			return fmt.Errorf("timed out waiting for deployment %q to become ready: %w", deploymentID, ctx.Err())
 		default:
 		}
 
@@ -444,10 +456,18 @@ func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, e
 	}
 }
 
-// WaitForColumnAvailable polls a column until its status becomes "available",
-// with a maximum wait of 5 minutes.
+// DefaultColumnTimeout bounds a column build wait when the configuration sets no
+// timeouts block. Previously hard-coded inside the function with no way to raise
+// it, which is a problem on a large table where the backfill genuinely takes
+// longer than five minutes.
+const DefaultColumnTimeout = 5 * time.Minute
+
+// WaitForColumnAvailable polls a column until its status becomes "available".
+//
+// Bounded by both ctx and DefaultColumnTimeout, whichever expires first, so a
+// caller that supplies no deadline still cannot wait indefinitely.
 func WaitForColumnAvailable(ctx context.Context, getColumn func() (interface{}, error), key string) error {
-	deadline := time.After(5 * time.Minute)
+	deadline := time.After(DefaultColumnTimeout)
 	for {
 		select {
 		case <-ctx.Done():

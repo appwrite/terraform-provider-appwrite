@@ -11,6 +11,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/functions"
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -35,29 +36,30 @@ type deploymentResource struct {
 }
 
 type deploymentResourceModel struct {
-	ID            types.String `tfsdk:"id"`
-	FunctionID    types.String `tfsdk:"function_id"`
-	SourceType    types.String `tfsdk:"source_type"`
-	Activate      types.Bool   `tfsdk:"activate"`
-	WaitForReady  types.Bool   `tfsdk:"wait_for_ready"`
-	CodePath      types.String `tfsdk:"code_path"`
-	CodeHash      types.String `tfsdk:"code_hash"`
-	Entrypoint    types.String `tfsdk:"entrypoint"`
-	Commands      types.String `tfsdk:"commands"`
-	Type          types.String `tfsdk:"type"`
-	Reference     types.String `tfsdk:"reference"`
-	Repository    types.String `tfsdk:"repository"`
-	Owner         types.String `tfsdk:"owner"`
-	RootDirectory types.String `tfsdk:"root_directory"`
-	Status        types.String `tfsdk:"status"`
-	BuildLogs     types.String `tfsdk:"build_logs"`
-	BuildDuration types.Int64  `tfsdk:"build_duration"`
-	SourceSize    types.Int64  `tfsdk:"source_size"`
-	BuildSize     types.Int64  `tfsdk:"build_size"`
-	TotalSize     types.Int64  `tfsdk:"total_size"`
-	CreatedAt     types.String `tfsdk:"created_at"`
-	UpdatedAt     types.String `tfsdk:"updated_at"`
-	ProjectID     types.String `tfsdk:"project_id"`
+	ID            types.String   `tfsdk:"id"`
+	FunctionID    types.String   `tfsdk:"function_id"`
+	SourceType    types.String   `tfsdk:"source_type"`
+	Activate      types.Bool     `tfsdk:"activate"`
+	WaitForReady  types.Bool     `tfsdk:"wait_for_ready"`
+	CodePath      types.String   `tfsdk:"code_path"`
+	CodeHash      types.String   `tfsdk:"code_hash"`
+	Entrypoint    types.String   `tfsdk:"entrypoint"`
+	Commands      types.String   `tfsdk:"commands"`
+	Type          types.String   `tfsdk:"type"`
+	Reference     types.String   `tfsdk:"reference"`
+	Repository    types.String   `tfsdk:"repository"`
+	Owner         types.String   `tfsdk:"owner"`
+	RootDirectory types.String   `tfsdk:"root_directory"`
+	Status        types.String   `tfsdk:"status"`
+	BuildLogs     types.String   `tfsdk:"build_logs"`
+	BuildDuration types.Int64    `tfsdk:"build_duration"`
+	SourceSize    types.Int64    `tfsdk:"source_size"`
+	BuildSize     types.Int64    `tfsdk:"build_size"`
+	TotalSize     types.Int64    `tfsdk:"total_size"`
+	CreatedAt     types.String   `tfsdk:"created_at"`
+	UpdatedAt     types.String   `tfsdk:"updated_at"`
+	ProjectID     types.String   `tfsdk:"project_id"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
 }
 
 func NewDeploymentResource() resource.Resource {
@@ -68,7 +70,7 @@ func (r *deploymentResource) Metadata(_ context.Context, req resource.MetadataRe
 	resp.TypeName = req.ProviderTypeName + "_function_deployment"
 }
 
-func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *deploymentResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an Appwrite function deployment.",
 		Attributes: map[string]schema.Attribute{
@@ -190,6 +192,17 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},
+		Blocks: map[string]schema.Block{
+			// A deployment build is the longest thing this provider waits on,
+			// and it had no deadline at all -- a build that never finished left
+			// Terraform polling until the operator killed it, which loses the
+			// deployment from state. The wait now defaults to 30 minutes and is
+			// configurable for the repositories where that is genuinely not
+			// enough. Create only: a deployment is immutable, so Update
+			// returns an error and an update timeout would advertise a
+			// lifecycle phase that does not exist.
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true}),
+		},
 	}
 }
 
@@ -211,6 +224,16 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Bounds everything below, the build wait included. Derived before the first
+	// API call rather than around the wait alone, so a hung upload is covered by
+	// the same deadline the user configured.
+	ctx, cancel, diags := common.CreateContext(ctx, plan.Timeouts, common.DefaultDeploymentTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	defer cancel()
 
 	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
 	if err != nil {

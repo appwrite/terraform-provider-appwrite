@@ -53,6 +53,7 @@ resource "appwrite_site_deployment" "from_template" {
 - `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash). Changing this forces a new resource to be created.
 - `repository` (String) Repository name for template deployments. Changing this forces a new resource to be created.
 - `root_directory` (String) Root directory in the repository for template deployments. Changing this forces a new resource to be created.
+- `timeouts` (Block, Optional) (see below for nested schema)
 - `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit"). Changing this forces a new resource to be created.
 - `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to true.
 
@@ -67,6 +68,13 @@ resource "appwrite_site_deployment" "from_template" {
 - `status` (String) The deployment build status.
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 ## Import
 
