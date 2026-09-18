@@ -32,7 +32,9 @@ Unit tests:
 make test
 ```
 
-Acceptance tests (requires a running Appwrite instance):
+Every pull request runs the acceptance suite in CI against an Appwrite brought
+up on the runner, so a change that only breaks against a real server fails on
+the pull request. Locally the suite needs an instance of your own:
 
 ```bash
 export APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
