@@ -6,6 +6,12 @@ on:
     - cron: "0 3 * * *"
   push:
     branches: [main]
+  # The suite is the only thing that exercises the provider against a real
+  # server, so a change that breaks it should fail on the pull request rather
+  # than after it lands on main. Everything it needs is brought up on the
+  # runner, so there are no secrets and a fork's pull request runs the same way.
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       appwrite_version:
@@ -25,9 +31,14 @@ permissions:
 # The suite creates and destroys resources in a shared project, so two runs
 # must not interleave. Queue them rather than cancelling: a cancelled run
 # leaves its resources behind.
+#
+# A pull request gets a group of its own. Sharing the one group would queue
+# every open pull request behind main and the nightly, each holding it for up to
+# 45 minutes; and a superseded pull request run is safe to cancel, because its
+# Appwrite lives on the runner and dies with it.
 concurrency:
-  group: acceptance-tests
-  cancel-in-progress: false
+  group: acceptance-tests${{ github.event_name == 'pull_request' && format('-{0}', github.ref) || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # Pinned deliberately. The compose file defaults to :latest, and a nightly
