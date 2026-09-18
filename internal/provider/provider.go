@@ -109,7 +109,7 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 			},
 			"max_retries": schema.Int64Attribute{
-				Description: "How many times to retry a request that failed for a reason likely to pass, such as a rate limit or a gateway error. Defaults to 5. Set to 0 to disable retrying. Note that Terraform applies resources in parallel, so raising both this and -parallelism against a rate-limited endpoint makes throttling more likely, not less.",
+				Description: "How many times to retry a request that failed for a reason likely to pass, such as a rate limit or a gateway error. Defaults to 5. Set to 0 to disable retrying. Rate-limited requests are retried whatever they were doing, because the server rejected them without acting; a create or update interrupted by a server error or a dropped connection is not retried, since the server may already have applied it and a second attempt would duplicate the resource. Note that Terraform applies resources in parallel, so raising both this and -parallelism against a rate-limited endpoint makes throttling more likely, not less.",
 				Optional:    true,
 				Validators: []validator.Int64{
 					int64validator.AtLeast(0),

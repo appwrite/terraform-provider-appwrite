@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/appwrite/sdk-for-go/v7/client"
+	"github.com/hashicorp/terraform-plugin-log/tflogtest"
 )
 
 // roundTripperFunc adapts a function to http.RoundTripper.
@@ -425,8 +427,60 @@ func TestWithHTTPTransportLeavesSelfSignedToTheTransport(t *testing.T) {
 	if clt.Client == nil || clt.Client.Transport == nil {
 		t.Fatal("no transport was installed")
 	}
-	if _, ok := clt.Client.Transport.(*retryTransport); !ok {
-		t.Errorf("outermost transport is %T, want the retry transport so each attempt is logged", clt.Client.Transport)
+}
+
+// Logging sits inside retrying so that each attempt is logged separately; the
+// other order logs one request and hides that it was sent four times, which
+// makes a rate-limit problem invisible in exactly the output someone would
+// reach for to diagnose it.
+//
+// Asserted through the log the user actually gets rather than by checking which
+// concrete type is outermost: the ordering is an implementation detail, the
+// per-attempt log line is the behavior.
+func TestEachRetryAttemptIsLoggedSeparately(t *testing.T) {
+	t.Parallel()
+
+	var logs bytes.Buffer
+	ctx := tflogtest.RootLogger(context.Background(), &logs)
+
+	var calls atomic.Int32
+	chain := &retryTransport{
+		maxRetries: 3,
+		next: &loggingTransport{next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+			if calls.Add(1) < 3 {
+				return response(http.StatusTooManyRequests, http.Header{"Retry-After": []string{"0"}}), nil
+			}
+			return response(http.StatusOK, nil), nil
+		})},
+	}
+
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "https://example.test/v1/health", nil)
+	resp, err := chain.RoundTrip(req)
+	if err != nil {
+		t.Fatalf("RoundTrip: %v", err)
+	}
+	defer resp.Body.Close()
+
+	entries, err := tflogtest.MultilineJSONDecode(&logs)
+	if err != nil {
+		t.Fatalf("decoding the log: %v", err)
+	}
+
+	var requests, responses int
+	for _, entry := range entries {
+		switch entry["@message"] {
+		case "Appwrite API request":
+			requests++
+		case "Appwrite API response":
+			responses++
+		}
+	}
+
+	if requests != 3 {
+		t.Errorf("logged %d requests, want 3 -- one per attempt", requests)
+	}
+	if responses != 3 {
+		t.Errorf("logged %d responses, want 3 -- one per attempt", responses)
 	}
 }
 
@@ -524,5 +578,193 @@ func newTestClient() client.Client {
 	return client.Client{
 		Headers: map[string]string{},
 		Config:  map[string]string{},
+	}
+}
+
+// max_retries = 0 is the documented way to turn retrying off. It used to be
+// swallowed by a `<= 0` check that replaced it with the default five, so the
+// supported opt-out did the opposite of what it said.
+func TestRetryTransportZeroDisablesRetrying(t *testing.T) {
+	t.Parallel()
+
+	var calls atomic.Int32
+	rt := &retryTransport{
+		maxRetries: 0,
+		next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+			calls.Add(1)
+			return response(http.StatusServiceUnavailable, http.Header{"Retry-After": []string{"0"}}), nil
+		}),
+	}
+
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.test/v1/x", nil)
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
+		t.Fatalf("RoundTrip: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if got := calls.Load(); got != 1 {
+		t.Errorf("attempts = %d, want 1; max_retries = 0 must disable retrying", got)
+	}
+}
+
+// A negative value is not reachable through configuration -- the schema
+// validator rejects it -- so it falls back to the default rather than meaning
+// "never retry", which zero already covers.
+func TestRetryTransportNegativeFallsBackToDefault(t *testing.T) {
+	t.Parallel()
+
+	var calls atomic.Int32
+	rt := &retryTransport{
+		maxRetries: -1,
+		next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+			calls.Add(1)
+			return response(http.StatusServiceUnavailable, http.Header{"Retry-After": []string{"0"}}), nil
+		}),
+	}
+
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.test/v1/x", nil)
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
+		t.Fatalf("RoundTrip: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if got := int(calls.Load()); got != DefaultMaxRetries+1 {
+		t.Errorf("attempts = %d, want %d", got, DefaultMaxRetries+1)
+	}
+}
+
+// The safety property: after a failure that might have been applied server-side,
+// a create must not be sent again. Replaying a POST that Appwrite already
+// committed produces a second deployment or database that Terraform holds no
+// state for, and nobody finds it until the bill arrives.
+func TestRetryTransportDoesNotReplayMutationsAfterAmbiguousFailure(t *testing.T) {
+	t.Parallel()
+
+	ambiguous := map[string]func() (*http.Response, error){
+		"500 after a possible commit": func() (*http.Response, error) {
+			return response(http.StatusInternalServerError, nil), nil
+		},
+		"502": func() (*http.Response, error) {
+			return response(http.StatusBadGateway, nil), nil
+		},
+		"503": func() (*http.Response, error) {
+			return response(http.StatusServiceUnavailable, nil), nil
+		},
+		"504": func() (*http.Response, error) {
+			return response(http.StatusGatewayTimeout, nil), nil
+		},
+		"connection died mid-flight": func() (*http.Response, error) {
+			return nil, errors.New("connection reset by peer")
+		},
+	}
+
+	for failure, respond := range ambiguous {
+		for _, method := range []string{http.MethodPost, http.MethodPatch} {
+			t.Run(failure+" "+method, func(t *testing.T) {
+				t.Parallel()
+
+				var calls atomic.Int32
+				rt := &retryTransport{
+					maxRetries: 5,
+					next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+						calls.Add(1)
+						return respond()
+					}),
+				}
+
+				req, err := http.NewRequestWithContext(context.Background(), method,
+					"https://example.test/v1/functions", strings.NewReader(`{"name":"x"}`))
+				if err != nil {
+					t.Fatal(err)
+				}
+				resp, _ := rt.RoundTrip(req)
+				if resp != nil {
+					resp.Body.Close()
+				}
+
+				if got := calls.Load(); got != 1 {
+					t.Errorf("%s was sent %d times after %s; a mutation must not be replayed when the server may already have applied it",
+						method, got, failure)
+				}
+			})
+		}
+	}
+}
+
+// A 429 is different in kind: the request was refused at the edge and the server
+// never acted on it, so replaying a create is safe and is the whole reason the
+// retry exists.
+func TestRetryTransportRetriesMutationsAfterRateLimit(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{http.MethodPost, http.MethodPatch} {
+		t.Run(method, func(t *testing.T) {
+			t.Parallel()
+
+			var calls atomic.Int32
+			rt := &retryTransport{
+				maxRetries: 3,
+				next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+					if calls.Add(1) < 3 {
+						return response(http.StatusTooManyRequests, http.Header{"Retry-After": []string{"0"}}), nil
+					}
+					return response(http.StatusOK, nil), nil
+				}),
+			}
+
+			req, err := http.NewRequestWithContext(context.Background(), method,
+				"https://example.test/v1/functions", strings.NewReader(`{"name":"x"}`))
+			if err != nil {
+				t.Fatal(err)
+			}
+			resp, err := rt.RoundTrip(req)
+			if err != nil {
+				t.Fatalf("RoundTrip: %v", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("status = %d, want 200 once the rate limit cleared", resp.StatusCode)
+			}
+			if got := calls.Load(); got != 3 {
+				t.Errorf("attempts = %d, want 3", got)
+			}
+		})
+	}
+}
+
+// Reads and deletes are safe to send twice, so an ambiguous failure on one is
+// still retried -- otherwise a refresh would fail on any transient blip.
+func TestRetryTransportRetriesIdempotentMethodsAfterAmbiguousFailure(t *testing.T) {
+	t.Parallel()
+
+	for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete} {
+		t.Run(method, func(t *testing.T) {
+			t.Parallel()
+
+			var calls atomic.Int32
+			rt := &retryTransport{
+				maxRetries: 2,
+				next: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+					if calls.Add(1) < 3 {
+						return response(http.StatusInternalServerError, nil), nil
+					}
+					return response(http.StatusOK, nil), nil
+				}),
+			}
+
+			req, _ := http.NewRequestWithContext(context.Background(), method, "https://example.test/v1/x", nil)
+			resp, err := rt.RoundTrip(req)
+			if err != nil {
+				t.Fatalf("RoundTrip: %v", err)
+			}
+			defer resp.Body.Close()
+
+			if got := calls.Load(); got != 3 {
+				t.Errorf("%s attempts = %d, want 3", method, got)
+			}
+		})
 	}
 }

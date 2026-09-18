@@ -14,7 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   jittered exponential backoff, honoring `Retry-After` when Appwrite sends it.
   Defaults to 5; set to 0 to disable. Raising it while also raising
   `-parallelism` against a rate-limited endpoint makes throttling more likely,
-  not less
+  not less. A rate-limited request is retried whatever it was doing, since the
+  server refused it without acting; a create or update interrupted by a server
+  error or a dropped connection is not, because the server may already have
+  applied it and a second attempt would duplicate the resource
 - A `timeouts` block on `appwrite_function_deployment` and
   `appwrite_site_deployment`, with a 30 minute default for the build wait. The
   wait previously had no deadline at all, so a build that never finished left

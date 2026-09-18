@@ -29,8 +29,7 @@ func TestBreakingChangesClassification(t *testing.T) {
 
 	for name, tc := range map[string]struct {
 		before, after map[string]snapshotAttribute
-		wantBreaking  bool
-		wantContains  string
+		wantKind      breakKind // empty means no break expected
 	}{
 		"nothing changed": {
 			before: map[string]snapshotAttribute{"a": optional},
@@ -53,59 +52,74 @@ func TestBreakingChangesClassification(t *testing.T) {
 			after:  map[string]snapshotAttribute{"a": sensitive},
 		},
 		"attribute removed": {
-			before:       map[string]snapshotAttribute{"a": optional, "b": optional},
-			after:        map[string]snapshotAttribute{"a": optional},
-			wantBreaking: true,
-			wantContains: `attribute "b" was removed`,
+			before:   map[string]snapshotAttribute{"a": optional, "b": optional},
+			after:    map[string]snapshotAttribute{"a": optional},
+			wantKind: breakRemoved,
 		},
 		"optional becomes required": {
-			before:       map[string]snapshotAttribute{"a": optional},
-			after:        map[string]snapshotAttribute{"a": required},
-			wantBreaking: true,
-			wantContains: "became required",
+			before:   map[string]snapshotAttribute{"a": optional},
+			after:    map[string]snapshotAttribute{"a": required},
+			wantKind: breakBecameRequired,
 		},
 		"type changed": {
-			before:       map[string]snapshotAttribute{"a": optional},
-			after:        map[string]snapshotAttribute{"a": {Type: "tftypes.Number", Optional: true}},
-			wantBreaking: true,
-			wantContains: "changed type",
+			before:   map[string]snapshotAttribute{"a": optional},
+			after:    map[string]snapshotAttribute{"a": {Type: "tftypes.Number", Optional: true}},
+			wantKind: breakTypeChanged,
 		},
 		"computed dropped": {
-			before:       map[string]snapshotAttribute{"a": computed},
-			after:        map[string]snapshotAttribute{"a": {Type: "tftypes.String", Optional: true}},
-			wantBreaking: true,
-			wantContains: "no longer computed",
+			before:   map[string]snapshotAttribute{"a": computed},
+			after:    map[string]snapshotAttribute{"a": {Type: "tftypes.String", Optional: true}},
+			wantKind: breakComputedDropped,
 		},
 		"sensitivity dropped": {
-			before:       map[string]snapshotAttribute{"a": sensitive},
-			after:        map[string]snapshotAttribute{"a": optional},
-			wantBreaking: true,
-			wantContains: "no longer sensitive",
+			before:   map[string]snapshotAttribute{"a": sensitive},
+			after:    map[string]snapshotAttribute{"a": optional},
+			wantKind: breakSensitiveDropped,
 		},
 		"became write-only": {
-			before:       map[string]snapshotAttribute{"a": optional},
-			after:        map[string]snapshotAttribute{"a": {Type: "tftypes.String", Optional: true, WriteOnly: true}},
-			wantBreaking: true,
-			wantContains: "became write-only",
+			before:   map[string]snapshotAttribute{"a": optional},
+			after:    map[string]snapshotAttribute{"a": {Type: "tftypes.String", Optional: true, WriteOnly: true}},
+			wantKind: breakBecameWriteOnly,
+		},
+		// A nested attribute serializes as "object" whatever its shape, so
+		// without the nesting mode recorded separately these two snapshots
+		// compare equal and a change that rewrites every configuration using
+		// the block passes the gate.
+		"nested attribute changed from list to set": {
+			before:   map[string]snapshotAttribute{"a": {Type: "object", Nesting: "list"}},
+			after:    map[string]snapshotAttribute{"a": {Type: "object", Nesting: "set"}},
+			wantKind: breakNestingChanged,
+		},
+		"block changed from single to list": {
+			before:   map[string]snapshotAttribute{"a": {Type: "block", Nesting: "single"}},
+			after:    map[string]snapshotAttribute{"a": {Type: "block", Nesting: "list"}},
+			wantKind: breakNestingChanged,
+		},
+		"nesting unchanged is not breaking": {
+			before: map[string]snapshotAttribute{"a": {Type: "block", Nesting: "single"}},
+			after:  map[string]snapshotAttribute{"a": {Type: "block", Nesting: "single"}},
 		},
 		"no longer settable": {
-			before:       map[string]snapshotAttribute{"a": optional},
-			after:        map[string]snapshotAttribute{"a": {Type: "tftypes.String", Computed: true}},
-			wantBreaking: true,
-			wantContains: "no longer settable",
+			before:   map[string]snapshotAttribute{"a": optional},
+			after:    map[string]snapshotAttribute{"a": {Type: "tftypes.String", Computed: true}},
+			wantKind: breakNotSettable,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			got := breakingChanges(snapshotWith(tc.before), snapshotWith(tc.after))
-			if tc.wantBreaking && len(got) == 0 {
-				t.Fatalf("expected a breaking change, got none")
+
+			if tc.wantKind == "" {
+				if len(got) > 0 {
+					t.Fatalf("expected no breaking change, got %s", summarize(got))
+				}
+				return
 			}
-			if !tc.wantBreaking && len(got) > 0 {
-				t.Fatalf("expected no breaking change, got %v", got)
+			if len(got) == 0 {
+				t.Fatalf("expected a %s break, got none", tc.wantKind)
 			}
-			if tc.wantContains != "" && !strings.Contains(strings.Join(got, "\n"), tc.wantContains) {
-				t.Errorf("expected a finding containing %q, got %v", tc.wantContains, got)
+			if !hasKind(got, tc.wantKind) {
+				t.Errorf("expected a %s break, got %s", tc.wantKind, summarize(got))
 			}
 		})
 	}
@@ -125,18 +139,18 @@ func TestBreakingChangesDetectsRemovedAndDowngradedTypes(t *testing.T) {
 		Ephemeral:   map[string]snapshotSchema{},
 	}
 
-	got := strings.Join(breakingChanges(before, after), "\n")
-	for _, want := range []string{
-		"resource appwrite_gone was removed",
-		"data source appwrite_ds_gone was removed",
-		"ephemeral resource appwrite_eph_gone was removed",
-		// A version going backwards makes Terraform refuse to upgrade state it
-		// has already written, which is as breaking as removing the resource.
-		"schema version went backwards",
-	} {
-		if !strings.Contains(got, want) {
-			t.Errorf("expected %q in:\n%s", want, got)
+	got := breakingChanges(before, after)
+
+	// One removal per kind of thing, plus the lowered version. A version going
+	// backwards makes Terraform refuse to upgrade state it has already written,
+	// which is as breaking as removing the resource outright.
+	for _, target := range []string{"resource appwrite_gone", "data source appwrite_ds_gone", "ephemeral resource appwrite_eph_gone"} {
+		if !hasKindForTarget(got, breakRemoved, target) {
+			t.Errorf("expected %s to be reported as removed, got %s", target, summarize(got))
 		}
+	}
+	if !hasKind(got, breakVersionLowered) {
+		t.Errorf("expected a lowered schema version to be reported, got %s", summarize(got))
 	}
 }
 
@@ -166,4 +180,22 @@ func TestAddedSurfaceReportsNewThings(t *testing.T) {
 	if len(breakingChanges(before, after)) != 0 {
 		t.Error("additions must not be reported as breaking")
 	}
+}
+
+func hasKind(changes []breakingChange, kind breakKind) bool {
+	for _, c := range changes {
+		if c.Kind == kind {
+			return true
+		}
+	}
+	return false
+}
+
+func hasKindForTarget(changes []breakingChange, kind breakKind, target string) bool {
+	for _, c := range changes {
+		if c.Kind == kind && c.Target == target {
+			return true
+		}
+	}
+	return false
 }

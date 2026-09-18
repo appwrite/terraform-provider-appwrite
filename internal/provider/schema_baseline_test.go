@@ -65,6 +65,6 @@ func TestSchemaHasNoBreakingChanges(t *testing.T) {
 		t.Errorf("the schema gained %d attribute(s) or type(s) the baseline does not know about:\n%s\n\n"+
 			"These are not breaking. Refresh the baseline so it keeps covering the whole surface:\n"+
 			"    APPWRITE_UPDATE_SCHEMA_BASELINE=1 go test ./internal/provider/ -run TestSchemaHasNoBreakingChanges",
-			len(additions), summarize(additions))
+			len(additions), summarizeStrings(additions))
 	}
 }

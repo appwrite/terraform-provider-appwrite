@@ -590,6 +590,10 @@
           "type": "tftypes.String",
           "computed": true
         },
+        "timeouts": {
+          "type": "block",
+          "nesting": "single"
+        },
         "timeouts.create": {
           "type": "tftypes.String",
           "optional": true
@@ -2586,6 +2590,10 @@
           "type": "tftypes.String",
           "computed": true
         },
+        "timeouts": {
+          "type": "block",
+          "nesting": "single"
+        },
         "timeouts.create": {
           "type": "tftypes.String",
           "optional": true
@@ -3458,6 +3466,7 @@
         },
         "specifications": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "specifications.cpu": {
@@ -3603,6 +3612,7 @@
       "attributes": {
         "backups": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "backups.completed_at": {
@@ -3922,6 +3932,7 @@
         },
         "replicas": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "replicas.healthy": {
@@ -3974,6 +3985,7 @@
         },
         "volumes": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "volumes.available": {
@@ -3999,6 +4011,7 @@
       "attributes": {
         "databases": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "databases.cpu": {
@@ -4078,6 +4091,7 @@
         },
         "specifications": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "specifications.cpu": {
@@ -4123,6 +4137,7 @@
       "attributes": {
         "backups": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "backups.completed_at": {
@@ -4442,6 +4457,7 @@
         },
         "replicas": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "replicas.healthy": {
@@ -4494,6 +4510,7 @@
         },
         "volumes": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "volumes.available": {
@@ -4519,6 +4536,7 @@
       "attributes": {
         "databases": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "databases.cpu": {
@@ -4598,6 +4616,7 @@
         },
         "specifications": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "specifications.cpu": {
@@ -4643,6 +4662,7 @@
       "attributes": {
         "backups": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "backups.completed_at": {
@@ -4962,6 +4982,7 @@
         },
         "replicas": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "replicas.healthy": {
@@ -5014,6 +5035,7 @@
         },
         "volumes": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "volumes.available": {
@@ -5039,6 +5061,7 @@
       "attributes": {
         "databases": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "databases.cpu": {
@@ -5125,6 +5148,7 @@
         },
         "metadata": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "metadata.category": {
@@ -5160,6 +5184,7 @@
         },
         "specifications": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "specifications.cpu": {
@@ -5406,6 +5431,7 @@
         },
         "specifications": {
           "type": "object",
+          "nesting": "list",
           "computed": true
         },
         "specifications.cpu": {

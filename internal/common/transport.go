@@ -94,8 +94,11 @@ type retryTransport struct {
 }
 
 func (r *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Only a negative value falls back to the default. Zero means zero: it is
+	// the documented way to disable retrying, and treating it as "unset" made
+	// that opt-out do the opposite of what it says.
 	attempts := r.maxRetries
-	if attempts <= 0 {
+	if attempts < 0 {
 		attempts = DefaultMaxRetries
 	}
 
@@ -118,7 +121,7 @@ func (r *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if !replayable || attempt >= attempts {
 			return resp, err
 		}
-		wait, ok := retryAfter(resp, err, attempt)
+		wait, ok := retryAfter(req.Method, resp, err, attempt)
 		if !ok {
 			return resp, err
 		}
@@ -162,15 +165,45 @@ func rewind(req *http.Request) error {
 	return nil
 }
 
+// idempotentMethods are the methods it is safe to send twice.
+//
+// PATCH and POST are absent deliberately. Appwrite creates resources with POST
+// and updates them with PATCH, and neither carries an idempotency key, so a
+// second send is a second create or a second mutation.
+var idempotentMethods = map[string]bool{
+	http.MethodGet:     true,
+	http.MethodHead:    true,
+	http.MethodOptions: true,
+	http.MethodTrace:   true,
+	http.MethodPut:     true,
+	http.MethodDelete:  true,
+}
+
 // retryAfter reports how long to wait before the next attempt, and whether to
 // make one at all.
-func retryAfter(resp *http.Response, err error, attempt int) (time.Duration, bool) {
+//
+// What matters is not which status code came back but whether the server might
+// already have acted. A 429 is a refusal: the request was rejected at the edge
+// and nothing happened, so replaying it is safe whatever the method. Everything
+// else here is ambiguous -- a connection that died mid-flight, or a 500 from a
+// container that fell over after committing -- and replaying a POST in that
+// situation creates a second deployment that Terraform holds no state for.
+// Ambiguous failures are therefore retried only for methods that can be sent
+// twice without consequence.
+//
+// The cost of the asymmetry is that a create interrupted by a genuine blip now
+// reports the error instead of quietly succeeding on the second try. That is the
+// right trade: a failed apply the operator can rerun is recoverable, and
+// orphaned billable infrastructure nobody knows about is not.
+func retryAfter(method string, resp *http.Response, err error, attempt int) (time.Duration, bool) {
+	ambiguousRetryAllowed := idempotentMethods[strings.ToUpper(method)]
+
 	if err != nil {
-		// A transport-level error is a connection that never produced a
-		// response: a reset, a DNS blip, a TLS handshake failure. Retrying is
-		// safe and usually works. A canceled context is not retried, since the
+		// A transport-level error produced no response at all: a reset, a DNS
+		// blip, a TLS handshake failure. Whether the server saw the request is
+		// unknowable from here. A canceled context is never retried, since the
 		// caller has already given up.
-		if isContextError(err) {
+		if isContextError(err) || !ambiguousRetryAllowed {
 			return 0, false
 		}
 		return backoff(attempt), true
@@ -191,13 +224,15 @@ func retryAfter(resp *http.Response, err error, attempt int) (time.Duration, boo
 	case http.StatusRequestTimeout,
 		http.StatusBadGateway,
 		http.StatusServiceUnavailable,
-		http.StatusGatewayTimeout:
-		return backoff(attempt), true
-	case http.StatusInternalServerError:
+		http.StatusGatewayTimeout,
 		// Appwrite returns 500 for genuine server faults, which a retry can
-		// clear when the cause is a restarting container. It is deliberately
-		// the only 5xx treated this way beyond the gateway codes above, since a
-		// 501 or 505 will never succeed however many times it is sent.
+		// clear when the cause is a restarting container. Deliberately the only
+		// 5xx treated this way beyond the gateway codes, since a 501 or 505 will
+		// never succeed however many times it is sent.
+		http.StatusInternalServerError:
+		if !ambiguousRetryAllowed {
+			return 0, false
+		}
 		return backoff(attempt), true
 	default:
 		return 0, false
