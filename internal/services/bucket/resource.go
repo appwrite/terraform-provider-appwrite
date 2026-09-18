@@ -62,7 +62,7 @@ func (r *bucketResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Description: "Manages an Appwrite storage bucket.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The bucket ID. Must be unique within the project.",
+				Description:   "The bucket ID. Must be unique within the project. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

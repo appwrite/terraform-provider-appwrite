@@ -43,12 +43,12 @@ output "available_extensions" {
 
 ### Required
 
-- `database_id` (String) The dedicated database ID to install the extension into.
-- `name` (String) The extension name, for example `postgis` or `pg_trgm`.
+- `database_id` (String) The dedicated database ID to install the extension into. Changing this forces a new resource to be created.
+- `name` (String) The extension name, for example `postgis` or `pg_trgm`. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

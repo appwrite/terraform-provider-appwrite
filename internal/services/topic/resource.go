@@ -49,7 +49,7 @@ func (r *topicResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Attributes: map[string]schema.Attribute{
 			"project_id": common.ProjectIDAttribute(),
 			"id": schema.StringAttribute{
-				Description:   "The topic ID.",
+				Description:   "The topic ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

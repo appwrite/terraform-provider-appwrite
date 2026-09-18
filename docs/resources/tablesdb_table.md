@@ -33,15 +33,15 @@ resource "appwrite_tablesdb_table" "posts" {
 
 ### Required
 
-- `database_id` (String) The ID of the database this table belongs to.
+- `database_id` (String) The ID of the database this table belongs to. Changing this forces a new resource to be created.
 - `name` (String) The table name.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the table is enabled. When disabled, the table is inaccessible to users but remains accessible via API keys. Defaults to true.
-- `id` (String) The table ID. Must be unique within the database.
+- `id` (String) The table ID. Must be unique within the database. Changing this forces a new resource to be created.
 - `permissions` (List of String) Table-level permissions.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `row_security` (Boolean) Whether row-level permissions are enabled. Defaults to false.
 
 ### Read-Only

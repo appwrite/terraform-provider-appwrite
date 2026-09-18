@@ -7,6 +7,8 @@ import (
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/docdb"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 )
 
 var products = []docdb.Product{docdb.ProductDocumentsDB, docdb.ProductVectorsDB}
@@ -131,8 +133,11 @@ func TestCollectionAttributesAreCreateOnlyAndProductSpecific(t *testing.T) {
 		if got := attribute.IsComputed(); got == wantConfigurable {
 			t.Errorf("%s attributes IsComputed() = %v, want %v", product, got, !wantConfigurable)
 		}
-		if wantConfigurable && !strings.Contains(attribute.GetDescription(), "replaces the collection") {
-			t.Errorf("%s attributes description should say it is create-only", product)
+		// The wording moved to the shared constant every ForceNew argument now
+		// uses, so assert against that rather than a phrase only this resource
+		// had.
+		if wantConfigurable && !strings.Contains(attribute.GetDescription(), common.ForcesReplacementNote) {
+			t.Errorf("%s attributes description should say that changing it replaces the collection", product)
 		}
 	}
 }

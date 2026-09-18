@@ -50,9 +50,9 @@ output "deployment_api_key" {
 ### Optional
 
 - `expire` (String) The expiration timestamp in ISO 8601 format. Omit for no expiration.
-- `id` (String) The API key ID.
-- `organization_id` (String) The Appwrite organization ID. Defaults to the provider-level organization_id.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `id` (String) The API key ID. Changing this forces a new resource to be created.
+- `organization_id` (String) The Appwrite organization ID. Defaults to the provider-level organization_id. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

@@ -38,7 +38,7 @@ resource "appwrite_postgresql_pooler" "main" {
 
 ### Required
 
-- `database_id` (String) The dedicated database ID whose pooler is configured.
+- `database_id` (String) The dedicated database ID whose pooler is configured. Changing this forces a new resource to be created.
 
 ### Optional
 
@@ -48,7 +48,7 @@ resource "appwrite_postgresql_pooler" "main" {
 - `pooler_cpu_request` (String) The CPU request for the pooler sidecar as a Kubernetes quantity, for example `100m`. Defaults to a proportion of the database CPU.
 - `pooler_memory_limit` (String) The memory limit for the pooler sidecar as a Kubernetes quantity, for example `128Mi`.
 - `pooler_memory_request` (String) The memory request for the pooler sidecar as a Kubernetes quantity, for example `64Mi`.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `read_write_splitting` (Boolean) Whether SELECTs are routed to high availability replicas while writes and locked reads stay on the primary. Only active when the database has replicas.
 
 ### Read-Only

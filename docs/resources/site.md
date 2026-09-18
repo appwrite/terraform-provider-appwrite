@@ -55,12 +55,12 @@ resource "appwrite_site" "docs" {
 - `deployment_retention` (Number) How many days to keep non-active deployments before automatic deletion.
 - `enabled` (Boolean) Whether the site is enabled. Defaults to true.
 - `fallback_file` (String) Name of fallback file to use instead of 404 page. If null, Appwrite 404 page will be displayed.
-- `id` (String) The site ID.
+- `id` (String) The site ID. Changing this forces a new resource to be created.
 - `install_command` (String) The install command used to install site dependencies.
 - `installation_id` (String) VCS (Version Control System) installation ID.
 - `logging` (Boolean) Whether request logs are enabled. Defaults to true.
 - `output_directory` (String) The directory where the site build output is located.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `provider_branch` (String) VCS (Version Control System) branch name.
 - `provider_repository_id` (String) VCS (Version Control System) repository ID.
 - `provider_root_directory` (String) Path to site in VCS repository.

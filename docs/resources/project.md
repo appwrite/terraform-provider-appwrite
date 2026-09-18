@@ -32,9 +32,9 @@ resource "appwrite_project" "example" {
 
 ### Optional
 
-- `id` (String) The project ID.
-- `organization_id` (String) The Appwrite organization ID. Defaults to the provider-level organization_id.
-- `region` (String) The region where the project is hosted. Defaults to the server's configured region.
+- `id` (String) The project ID. Changing this forces a new resource to be created.
+- `organization_id` (String) The Appwrite organization ID. Defaults to the provider-level organization_id. Changing this forces a new resource to be created.
+- `region` (String) The region where the project is hosted. Defaults to the server's configured region. Changing this forces a new resource to be created.
 
 ### Read-Only
 

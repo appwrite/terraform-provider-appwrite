@@ -80,23 +80,23 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Description: "Manages a column in an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description:   common.DatabaseIDDescription,
+				Description:   common.DatabaseIDDescription + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"table_id": schema.StringAttribute{
-				Description:   "The table ID.",
+				Description:   "The table ID. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"key": schema.StringAttribute{
-				Description:   "The column key (name).",
+				Description:   "The column key (name). Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"type": schema.StringAttribute{
-				Description:   "The column type. One of: " + allColumnTypes + ".",
+				Description:   "The column type. One of: " + allColumnTypes + "." + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -107,7 +107,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Default:     booldefault.StaticBool(false),
 			},
 			"array": schema.BoolAttribute{
-				Description: "Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip types.",
+				Description: "Whether the column is an array. Applies to string, varchar, text, longtext, mediumtext, integer, bigint, float, boolean, enum, email, datetime, url, ip types. Changing this forces a new resource to be created.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -145,7 +145,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 			},
 			"encrypt": schema.BoolAttribute{
-				Description: "Whether the column is encrypted. Applies to string, varchar, text, longtext, mediumtext types.",
+				Description: "Whether the column is encrypted. Applies to string, varchar, text, longtext, mediumtext types. Changing this forces a new resource to be created.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -154,12 +154,12 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 			},
 			"related_table_id": schema.StringAttribute{
-				Description:   "The ID of the related table. Required for relationship type.",
+				Description:   "The ID of the related table. Required for relationship type. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"relationship_type": schema.StringAttribute{
-				Description:   "The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type.",
+				Description:   "The relationship type: oneToOne, oneToMany, manyToOne, manyToMany. Required for relationship type. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

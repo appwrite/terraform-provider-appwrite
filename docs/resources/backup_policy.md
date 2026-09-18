@@ -44,9 +44,9 @@ resource "appwrite_backup_policy" "production" {
 ### Optional
 
 - `enabled` (Boolean) Whether the policy is enabled. Defaults to true.
-- `id` (String) The backup policy ID.
+- `id` (String) The backup policy ID. Changing this forces a new resource to be created.
 - `name` (String) The backup policy name.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `resource_id` (String) The resource ID to back up. Set to back up a single database instead of all databases.
 
 ### Read-Only

@@ -34,7 +34,7 @@ resource "appwrite_vectorsdb_collection" "articles" {
 
 ### Required
 
-- `database_id` (String) The database ID the collection belongs to.
+- `database_id` (String) The database ID the collection belongs to. Changing this forces a new resource to be created.
 - `dimension` (Number) The embedding dimension every vector in this collection must have. Required, and must match the model producing the embeddings.
 - `name` (String) The collection name.
 
@@ -42,9 +42,9 @@ resource "appwrite_vectorsdb_collection" "articles" {
 
 - `document_security` (Boolean) Whether document-level permissions are enforced in addition to collection-level ones.
 - `enabled` (Boolean) Whether the collection is enabled. When disabled it is inaccessible to users but still reachable with an API key. Defaults to true.
-- `id` (String) The collection ID. Must be unique within the database. Generated when omitted.
+- `id` (String) The collection ID. Must be unique within the database. Generated when omitted. Changing this forces a new resource to be created.
 - `permissions` (Set of String) The collection permissions, for example `read("any")` or `write("users")`.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

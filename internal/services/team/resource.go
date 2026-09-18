@@ -48,7 +48,7 @@ func (r *teamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Description: "Manages an Appwrite team.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The team ID.",
+				Description:   "The team ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

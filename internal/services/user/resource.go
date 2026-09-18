@@ -61,7 +61,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Description: "Manages an Appwrite user.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The user ID.",
+				Description:   "The user ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

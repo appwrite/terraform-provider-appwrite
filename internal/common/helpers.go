@@ -214,7 +214,7 @@ func VariableKeyValidators() []validator.String {
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.
 func ProjectIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   ProjectIDDescription,
+		Description:   ProjectIDDescription + " " + ForcesReplacementNote,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
@@ -225,7 +225,7 @@ func ProjectIDAttribute() schema.StringAttribute {
 // organization_id on organization-scoped resources.
 func OrganizationIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   OrganizationIDDescription,
+		Description:   OrganizationIDDescription + " " + ForcesReplacementNote,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},

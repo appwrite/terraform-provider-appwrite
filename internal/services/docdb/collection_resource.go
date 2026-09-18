@@ -60,13 +60,13 @@ func (r *collectionResource) Metadata(_ context.Context, req resource.MetadataRe
 func (r *collectionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description:   "The collection ID. Must be unique within the database. Generated when omitted.",
+			Description:   "The collection ID. Must be unique within the database. Generated when omitted. Changing this forces a new resource to be created.",
 			Optional:      true,
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 		},
 		"database_id": schema.StringAttribute{
-			Description:   "The database ID the collection belongs to.",
+			Description:   "The database ID the collection belongs to. Changing this forces a new resource to be created.",
 			Required:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 		},
@@ -113,7 +113,7 @@ func (r *collectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		attributes["attributes"] = schema.StringAttribute{
 			Description: "Typed attribute definitions as a JSON array string, for example " +
 				"`jsonencode([{ key = \"slug\", type = \"string\", size = 255, required = true }])`. " +
-				"Applied only when the collection is created, so changing this replaces the collection. " +
+				"Applied only when the collection is created. Changing this forces a new resource to be created. " +
 				"An index can only be built on a declared attribute, so declare here anything you intend to index. " +
 				"Not refreshed from the server, so drift on it is not detected.",
 			Optional:      true,

@@ -52,23 +52,23 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Description: "Manages an index on an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description:   common.DatabaseIDDescription,
+				Description:   common.DatabaseIDDescription + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"table_id": schema.StringAttribute{
-				Description:   "The table ID.",
+				Description:   "The table ID. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"key": schema.StringAttribute{
-				Description:   "The index key (name).",
+				Description:   "The index key (name). Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"type": schema.StringAttribute{
-				Description:   "Index type: key, unique, or fulltext.",
+				Description:   "Index type: key, unique, or fulltext. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -83,9 +83,13 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				ElementType: types.StringType,
 			},
-			"created_at": schema.StringAttribute{Computed: true},
+			"created_at": schema.StringAttribute{
+				Description: "The creation timestamp in ISO 8601 format.",
+				Computed:    true,
+			},
 			"updated_at": schema.StringAttribute{
-				Computed: true,
+				Description: "The last update timestamp in ISO 8601 format.",
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					common.UseStateForUnknownUnlessUpdating(),
 				},

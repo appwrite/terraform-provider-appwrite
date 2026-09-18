@@ -53,7 +53,7 @@ variable "backup_secret_key" {
 
 - `access_key` (String, Sensitive) The access key used to authenticate against the bucket. Never returned by the API, so it is only ever what you configured.
 - `bucket` (String) The bucket or container name to write backups into.
-- `database_id` (String) The dedicated database ID whose backups are redirected.
+- `database_id` (String) The dedicated database ID whose backups are redirected. Changing this forces a new resource to be created.
 - `secret_key` (String, Sensitive) The secret key used to authenticate against the bucket. Never returned by the API, so it is only ever what you configured.
 - `storage_provider` (String) The storage provider. One of `s3` (Amazon S3 or S3-compatible), `gcs` (Google Cloud Storage) or `azure` (Azure Blob Storage).
 
@@ -61,7 +61,7 @@ variable "backup_secret_key" {
 
 - `endpoint` (String) A custom endpoint, for S3-compatible storage that is not Amazon S3.
 - `prefix` (String) The object key prefix to write backups under.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `region` (String) The storage region.
 
 ### Read-Only

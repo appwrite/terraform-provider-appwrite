@@ -72,7 +72,7 @@ func (r *functionResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Description: "Manages an Appwrite function.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The function ID.",
+				Description:   "The function ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

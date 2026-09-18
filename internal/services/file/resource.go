@@ -57,14 +57,14 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Description: "Manages a file in an Appwrite storage bucket.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The file ID.",
+				Description:   "The file ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"project_id": common.ProjectIDAttribute(),
 			"bucket_id": schema.StringAttribute{
-				Description:   "The bucket ID.",
+				Description:   "The bucket ID. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -74,7 +74,7 @@ func (r *fileResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Computed:    true,
 			},
 			"file_path": schema.StringAttribute{
-				Description:   "The local path to the file to upload.",
+				Description:   "The local path to the file to upload. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

@@ -20,4 +20,14 @@ const (
 
 	MemoryMBDescription      = "The allocated memory in MB."
 	CPUMillicoresDescription = "The allocated CPU in millicores."
+
+	// ForcesReplacementNote is appended to every argument that cannot be changed
+	// in place.
+	//
+	// The provider has 170 such attributes across its resources and not one of
+	// them said so in its documentation, which means a reader had no way to tell
+	// which edit recreates their database. Enforced by
+	// TestForceNewAttributesDocumentReplacement, so a new ForceNew argument
+	// cannot ship undocumented.
+	ForcesReplacementNote = "Changing this forces a new resource to be created."
 )

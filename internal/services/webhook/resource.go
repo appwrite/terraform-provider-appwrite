@@ -61,7 +61,7 @@ func (r *webhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Description: "Manages an Appwrite webhook.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The webhook ID.",
+				Description:   "The webhook ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

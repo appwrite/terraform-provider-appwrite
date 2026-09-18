@@ -59,14 +59,14 @@ resource "appwrite_tablesdb_row" "alice" {
 ### Required
 
 - `data` (String) The row data as a JSON object. Keys are column keys, values are column values.
-- `database_id` (String) The database ID.
-- `table_id` (String) The table ID.
+- `database_id` (String) The database ID. Changing this forces a new resource to be created.
+- `table_id` (String) The table ID. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `id` (String) The row ID.
+- `id` (String) The row ID. Changing this forces a new resource to be created.
 - `permissions` (List of String) Row permissions.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

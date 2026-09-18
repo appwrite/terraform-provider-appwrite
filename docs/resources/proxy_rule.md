@@ -32,14 +32,14 @@ resource "appwrite_proxy_rule" "example" {
 
 ### Required
 
-- `domain` (String) The custom domain name.
-- `resource_id` (String) The ID of the site or function served by this rule.
-- `type` (String) The target resource type: site or function.
+- `domain` (String) The custom domain name Changing this forces a new resource to be created.
+- `resource_id` (String) The ID of the site or function served by this rule Changing this forces a new resource to be created.
+- `type` (String) The target resource type: site or function Changing this forces a new resource to be created.
 
 ### Optional
 
-- `branch` (String) The VCS branch that updates the rule automatically.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `branch` (String) The VCS branch that updates the rule automatically Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

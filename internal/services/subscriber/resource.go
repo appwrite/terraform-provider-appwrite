@@ -49,18 +49,18 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"project_id": common.ProjectIDAttribute(),
 			"id": schema.StringAttribute{
-				Description:   "The subscriber ID.",
+				Description:   "The subscriber ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"topic_id": schema.StringAttribute{
-				Description:   "The topic ID to subscribe to.",
+				Description:   "The topic ID to subscribe to. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"target_id": schema.StringAttribute{
-				Description:   "The target ID (e.g. a user's email or push target).",
+				Description:   "The target ID (e.g. a user's email or push target). Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

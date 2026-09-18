@@ -70,7 +70,7 @@ func (r *siteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Description: "Manages an Appwrite site.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The site ID.",
+				Description:   "The site ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

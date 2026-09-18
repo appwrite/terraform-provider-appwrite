@@ -48,7 +48,7 @@ resource "appwrite_mysql_database" "production" {
 
 ### Optional
 
-- `id` (String) The database ID. Must be unique within the project. Generated when omitted.
+- `id` (String) The database ID. Must be unique within the project. Generated when omitted. Changing this forces a new resource to be created.
 - `idle_timeout_minutes` (Number) Minutes of inactivity before the database container scales to zero. Set to 0 to keep it always on.
 - `maintenance_window_day` (String) The day of the week the maintenance window starts. One of `sun`, `mon`, `tue`, `wed`, `thu`, `fri` or `sat`. Must be set together with `maintenance_window_hour_utc`.
 - `maintenance_window_hour_utc` (Number) The hour in UTC (0-23) the maintenance window starts. Must be set together with `maintenance_window_day`.
@@ -56,7 +56,7 @@ resource "appwrite_mysql_database" "production" {
 - `network_ip_allowlist` (Set of String) IP addresses and CIDR ranges allowed to connect. An empty set allows any address.
 - `pitr` (Boolean) Whether point-in-time recovery is enabled.
 - `pitr_retention_days` (Number) How many days of point-in-time recovery data to retain.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `replicas` (Number) The number of high availability replicas. High availability is enabled when greater than 0.
 - `specification` (String) The compute specification slug, for example `s-1vcpu-1gb`. Read the available slugs from the corresponding specifications data source. Changing this resizes the database in place.
 - `sql_api_allowed_statements` (Set of String) The statement types the SQL API accepts. Defaults to read/write DML only; DDL and DCL types (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `GRANT`, `REVOKE`) are opt-in.
