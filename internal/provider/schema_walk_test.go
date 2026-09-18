@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	rschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/provider"
 )
@@ -133,14 +133,23 @@ func nestedAttributes(attr rschema.Attribute) map[string]rschema.Attribute {
 	return obj.Attributes
 }
 
+// Reference descriptions, taken from the framework at runtime rather than
+// written out here.
+//
+// The framework builds RequiresReplace out of RequiresReplaceIf, so the two are
+// the same concrete Go type and only the description distinguishes them. Reading
+// the reference strings from the framework instead of hardcoding the sentence
+// means a reworded release moves both sides together and detection keeps
+// working, rather than silently matching nothing. The wording is identical
+// across all twelve type-specific modifier packages, so the string form is
+// enough for every attribute type.
+var (
+	replaceDescription             = stringplanmodifier.RequiresReplace().Description(context.Background())
+	replaceIfConfiguredDescription = stringplanmodifier.RequiresReplaceIfConfigured().Description(context.Background())
+)
+
 // replacementBehavior reports whether any plan modifier on the attribute forces
 // replacement, and whether it only does so when the attribute is configured.
-//
-// Detected from what the modifier says about itself rather than its Go type. The
-// framework builds RequiresReplace out of RequiresReplaceIf, so the concrete type
-// is the same for both and for any provider-defined conditional modifier; the
-// description is the thing that distinguishes them, and it is what ends up in
-// documentation anyway.
 func replacementBehavior(attr rschema.Attribute) (forcesNew bool, onlyIfConfigured bool) {
 	field := reflect.ValueOf(attr)
 	if field.Kind() == reflect.Pointer {
@@ -162,16 +171,12 @@ func replacementBehavior(attr rschema.Attribute) (forcesNew bool, onlyIfConfigur
 		if !ok {
 			continue
 		}
-		switch text := describer.Description(ctx); {
-		case contains(text, "is configured and changes, Terraform will destroy and recreate"):
+		switch describer.Description(ctx) {
+		case replaceIfConfiguredDescription:
 			return true, true
-		case contains(text, "Terraform will destroy and recreate"):
+		case replaceDescription:
 			return true, false
 		}
 	}
 	return false, false
-}
-
-func contains(haystack, needle string) bool {
-	return strings.Contains(haystack, needle)
 }

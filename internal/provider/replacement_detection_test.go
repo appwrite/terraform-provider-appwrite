@@ -8,20 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-// TestReplacementDetectionStillRecognizesTheFramework is the canary for
-// TestForceNewAttributesDocumentReplacement.
+// TestReplacementDetectionRecognizesFrameworkModifiers checks that
+// replacementBehavior identifies the framework's replacement modifiers, and only
+// those.
 //
-// That test decides whether an attribute forces replacement by reading what its
-// plan modifier says about itself, because the framework builds RequiresReplace
-// out of RequiresReplaceIf and the Go types are identical for both. The risk is
-// silent: if a framework release rewords that sentence, detection returns false
-// for everything, the documentation test passes with nothing to check, and 170
-// attributes quietly stop being covered.
-//
-// This asserts the framework's own modifiers are still recognized, so a wording
-// change fails here -- loudly, next to an explanation -- rather than disabling a
-// check nobody is watching.
-func TestReplacementDetectionStillRecognizesTheFramework(t *testing.T) {
+// It no longer guards against a reworded framework release: the reference
+// descriptions are now read from the framework at runtime, so a rewording moves
+// both sides together. What remains worth asserting is that the two modifiers
+// are told apart from each other and from an unrelated one, since
+// TestForceNewAttributesDocumentReplacement is only as good as this function.
+func TestReplacementDetectionRecognizesFrameworkModifiers(t *testing.T) {
 	t.Parallel()
 
 	for name, tc := range map[string]struct {
@@ -53,9 +49,8 @@ func TestReplacementDetectionStillRecognizesTheFramework(t *testing.T) {
 			forcesNew, onlyIfConfigured := replacementBehavior(attr)
 
 			if forcesNew != tc.wantForcesNew {
-				t.Errorf("replacementBehavior detected forcesNew=%v, want %v.\n"+
-					"The framework's plan modifier description has probably changed wording. "+
-					"Update the matching in replacementBehavior, or force-new detection silently covers nothing.",
+				t.Errorf("replacementBehavior detected forcesNew=%v, want %v; "+
+					"force-new detection is the basis of the documentation check, so it covers nothing if this is wrong",
 					forcesNew, tc.wantForcesNew)
 			}
 			if forcesNew && onlyIfConfigured != tc.wantOnlyIfConfigure {
