@@ -70,18 +70,18 @@ func (r *documentResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The document ID. Generated when omitted.",
+				Description:   "The document ID. Generated when omitted. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
-				Description:   "The database ID.",
+				Description:   common.DatabaseIDDescription + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"collection_id": schema.StringAttribute{
-				Description:   "The collection ID the document belongs to.",
+				Description:   "The collection ID the document belongs to. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

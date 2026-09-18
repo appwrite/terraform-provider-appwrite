@@ -11,6 +11,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/sdk-for-go/v7/sites"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -35,30 +36,31 @@ type deploymentResource struct {
 }
 
 type deploymentResourceModel struct {
-	ID              types.String `tfsdk:"id"`
-	SiteID          types.String `tfsdk:"site_id"`
-	SourceType      types.String `tfsdk:"source_type"`
-	Activate        types.Bool   `tfsdk:"activate"`
-	WaitForReady    types.Bool   `tfsdk:"wait_for_ready"`
-	CodePath        types.String `tfsdk:"code_path"`
-	CodeHash        types.String `tfsdk:"code_hash"`
-	InstallCommand  types.String `tfsdk:"install_command"`
-	BuildCommand    types.String `tfsdk:"build_command"`
-	OutputDirectory types.String `tfsdk:"output_directory"`
-	Type            types.String `tfsdk:"type"`
-	Reference       types.String `tfsdk:"reference"`
-	Repository      types.String `tfsdk:"repository"`
-	Owner           types.String `tfsdk:"owner"`
-	RootDirectory   types.String `tfsdk:"root_directory"`
-	Status          types.String `tfsdk:"status"`
-	BuildLogs       types.String `tfsdk:"build_logs"`
-	BuildDuration   types.Int64  `tfsdk:"build_duration"`
-	SourceSize      types.Int64  `tfsdk:"source_size"`
-	BuildSize       types.Int64  `tfsdk:"build_size"`
-	TotalSize       types.Int64  `tfsdk:"total_size"`
-	CreatedAt       types.String `tfsdk:"created_at"`
-	UpdatedAt       types.String `tfsdk:"updated_at"`
-	ProjectID       types.String `tfsdk:"project_id"`
+	ID              types.String   `tfsdk:"id"`
+	SiteID          types.String   `tfsdk:"site_id"`
+	SourceType      types.String   `tfsdk:"source_type"`
+	Activate        types.Bool     `tfsdk:"activate"`
+	WaitForReady    types.Bool     `tfsdk:"wait_for_ready"`
+	CodePath        types.String   `tfsdk:"code_path"`
+	CodeHash        types.String   `tfsdk:"code_hash"`
+	InstallCommand  types.String   `tfsdk:"install_command"`
+	BuildCommand    types.String   `tfsdk:"build_command"`
+	OutputDirectory types.String   `tfsdk:"output_directory"`
+	Type            types.String   `tfsdk:"type"`
+	Reference       types.String   `tfsdk:"reference"`
+	Repository      types.String   `tfsdk:"repository"`
+	Owner           types.String   `tfsdk:"owner"`
+	RootDirectory   types.String   `tfsdk:"root_directory"`
+	Status          types.String   `tfsdk:"status"`
+	BuildLogs       types.String   `tfsdk:"build_logs"`
+	BuildDuration   types.Int64    `tfsdk:"build_duration"`
+	SourceSize      types.Int64    `tfsdk:"source_size"`
+	BuildSize       types.Int64    `tfsdk:"build_size"`
+	TotalSize       types.Int64    `tfsdk:"total_size"`
+	CreatedAt       types.String   `tfsdk:"created_at"`
+	UpdatedAt       types.String   `tfsdk:"updated_at"`
+	ProjectID       types.String   `tfsdk:"project_id"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
 func NewDeploymentResource() resource.Resource {
@@ -69,7 +71,7 @@ func (r *deploymentResource) Metadata(_ context.Context, req resource.MetadataRe
 	resp.TypeName = req.ProviderTypeName + "_site_deployment"
 }
 
-func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *deploymentResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an Appwrite site deployment.",
 		Attributes: map[string]schema.Attribute{
@@ -79,18 +81,18 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"site_id": schema.StringAttribute{
-				Description:   "The site ID this deployment belongs to.",
+				Description:   "The site ID this deployment belongs to. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"source_type": schema.StringAttribute{
-				Description:   `The deployment source type. Must be one of "code" or "template".`,
+				Description:   `The deployment source type. Must be one of "code" or "template".` + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Validators:    []validator.String{stringvalidator.OneOf("code", "template")},
 			},
 			"activate": schema.BoolAttribute{
-				Description: "Whether to activate this deployment after creation.",
+				Description: "Whether to activate this deployment after creation. Changing this forces a new resource to be created.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -105,52 +107,52 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Default:     booldefault.StaticBool(true),
 			},
 			"code_path": schema.StringAttribute{
-				Description:   "Local path to the code file to upload. Required when source_type is code.",
+				Description:   "Local path to the code file to upload. Required when source_type is code. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"code_hash": schema.StringAttribute{
-				Description:   "Hash of the code file for drift detection. Use filesha256() to compute.",
+				Description:   "Hash of the code file for drift detection. Use filesha256() to compute. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"install_command": schema.StringAttribute{
-				Description:   "Custom install command for code deployments.",
+				Description:   "Custom install command for code deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"build_command": schema.StringAttribute{
-				Description:   "Custom build command for code deployments.",
+				Description:   "Custom build command for code deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"output_directory": schema.StringAttribute{
-				Description:   "Build output directory for code deployments.",
+				Description:   "Build output directory for code deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"type": schema.StringAttribute{
-				Description:   `Reference type for template deployments (e.g. "branch", "tag", "commit").`,
+				Description:   `Reference type for template deployments (e.g. "branch", "tag", "commit").` + " " + common.ForcesReplacementNote,
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"reference": schema.StringAttribute{
-				Description:   "Reference value for template deployments (e.g. branch name, tag, or commit hash).",
+				Description:   "Reference value for template deployments (e.g. branch name, tag, or commit hash). Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"repository": schema.StringAttribute{
-				Description:   "Repository name for template deployments.",
+				Description:   "Repository name for template deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"owner": schema.StringAttribute{
-				Description:   "Repository owner for template deployments.",
+				Description:   "Repository owner for template deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"root_directory": schema.StringAttribute{
-				Description:   "Root directory in the repository for template deployments.",
+				Description:   "Root directory in the repository for template deployments. Changing this forces a new resource to be created.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -196,6 +198,17 @@ func (r *deploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"project_id": common.ProjectIDAttribute(),
 		},
+		Blocks: map[string]schema.Block{
+			// A deployment build is the longest thing this provider waits on,
+			// and it had no deadline at all -- a build that never finished left
+			// Terraform polling until the operator killed it, which loses the
+			// deployment from state. The wait now defaults to 30 minutes and is
+			// configurable for the repositories where that is genuinely not
+			// enough. Create only: a deployment is immutable, so Update
+			// returns an error and an update timeout would advertise a
+			// lifecycle phase that does not exist.
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{Create: true}),
+		},
 	}
 }
 
@@ -217,6 +230,16 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Bounds everything below, the build wait included. Derived before the first
+	// API call rather than around the wait alone, so a hung upload is covered by
+	// the same deadline the user configured.
+	ctx, cancel, diags := common.CreateContext(ctx, plan.Timeouts, common.DefaultDeploymentTimeout)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	defer cancel()
 
 	projectID, err := common.ResolveProjectID(r.clients, plan.ProjectID)
 	if err != nil {

@@ -35,7 +35,7 @@ resource "appwrite_auth_user" "admin" {
 
 - `email` (String) The user email address.
 - `email_verification` (Boolean) Whether the user email is verified.
-- `id` (String) The user ID.
+- `id` (String) The user ID. Changing this forces a new resource to be created.
 - `labels` (List of String) User labels.
 - `name` (String) The user name.
 - `password` (String, Sensitive) The user password. Not returned by the API, but stored in Terraform state. Prefer password_wo, which is never written to state at all.
@@ -43,7 +43,7 @@ resource "appwrite_auth_user" "admin" {
 - `password_wo_version` (Number) Increment to apply a changed password_wo.
 - `phone` (String) The user phone number in E.164 format.
 - `phone_verification` (Boolean) Whether the user phone is verified.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `status` (Boolean) Whether the user account is enabled. Defaults to true.
 
 ### Read-Only

@@ -54,18 +54,18 @@ func (r *rowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 		Description: "Manages a row in an Appwrite tablesdb table.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The row ID.",
+				Description:   "The row ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
-				Description:   "The database ID.",
+				Description:   common.DatabaseIDDescription + " " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"table_id": schema.StringAttribute{
-				Description:   "The table ID.",
+				Description:   "The table ID. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

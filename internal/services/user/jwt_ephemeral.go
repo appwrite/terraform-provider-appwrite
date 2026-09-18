@@ -64,7 +64,7 @@ func (r *jwtEphemeralResource) Schema(_ context.Context, _ ephemeral.SchemaReque
 				Sensitive:   true,
 			},
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				// Computed as well, because Open resolves the provider-level
 				// default into it; an Optional-only attribute may not come back

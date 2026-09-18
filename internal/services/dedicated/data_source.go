@@ -109,11 +109,11 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 		Description: fmt.Sprintf("Fetches a dedicated Appwrite %s database by ID.", d.engine.Label()),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "The database ID.",
+				Description: common.DatabaseIDDescription,
 				Required:    true,
 			},
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				Computed:    true,
 			},
@@ -158,8 +158,8 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"last_accessed_at": computedString("The last activity timestamp in ISO 8601 format."),
 			"idle_until":       computedString("When the database is expected to be considered idle."),
 			"lifecycle_state":  computedString("The idle-lifecycle state."),
-			"cpu":              computedInt("The allocated CPU in millicores."),
-			"memory":           computedInt("The allocated memory in MB."),
+			"cpu":              computedInt(common.CPUMillicoresDescription),
+			"memory":           computedInt(common.MemoryMBDescription),
 			"storage":          computedInt("The allocated storage in GB."),
 			"storage_class":    computedString("The storage class backing the volume."),
 			"storage_max_gb":   computedInt("The maximum storage allowed in GB."),

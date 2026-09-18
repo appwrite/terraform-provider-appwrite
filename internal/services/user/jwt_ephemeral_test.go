@@ -18,7 +18,7 @@ func TestAccAuthJWTEphemeral_authenticatesAsTheUser(t *testing.T) {
 	userID, cleanup := acceptance.User(t)
 	defer cleanup()
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_10_0),

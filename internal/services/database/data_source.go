@@ -42,7 +42,7 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 		Description: "Fetches an Appwrite database by ID.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "The database ID.",
+				Description: common.DatabaseIDDescription,
 				Required:    true,
 			},
 			"name": schema.StringAttribute{
@@ -62,7 +62,7 @@ func (d *databaseDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Computed:    true,
 			},
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				Computed:    true,
 			},

@@ -121,7 +121,7 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description:   "The database ID. Must be unique within the project. Generated when omitted.",
+			Description:   "The database ID. Must be unique within the project. Generated when omitted. Changing this forces a new resource to be created.",
 			Optional:      true,
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
@@ -278,8 +278,8 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		"last_accessed_at":        schema.StringAttribute{Description: "The last activity timestamp in ISO 8601 format.", Computed: true},
 		"idle_until":              schema.StringAttribute{Description: "When the database is expected to be considered idle, in ISO 8601 format.", Computed: true},
 		"lifecycle_state":         schema.StringAttribute{Description: "The idle-lifecycle state: `active`, `warm`, `cold` or `hibernated`.", Computed: true},
-		"cpu":                     schema.Int64Attribute{Description: "The allocated CPU in millicores.", Computed: true},
-		"memory":                  schema.Int64Attribute{Description: "The allocated memory in MB.", Computed: true},
+		"cpu":                     schema.Int64Attribute{Description: common.CPUMillicoresDescription, Computed: true},
+		"memory":                  schema.Int64Attribute{Description: common.MemoryMBDescription, Computed: true},
 		"storage":                 schema.Int64Attribute{Description: "The allocated storage in GB.", Computed: true},
 		"storage_class":           schema.StringAttribute{Description: "The storage class backing the volume.", Computed: true},
 		"storage_max_gb":          schema.Int64Attribute{Description: "The maximum storage allowed in GB. 0 means the system default.", Computed: true},

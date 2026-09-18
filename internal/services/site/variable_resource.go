@@ -62,7 +62,7 @@ func (r *variableResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"site_id": schema.StringAttribute{
-				Description:   "The site ID this variable belongs to.",
+				Description:   "The site ID this variable belongs to. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

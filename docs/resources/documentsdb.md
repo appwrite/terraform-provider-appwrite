@@ -45,8 +45,8 @@ resource "appwrite_documentsdb" "production" {
 ### Optional
 
 - `enabled` (Boolean) Whether the database is enabled. When disabled it is inaccessible to users but still reachable with an API key. Defaults to true.
-- `id` (String) The database ID. Must be unique within the project. Generated when omitted.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `id` (String) The database ID. Must be unique within the project. Generated when omitted. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `replicas` (Number) The number of high availability replicas on the dedicated backing, excluding the primary.
 - `specification` (String) The compute specification slug of the dedicated backing, for example `s-1vcpu-1gb`. Omit to use the deployment's shared pool, which requires that one is configured; otherwise this is mandatory.
 - `sync_mode` (String) The replication sync mode of the dedicated backing. One of `async`, `sync` or `quorum`. Only meaningful when `replicas` is greater than 0.

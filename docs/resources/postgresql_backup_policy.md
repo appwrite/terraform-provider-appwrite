@@ -42,7 +42,7 @@ resource "appwrite_postgresql_backup_policy" "incremental" {
 
 ### Required
 
-- `database_id` (String) The dedicated database ID the policy backs up.
+- `database_id` (String) The dedicated database ID the policy backs up. Changing this forces a new resource to be created.
 - `name` (String) The backup policy name.
 - `retention` (Number) How many days to keep each backup before it is deleted automatically.
 - `schedule` (String) The backup schedule in CRON format, for example `0 3 * * *` for daily at 03:00 UTC.
@@ -50,9 +50,9 @@ resource "appwrite_postgresql_backup_policy" "incremental" {
 ### Optional
 
 - `enabled` (Boolean) Whether the policy is enabled. Defaults to true.
-- `id` (String) The backup policy ID. Must be unique within the database. Generated when omitted.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
-- `type` (String) The backup type. `full` takes a complete snapshot; `incremental` stores changes since the last backup. Changing this replaces the policy.
+- `id` (String) The backup policy ID. Must be unique within the database. Generated when omitted. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
+- `type` (String) The backup type. `full` takes a complete snapshot; `incremental` stores changes since the last backup. Changing this replaces the policy. Changing this forces a new resource to be created.
 
 ### Read-Only
 

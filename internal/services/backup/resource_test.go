@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccDatabaseBackupPolicyResource_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.CloudPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

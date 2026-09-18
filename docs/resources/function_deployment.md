@@ -39,22 +39,23 @@ resource "appwrite_function_deployment" "from_template" {
 
 ### Required
 
-- `function_id` (String) The function ID this deployment belongs to.
-- `source_type` (String) The deployment source type. Must be one of "code" or "template".
+- `function_id` (String) The function ID this deployment belongs to. Changing this forces a new resource to be created.
+- `source_type` (String) The deployment source type. Must be one of "code" or "template". Changing this forces a new resource to be created.
 
 ### Optional
 
-- `activate` (Boolean) Whether to activate this deployment after creation.
-- `code_hash` (String) Hash of the code file for drift detection. Use filesha256() to compute.
-- `code_path` (String) Local path to the code tar.gz file to upload. Required when source_type is code.
-- `commands` (String) Build commands for code deployments.
-- `entrypoint` (String) The entrypoint file for code deployments.
-- `owner` (String) Repository owner for template deployments.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
-- `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash).
-- `repository` (String) Repository name for template deployments.
-- `root_directory` (String) Root directory in the repository for template deployments.
-- `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit").
+- `activate` (Boolean) Whether to activate this deployment after creation. Changing this forces a new resource to be created.
+- `code_hash` (String) Hash of the code file for drift detection. Use filesha256() to compute. Changing this forces a new resource to be created.
+- `code_path` (String) Local path to the code tar.gz file to upload. Required when source_type is code. Changing this forces a new resource to be created.
+- `commands` (String) Build commands for code deployments. Changing this forces a new resource to be created.
+- `entrypoint` (String) The entrypoint file for code deployments. Changing this forces a new resource to be created.
+- `owner` (String) Repository owner for template deployments. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
+- `reference` (String) Reference value for template deployments (e.g. branch name, tag, or commit hash). Changing this forces a new resource to be created.
+- `repository` (String) Repository name for template deployments. Changing this forces a new resource to be created.
+- `root_directory` (String) Root directory in the repository for template deployments. Changing this forces a new resource to be created.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `type` (String) Reference type for template deployments (e.g. "branch", "tag", "commit"). Changing this forces a new resource to be created.
 - `wait_for_ready` (Boolean) Whether to wait for the deployment to reach ready status before completing. Defaults to true.
 
 ### Read-Only
@@ -68,6 +69,13 @@ resource "appwrite_function_deployment" "from_template" {
 - `status` (String) The deployment build status.
 - `total_size` (Number) The total size in bytes.
 - `updated_at` (String) The deployment last update timestamp in ISO 8601 format.
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 ## Import
 

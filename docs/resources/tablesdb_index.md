@@ -62,20 +62,20 @@ resource "appwrite_tablesdb_index" "name_index" {
 ### Required
 
 - `columns` (List of String) Array of column keys to index.
-- `database_id` (String) The database ID.
-- `table_id` (String) The table ID.
-- `type` (String) Index type: key, unique, or fulltext.
+- `database_id` (String) The database ID. Changing this forces a new resource to be created.
+- `table_id` (String) The table ID. Changing this forces a new resource to be created.
+- `type` (String) Index type: key, unique, or fulltext. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `key` (String) The index key (name).
+- `key` (String) The index key (name). Changing this forces a new resource to be created.
 - `orders` (List of String) Array of index orders (asc or desc) for each column.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 
-- `created_at` (String)
-- `updated_at` (String)
+- `created_at` (String) The creation timestamp in ISO 8601 format.
+- `updated_at` (String) The last update timestamp in ISO 8601 format.
 
 ## Import
 

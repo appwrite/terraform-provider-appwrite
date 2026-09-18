@@ -58,7 +58,7 @@ func (r *keyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 		Description: "Manages an Appwrite project API key.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The API key ID.",
+				Description:   "The API key ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

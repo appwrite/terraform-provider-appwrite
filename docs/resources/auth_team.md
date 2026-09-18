@@ -31,8 +31,8 @@ resource "appwrite_auth_team" "marketing" {
 
 ### Optional
 
-- `id` (String) The team ID.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `id` (String) The team ID. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `roles` (List of String) Roles for new team members. Defaults to ["owner"].
 
 ### Read-Only

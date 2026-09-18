@@ -46,15 +46,15 @@ resource "appwrite_vectorsdb_document" "seed" {
 
 ### Required
 
-- `collection_id` (String) The collection ID the document belongs to.
+- `collection_id` (String) The collection ID the document belongs to. Changing this forces a new resource to be created.
 - `data` (String) The document body as a JSON object string, for example `jsonencode({ title = "Hello" })`. A VectorsDB document carries its embedding, which must have exactly the collection's `dimension` values. Only the keys present here are tracked, so fields written by other clients do not show as drift.
-- `database_id` (String) The database ID.
+- `database_id` (String) The database ID. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `id` (String) The document ID. Generated when omitted.
+- `id` (String) The document ID. Generated when omitted. Changing this forces a new resource to be created.
 - `permissions` (Set of String) The document permissions. Only enforced when the collection has `document_security` enabled.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

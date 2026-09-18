@@ -52,10 +52,10 @@ resource "appwrite_function" "event_driven" {
 - `entrypoint` (String) The entrypoint file used to execute the deployment.
 - `events` (List of String) Events that trigger the function.
 - `execute` (List of String) Execution permissions (e.g. users, teams, roles).
-- `id` (String) The function ID.
+- `id` (String) The function ID. Changing this forces a new resource to be created.
 - `installation_id` (String) VCS (Version Control System) installation ID.
 - `logging` (Boolean) Whether execution logs are enabled. When disabled, executions will be slightly faster. Defaults to true.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `provider_branch` (String) VCS (Version Control System) branch name.
 - `provider_repository_id` (String) VCS (Version Control System) repository ID.
 - `provider_root_directory` (String) Path to function in VCS repository.

@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccFunctionDeploymentResource_template(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.BuildPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

@@ -74,13 +74,13 @@ func (r *backupPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 		),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The backup policy ID. Must be unique within the database. Generated when omitted.",
+				Description:   "The backup policy ID. Must be unique within the database. Generated when omitted. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
-				Description:   "The dedicated database ID the policy backs up.",
+				Description:   "The dedicated database ID the policy backs up. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -98,7 +98,7 @@ func (r *backupPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Validators:  []validator.Int64{int64validator.AtLeast(1)},
 			},
 			"type": schema.StringAttribute{
-				Description:   "The backup type. `full` takes a complete snapshot; `incremental` stores changes since the last backup. Changing this replaces the policy.",
+				Description:   "The backup type. `full` takes a complete snapshot; `incremental` stores changes since the last backup. Changing this replaces the policy. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				Validators:    []validator.String{stringvalidator.OneOf("full", "incremental")},

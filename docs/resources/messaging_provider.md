@@ -52,7 +52,7 @@ resource "appwrite_messaging_provider" "fcm" {
 ### Required
 
 - `name` (String) The provider name.
-- `type` (String) The provider type. One of: sendgrid, mailgun, smtp, resend, twilio, vonage, msg91, telesign, textmagic, apns, fcm.
+- `type` (String) The provider type. One of: sendgrid, mailgun, smtp, resend, twilio, vonage, msg91, telesign, textmagic, apns, fcm. Changing this forces a new resource to be created.
 
 ### Optional
 
@@ -72,11 +72,11 @@ resource "appwrite_messaging_provider" "fcm" {
 - `from_email` (String) Sender email address. Applies to email providers.
 - `from_name` (String) Sender name. Applies to email providers.
 - `host` (String) SMTP host. Required for smtp type.
-- `id` (String) The provider ID.
+- `id` (String) The provider ID. Changing this forces a new resource to be created.
 - `is_eu_region` (Boolean) Whether to use EU region. Applies to mailgun type.
 - `password` (String, Sensitive) Password. Applies to smtp type.
 - `port` (Number) SMTP port. Applies to smtp type.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `reply_to_email` (String) Reply-to email address. Applies to email providers.
 - `reply_to_name` (String) Reply-to name. Applies to email providers.
 - `sandbox` (Boolean) Use APNS sandbox environment. Applies to apns type.

@@ -54,7 +54,7 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Description: "Manages an Appwrite project within an organization.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The project ID.",
+				Description:   "The project ID. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},
@@ -65,7 +65,7 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Validators:  []validator.String{stringvalidator.LengthAtLeast(1), stringvalidator.LengthAtMost(128)},
 			},
 			"region": schema.StringAttribute{
-				Description: "The region where the project is hosted. Defaults to the server's configured region.",
+				Description: "The region where the project is hosted. Defaults to the server's configured region. Changing this forces a new resource to be created.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{

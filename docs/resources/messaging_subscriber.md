@@ -27,13 +27,13 @@ resource "appwrite_messaging_subscriber" "user_email" {
 
 ### Required
 
-- `target_id` (String) The target ID (e.g. a user's email or push target).
-- `topic_id` (String) The topic ID to subscribe to.
+- `target_id` (String) The target ID (e.g. a user's email or push target). Changing this forces a new resource to be created.
+- `topic_id` (String) The topic ID to subscribe to. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `id` (String) The subscriber ID.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `id` (String) The subscriber ID. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

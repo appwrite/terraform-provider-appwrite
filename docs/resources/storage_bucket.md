@@ -17,18 +17,18 @@ resource "appwrite_storage_bucket" "uploads" {
 }
 
 resource "appwrite_storage_bucket" "images" {
-  name                   = "images"
+  name                    = "images"
   maximum_file_size       = 10485760
   allowed_file_extensions = ["jpg", "png", "webp", "gif"]
-  compression            = "gzip"
-  transformations        = true
+  compression             = "gzip"
+  transformations         = true
 }
 
 resource "appwrite_storage_bucket" "documents" {
-  name         = "documents"
+  name          = "documents"
   file_security = true
-  encryption   = true
-  antivirus    = true
+  encryption    = true
+  antivirus     = true
 }
 ```
 
@@ -47,10 +47,10 @@ resource "appwrite_storage_bucket" "documents" {
 - `enabled` (Boolean) Whether the bucket is enabled. Defaults to true.
 - `encryption` (Boolean) Whether bucket encryption is enabled. Defaults to true.
 - `file_security` (Boolean) Whether file-level security is enabled. When enabled, users can access files for which they have been granted permissions. Defaults to false.
-- `id` (String) The bucket ID. Must be unique within the project.
+- `id` (String) The bucket ID. Must be unique within the project. Changing this forces a new resource to be created.
 - `maximum_file_size` (Number) Maximum file size in bytes.
 - `permissions` (List of String) Bucket-level permissions.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `transformations` (Boolean) Whether image transformations are enabled. Defaults to false.
 
 ### Read-Only

@@ -55,9 +55,19 @@ type AppwriteClients struct {
 
 // WithUserAgent returns a ClientOption that sets the User-Agent header to identify
 // Terraform provider traffic. This is required for HashiCorp partner providers.
+//
+// TF_APPEND_USER_AGENT is appended when set. terraform-plugin-sdk honors that
+// variable for free, but a framework-only provider has to do it itself, so it
+// previously had no effect here -- and it is how Terraform Cloud, Terragrunt and
+// in-house wrappers identify themselves. Without it their traffic looks the same
+// as a developer's laptop in Appwrite's logs.
 func WithUserAgent(version string) client.ClientOption {
 	return func(clt *client.Client) error {
-		clt.Headers["user-agent"] = fmt.Sprintf("terraform-provider-appwrite/%s", version)
+		userAgent := fmt.Sprintf("terraform-provider-appwrite/%s", version)
+		if appended := AppendedUserAgent(); appended != "" {
+			userAgent = userAgent + " " + appended
+		}
+		clt.Headers["user-agent"] = userAgent
 		return nil
 	}
 }
@@ -204,7 +214,7 @@ func VariableKeyValidators() []validator.String {
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.
 func ProjectIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Description:   ProjectIDDescription + " " + ForcesReplacementNote,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
@@ -215,7 +225,7 @@ func ProjectIDAttribute() schema.StringAttribute {
 // organization_id on organization-scoped resources.
 func OrganizationIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   "The Appwrite organization ID. Defaults to the provider-level organization_id.",
+		Description:   OrganizationIDDescription + " " + ForcesReplacementNote,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
@@ -231,13 +241,55 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
-// IsColumnNotAvailableError checks if the error is due to a column still being processed.
+// ErrorType returns the machine-readable type Appwrite puts in an error
+// response body, or "" when the error is not an Appwrite API error.
+//
+// The type is the only part of an error response that is contractual. Messages
+// are prose: they get reworded, translated and have identifiers interpolated
+// into them, so code that matches on a message breaks on a release that changed
+// nothing a user would notice.
+func ErrorType(err error) string {
+	var appErr *client.AppwriteError
+	if !errors.As(err, &appErr) {
+		return ""
+	}
+	var response struct {
+		Type string `json:"type"`
+	}
+	if json.Unmarshal([]byte(appErr.GetResponse()), &response) != nil {
+		return ""
+	}
+	return response.Type
+}
+
+// columnNotAvailableTypes are the error types Appwrite uses for a column that
+// exists but is still being built.
+var columnNotAvailableTypes = map[string]bool{
+	"column_not_available":    true,
+	"attribute_not_available": true, // the legacy Databases name for the same state
+}
+
+// IsColumnNotAvailableError reports whether the error means a column is still
+// being processed, so the caller should keep polling.
+//
+// Prefers the structured type and keeps the message match as a fallback. The
+// message form is what this used to do exclusively, and it is fragile in exactly
+// the way AWS's error-handling guide describes -- a 400 whose prose changes
+// silently turns a poll into a hard failure. The fallback stays until the type
+// is confirmed against every server version the provider supports; once it is,
+// delete it.
 func IsColumnNotAvailableError(err error) bool {
 	var appErr *client.AppwriteError
-	if errors.As(err, &appErr) {
-		return appErr.GetStatusCode() == 400 && strings.Contains(appErr.GetMessage(), "not yet available")
+	if !errors.As(err, &appErr) {
+		return false
 	}
-	return false
+	if appErr.GetStatusCode() != 400 {
+		return false
+	}
+	if columnNotAvailableTypes[ErrorType(err)] {
+		return true
+	}
+	return strings.Contains(appErr.GetMessage(), "not yet available")
 }
 
 // FormatError returns a detailed error string including status code and response body.
@@ -258,13 +310,7 @@ func FormatErrorWithAuthGuidance(err error, guidance string) string {
 		return formatted
 	}
 
-	var response struct {
-		Type string `json:"type"`
-	}
-	if json.Unmarshal([]byte(appErr.GetResponse()), &response) != nil {
-		return formatted
-	}
-	switch response.Type {
+	switch ErrorType(err) {
 	case "general_unauthorized_scope", "user_unauthorized", "key_creation_denied":
 		return formatted + "\n\nAuthentication guidance: " + guidance
 	default:
@@ -370,13 +416,25 @@ func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, res
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key"), parts[2])...)
 }
 
+// DefaultDeploymentTimeout bounds a deployment wait when the configuration sets
+// no timeouts block.
+//
+// The wait previously had no deadline of any kind. A build that never finished --
+// a runtime that cannot start, an upstream repository that hangs -- left
+// Terraform polling forever with no output, and the only way out was to kill it,
+// which leaves the deployment unrecorded in state. Thirty minutes is well clear
+// of a slow build and still terminates.
+const DefaultDeploymentTimeout = 30 * time.Minute
+
 // WaitForDeploymentReady polls a deployment until its status becomes "ready",
 // "failed", or "canceled". Returns nil on "ready", error otherwise.
+//
+// Bounded by ctx, which the caller should derive from its timeouts block.
 func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, error), deploymentID string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("timed out waiting for deployment %q to become ready", deploymentID)
+			return fmt.Errorf("timed out waiting for deployment %q to become ready: %w", deploymentID, ctx.Err())
 		default:
 		}
 
@@ -398,10 +456,18 @@ func WaitForDeploymentReady(ctx context.Context, getDeployment func() (string, e
 	}
 }
 
-// WaitForColumnAvailable polls a column until its status becomes "available",
-// with a maximum wait of 5 minutes.
+// DefaultColumnTimeout bounds a column build wait when the configuration sets no
+// timeouts block. Previously hard-coded inside the function with no way to raise
+// it, which is a problem on a large table where the backfill genuinely takes
+// longer than five minutes.
+const DefaultColumnTimeout = 5 * time.Minute
+
+// WaitForColumnAvailable polls a column until its status becomes "available".
+//
+// Bounded by both ctx and DefaultColumnTimeout, whichever expires first, so a
+// caller that supplies no deadline still cannot wait indefinitely.
 func WaitForColumnAvailable(ctx context.Context, getColumn func() (interface{}, error), key string) error {
-	deadline := time.After(5 * time.Minute)
+	deadline := time.After(DefaultColumnTimeout)
 	for {
 		select {
 		case <-ctx.Done():

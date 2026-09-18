@@ -26,7 +26,7 @@ func TestAccAuthSessionEphemeral_closedOnFinish(t *testing.T) {
 
 	var sessionID string
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_10_0),

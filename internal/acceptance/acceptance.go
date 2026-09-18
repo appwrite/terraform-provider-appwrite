@@ -205,3 +205,15 @@ func MessagingTarget(t *testing.T) (targetID string, cleanup func()) {
 	t.Fatalf("user %s was created without an email target", user.Id)
 	return "", func() {}
 }
+
+// ClientForProjectID returns an SDK client scoped to a specific project rather
+// than the one in the environment. Destroy checks need it: a test may create
+// its own project, and its resources have to be looked up inside that project.
+func ClientForProjectID(t *testing.T, projectID string) sdkclient.Client {
+	t.Helper()
+	return appwrite.NewClient(
+		appwrite.WithEndpoint(os.Getenv("APPWRITE_ENDPOINT")),
+		appwrite.WithKey(os.Getenv("APPWRITE_API_KEY")),
+		appwrite.WithProject(projectID),
+	)
+}

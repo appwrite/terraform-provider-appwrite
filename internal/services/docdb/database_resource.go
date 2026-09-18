@@ -77,7 +77,7 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 		Description: description,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The database ID. Must be unique within the project. Generated when omitted.",
+				Description:   "The database ID. Must be unique within the project. Generated when omitted. Changing this forces a new resource to be created.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()},

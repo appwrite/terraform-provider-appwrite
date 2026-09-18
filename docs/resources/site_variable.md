@@ -34,13 +34,13 @@ resource "appwrite_site_variable" "secret_key" {
 ### Required
 
 - `key` (String) The variable key (name).
-- `site_id` (String) The site ID this variable belongs to.
+- `site_id` (String) The site ID this variable belongs to. Changing this forces a new resource to be created.
 
 ### Optional
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `secret` (Boolean) Whether the variable is secret. Secret variables can only be updated or deleted, never read.
 - `value` (String, Sensitive) The variable value. Stored in Terraform state; prefer value_wo, which is not. Exactly one of value or value_wo must be set.
 - `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The variable value, as a write-only argument. Read from the configuration during apply and never persisted. Change value_wo_version to apply a new value, since Terraform cannot detect a change in a value it does not store. Requires Terraform 1.11 or later.

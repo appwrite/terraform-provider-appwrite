@@ -3,16 +3,16 @@ resource "appwrite_storage_bucket" "uploads" {
 }
 
 resource "appwrite_storage_bucket" "images" {
-  name                   = "images"
+  name                    = "images"
   maximum_file_size       = 10485760
   allowed_file_extensions = ["jpg", "png", "webp", "gif"]
-  compression            = "gzip"
-  transformations        = true
+  compression             = "gzip"
+  transformations         = true
 }
 
 resource "appwrite_storage_bucket" "documents" {
-  name         = "documents"
+  name          = "documents"
   file_security = true
-  encryption   = true
-  antivirus    = true
+  encryption    = true
+  antivirus     = true
 }

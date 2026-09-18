@@ -76,7 +76,7 @@ func (r *backupStorageResource) Schema(_ context.Context, _ resource.SchemaReque
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
-				Description:   "The dedicated database ID whose backups are redirected.",
+				Description:   "The dedicated database ID whose backups are redirected. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

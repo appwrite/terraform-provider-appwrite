@@ -35,15 +35,15 @@ resource "appwrite_storage_file" "config" {
 
 ### Required
 
-- `bucket_id` (String) The bucket ID.
-- `file_path` (String) The local path to the file to upload.
+- `bucket_id` (String) The bucket ID. Changing this forces a new resource to be created.
+- `file_path` (String) The local path to the file to upload. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `id` (String) The file ID.
+- `id` (String) The file ID. Changing this forces a new resource to be created.
 - `name` (String) The file name.
 - `permissions` (List of String) File permissions.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

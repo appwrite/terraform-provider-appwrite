@@ -15,12 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           fetch-depth: 0
 
+      # Cache deliberately off. This job builds and signs what users install, and
+      # a build cache is writable by workflows running on pull requests, so
+      # restoring one here would let untrusted input reach a release artifact.
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
 
       # GoReleaser shells out to syft to build the SBOMs, and the GoReleaser
       # action does not bundle it.

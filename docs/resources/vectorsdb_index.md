@@ -36,17 +36,17 @@ resource "appwrite_vectorsdb_index" "by_source" {
 
 ### Required
 
-- `attributes` (List of String) The document attributes to index, in order.
-- `collection_id` (String) The collection ID the index is created on.
-- `database_id` (String) The database ID.
-- `key` (String) The index key, unique within the collection.
-- `type` (String) The index type, for example `key`, `unique` or `fulltext`. The accepted values depend on the product and the attribute being indexed.
+- `attributes` (List of String) The document attributes to index, in order. Changing this forces a new resource to be created.
+- `collection_id` (String) The collection ID the index is created on. Changing this forces a new resource to be created.
+- `database_id` (String) The database ID. Changing this forces a new resource to be created.
+- `key` (String) The index key, unique within the collection. Changing this forces a new resource to be created.
+- `type` (String) The index type, for example `key`, `unique` or `fulltext`. The accepted values depend on the product and the attribute being indexed. Changing this forces a new resource to be created.
 
 ### Optional
 
-- `lengths` (List of Number) The indexed prefix length per attribute. Positional, matching `attributes`.
-- `orders` (List of String) The sort order per attribute, `ASC` or `DESC`. Positional, matching `attributes`.
-- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id.
+- `lengths` (List of Number) The indexed prefix length per attribute. Positional, matching `attributes`. Changing this forces a new resource to be created.
+- `orders` (List of String) The sort order per attribute, `ASC` or `DESC`. Positional, matching `attributes`. Changing this forces a new resource to be created.
+- `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 
 ### Read-Only
 

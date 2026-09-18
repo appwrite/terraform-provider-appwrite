@@ -58,7 +58,7 @@ func (d *specificationsDataSource) Schema(_ context.Context, _ datasource.Schema
 		),
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				Computed:    true,
 			},
@@ -70,8 +70,8 @@ func (d *specificationsDataSource) Schema(_ context.Context, _ datasource.Schema
 						"slug":               schema.StringAttribute{Description: "The slug to pass as `specification` when creating a database.", Computed: true},
 						"name":               schema.StringAttribute{Description: "The human readable specification name.", Computed: true},
 						"price":              schema.Float64Attribute{Description: "The monthly price in USD.", Computed: true},
-						"cpu":                schema.Int64Attribute{Description: "The allocated CPU in millicores.", Computed: true},
-						"memory":             schema.Int64Attribute{Description: "The allocated memory in MB.", Computed: true},
+						"cpu":                schema.Int64Attribute{Description: common.CPUMillicoresDescription, Computed: true},
+						"memory":             schema.Int64Attribute{Description: common.MemoryMBDescription, Computed: true},
 						"max_connections":    schema.Int64Attribute{Description: "The maximum number of concurrent connections.", Computed: true},
 						"included_storage":   schema.Int64Attribute{Description: "The included storage in GB before overage charges apply.", Computed: true},
 						"included_bandwidth": schema.Int64Attribute{Description: "The included bandwidth in GB before overage charges apply.", Computed: true},

@@ -29,7 +29,7 @@ func specification() string {
 func TestAccPostgresqlDatabaseResource_basic(t *testing.T) {
 	databaseID := fmt.Sprintf("tf-pg-%d", time.Now().UnixNano())
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.DedicatedPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -70,7 +70,7 @@ func TestAccPostgresqlDatabaseResource_basic(t *testing.T) {
 func TestAccPostgresqlDatabaseResource_maintenanceWindow(t *testing.T) {
 	databaseID := fmt.Sprintf("tf-pg-mw-%d", time.Now().UnixNano())
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.DedicatedPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -111,7 +111,7 @@ resource "appwrite_postgresql_database" "test" {
 // A day without an hour is rejected at apply time rather than sent as a partial
 // pair the API would misread.
 func TestAccPostgresqlDatabaseResource_incompleteMaintenanceWindow(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.DedicatedPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -133,7 +133,7 @@ resource "appwrite_postgresql_database" "test" {
 func TestAccMysqlDatabaseResource_basic(t *testing.T) {
 	databaseID := fmt.Sprintf("tf-my-%d", time.Now().UnixNano())
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.DedicatedPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -158,7 +158,7 @@ resource "appwrite_mysql_database" "test" {
 func TestAccMongoDatabaseResource_basic(t *testing.T) {
 	databaseID := fmt.Sprintf("tf-mongo-%d", time.Now().UnixNano())
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.DedicatedPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

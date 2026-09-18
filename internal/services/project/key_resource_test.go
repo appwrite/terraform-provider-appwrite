@@ -16,7 +16,7 @@ import (
 // one has to fail at apply time with guidance rather than silently creating the
 // wrong kind of key.
 func TestAccProjectKeyResource_createUnsupported(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() {
 			acceptance.OrganizationPreCheck(t)
 			acceptance.PreCheck(t)
@@ -37,7 +37,7 @@ func TestAccProjectKeyResource_importAndUpdate(t *testing.T) {
 	keyID := os.Getenv("APPWRITE_PROJECT_KEY_ID")
 	projectID := os.Getenv("APPWRITE_PROJECT_ID")
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() {
 			acceptance.OrganizationPreCheck(t)
 			acceptance.PreCheck(t)

@@ -1,0 +1,5605 @@
+{
+  "provider": {
+    "version": 0,
+    "attributes": {
+      "api_key": {
+        "type": "tftypes.String",
+        "optional": true,
+        "sensitive": true
+      },
+      "endpoint": {
+        "type": "tftypes.String",
+        "optional": true
+      },
+      "http_timeout_seconds": {
+        "type": "tftypes.Number",
+        "optional": true
+      },
+      "max_retries": {
+        "type": "tftypes.Number",
+        "optional": true
+      },
+      "organization_api_key": {
+        "type": "tftypes.String",
+        "optional": true,
+        "sensitive": true
+      },
+      "organization_id": {
+        "type": "tftypes.String",
+        "optional": true
+      },
+      "project_id": {
+        "type": "tftypes.String",
+        "optional": true
+      },
+      "self_signed": {
+        "type": "tftypes.Bool",
+        "optional": true
+      }
+    }
+  },
+  "resources": {
+    "appwrite_auth_team": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "roles": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_auth_user": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "email_verification": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "labels": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "password_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "password_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "phone": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "phone_verification": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_backup_policy": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "retention": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "services": {
+          "type": "tftypes.List[tftypes.String]",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb_collection": {
+      "version": 0,
+      "attributes": {
+        "attributes": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "dimension": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "document_security": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "permissions": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb_document": {
+      "version": 0,
+      "attributes": {
+        "collection_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "data": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "permissions": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb_index": {
+      "version": 0,
+      "attributes": {
+        "attributes": {
+          "type": "tftypes.List[tftypes.String]",
+          "required": true
+        },
+        "collection_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "lengths": {
+          "type": "tftypes.List[tftypes.Number]",
+          "optional": true,
+          "computed": true
+        },
+        "orders": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_function": {
+      "version": 0,
+      "attributes": {
+        "build_specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "commands": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_retention": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "entrypoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "events": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "execute": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "installation_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "logging": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "provider_branch": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_repository_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_root_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_silent_mode": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "runtime": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "runtime_specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "scopes": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "timeout": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_function_deployment": {
+      "version": 0,
+      "attributes": {
+        "activate": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "build_duration": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "build_logs": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "build_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "code_hash": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "code_path": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "commands": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "entrypoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "function_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "owner": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reference": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "repository": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "root_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "source_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "source_type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "timeouts": {
+          "type": "block",
+          "nesting": "single"
+        },
+        "timeouts.create": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "total_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "wait_for_ready": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_function_variable": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "function_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "value": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "value_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "value_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_messaging_provider": {
+      "version": 0,
+      "attributes": {
+        "account_sid": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "api_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "api_secret": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "auth_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "auth_key_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "auth_token": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "auto_tls": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "bundle_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "customer_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "encryption": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "from": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "from_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "from_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "is_eu_region": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reply_to_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "reply_to_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sandbox": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "sender_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "service_account_json": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "team_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "template_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "username": {
+          "type": "tftypes.String",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_messaging_subscriber": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "target_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "topic_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_messaging_topic": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "subscribe": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_backup_policy": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resource_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resources": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "retention": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "services": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_backup_storage": {
+      "version": 0,
+      "attributes": {
+        "access_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "bucket": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "endpoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "prefix": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "secret_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "storage_provider": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
+    "appwrite_mongo_branch": {
+      "version": 0,
+      "attributes": {
+        "branch_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "branch_name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "database": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expires_at": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "namespace": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "ttl": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "username": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_backup_policy": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resource_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resources": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "retention": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "services": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_backup_storage": {
+      "version": 0,
+      "attributes": {
+        "access_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "bucket": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "endpoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "prefix": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "secret_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "storage_provider": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
+    "appwrite_mysql_branch": {
+      "version": 0,
+      "attributes": {
+        "branch_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "branch_name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "database": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expires_at": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "namespace": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "ttl": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "username": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_pooler": {
+      "version": 0,
+      "attributes": {
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "default_pool_size": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "max_connections": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_cpu_limit": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_cpu_request": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_memory_limit": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_memory_request": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "read_write_splitting": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_backup_policy": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resource_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resources": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "retention": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "services": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_backup_storage": {
+      "version": 0,
+      "attributes": {
+        "access_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "bucket": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "endpoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "prefix": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "secret_key": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "storage_provider": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
+    "appwrite_postgresql_branch": {
+      "version": 0,
+      "attributes": {
+        "branch_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "branch_name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "database": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expires_at": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "namespace": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "ttl": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "username": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_extension": {
+      "version": 0,
+      "attributes": {
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_pooler": {
+      "version": 0,
+      "attributes": {
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "default_pool_size": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_cpu_limit": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_cpu_request": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_memory_limit": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "pooler_memory_request": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "read_write_splitting": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_project": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "team_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_project_key": {
+      "version": 0,
+      "attributes": {
+        "accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expire": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "scopes": {
+          "type": "tftypes.Set[tftypes.String]",
+          "required": true
+        },
+        "sdks": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_proxy_rule": {
+      "version": 0,
+      "attributes": {
+        "branch": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "logs": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "renew_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_site": {
+      "version": 0,
+      "attributes": {
+        "adapter": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "build_command": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "build_runtime": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "build_specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_retention": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "fallback_file": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "framework": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "install_command": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "installation_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "logging": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "output_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "provider_branch": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_repository_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_root_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_silent_mode": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "runtime_specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "start_command": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "timeout": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_site_deployment": {
+      "version": 0,
+      "attributes": {
+        "activate": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "build_command": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "build_duration": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "build_logs": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "build_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "code_hash": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "code_path": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "install_command": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "output_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "owner": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reference": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "repository": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "root_directory": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "site_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "source_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "source_type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "timeouts": {
+          "type": "block",
+          "nesting": "single"
+        },
+        "timeouts.create": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "total_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "wait_for_ready": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_site_variable": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "site_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "value": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "value_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "value_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_storage_bucket": {
+      "version": 0,
+      "attributes": {
+        "allowed_file_extensions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "antivirus": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "compression": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "encryption": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "file_security": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "maximum_file_size": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "permissions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "transformations": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_storage_file": {
+      "version": 0,
+      "attributes": {
+        "bucket_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "file_path": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "mime_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "permissions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "size_original": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb_column": {
+      "version": 0,
+      "attributes": {
+        "array": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "default": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "elements": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "encrypt": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "float_max": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "float_min": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "max": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "min": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "on_delete": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "related_table_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "relationship_type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "required": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "size": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "table_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "two_way": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "two_way_key": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb_index": {
+      "version": 0,
+      "attributes": {
+        "columns": {
+          "type": "tftypes.List[tftypes.String]",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "orders": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "table_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb_row": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "data": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "permissions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "table_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb_table": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "permissions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "row_security": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb_collection": {
+      "version": 0,
+      "attributes": {
+        "attributes": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "dimension": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "document_security": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "permissions": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb_document": {
+      "version": 0,
+      "attributes": {
+        "collection_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "data": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "permissions": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb_index": {
+      "version": 0,
+      "attributes": {
+        "attributes": {
+          "type": "tftypes.List[tftypes.String]",
+          "required": true
+        },
+        "collection_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "lengths": {
+          "type": "tftypes.List[tftypes.Number]",
+          "optional": true,
+          "computed": true
+        },
+        "orders": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_webhook": {
+      "version": 0,
+      "attributes": {
+        "auth_password": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "auth_password_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "auth_password_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "auth_username": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "events": {
+          "type": "tftypes.List[tftypes.String]",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "tls": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "url": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    }
+  },
+  "data_sources": {
+    "appwrite_auth_team": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_auth_user": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "email": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "email_verification": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "labels": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "phone": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "phone_verification": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_documentsdb_specifications": {
+      "version": 0,
+      "attributes": {
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "specifications": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "specifications.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "specifications.included_bandwidth": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.included_storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "specifications.price": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_function": {
+      "version": 0,
+      "attributes": {
+        "commands": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "entrypoint": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "events": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "execute": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "logging": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "runtime": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "schedule": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "scopes": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "timeout": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_messaging_topic": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "subscribe": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_backups": {
+      "version": 0,
+      "attributes": {
+        "backups": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "backups.completed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.expires_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.fallback_reason": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.log_position": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.policy_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.requested_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.size_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "backups.started_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.trigger": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.verified_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_database_status": {
+      "version": 0,
+      "attributes": {
+        "connections_current": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connections_max": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "effective_sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "health": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ready": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "replicas.healthy": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.index": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.lag_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.replicating": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.role": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_acknowledgements": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_degraded": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_standby_count": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_state_confirmed": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "uptime": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "volumes.available": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.mounted": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "volumes.path": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.used_percent": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_databases": {
+      "version": 0,
+      "attributes": {
+        "databases": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "databases.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mongo_specifications": {
+      "version": 0,
+      "attributes": {
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "specifications": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "specifications.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "specifications.included_bandwidth": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.included_storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "specifications.price": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_backups": {
+      "version": 0,
+      "attributes": {
+        "backups": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "backups.completed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.expires_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.fallback_reason": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.log_position": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.policy_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.requested_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.size_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "backups.started_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.trigger": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.verified_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_database_status": {
+      "version": 0,
+      "attributes": {
+        "connections_current": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connections_max": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "effective_sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "health": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ready": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "replicas.healthy": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.index": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.lag_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.replicating": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.role": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_acknowledgements": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_degraded": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_standby_count": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_state_confirmed": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "uptime": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "volumes.available": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.mounted": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "volumes.path": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.used_percent": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_databases": {
+      "version": 0,
+      "attributes": {
+        "databases": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "databases.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_mysql_specifications": {
+      "version": 0,
+      "attributes": {
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "specifications": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "specifications.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "specifications.included_bandwidth": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.included_storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "specifications.price": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_backups": {
+      "version": 0,
+      "attributes": {
+        "backups": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "backups.completed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.expires_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.fallback_reason": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.log_position": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.policy_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.requested_type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.size_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "backups.started_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.trigger": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backups.verified_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_database": {
+      "version": 0,
+      "attributes": {
+        "api": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backend": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "backup_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "connection_password": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_port": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connection_string": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "connection_user": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "container_status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "error": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "idle_timeout_minutes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "idle_until": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "last_accessed_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "lifecycle_state": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_day": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "maintenance_window_hour_utc": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "metrics_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "network_idle_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "network_ip_allowlist": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "network_max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "node_pool": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "pitr": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "pitr_retention_days": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sql_api_allowed_statements": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "sql_api_enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sql_api_max_bytes": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_max_rows": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sql_api_timeout_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "ssl": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "storage_autoscaling_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_autoscaling_threshold_percent": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "storage_class": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "storage_max_gb": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_database_status": {
+      "version": 0,
+      "attributes": {
+        "connections_current": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "connections_max": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "effective_sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "health": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ready": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "replicas.healthy": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.index": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.lag_seconds": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "replicas.replicating": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "replicas.role": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_acknowledgements": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_degraded": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "sync_mode": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "sync_standby_count": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "sync_state_confirmed": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "uptime": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "volumes.available": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.mounted": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "volumes.path": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "volumes.used_percent": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_databases": {
+      "version": 0,
+      "attributes": {
+        "databases": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "databases.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.hostname": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "databases.updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "databases.version": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "queries": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "total": {
+          "type": "tftypes.Number",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_extensions": {
+      "version": 0,
+      "attributes": {
+        "available": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "database_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "installed": {
+          "type": "tftypes.Set[tftypes.String]",
+          "computed": true
+        },
+        "metadata": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "metadata.category": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "metadata.description": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "metadata.key": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "metadata.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_postgresql_specifications": {
+      "version": 0,
+      "attributes": {
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "specifications": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "specifications.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "specifications.included_bandwidth": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.included_storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "specifications.price": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_site": {
+      "version": 0,
+      "attributes": {
+        "build_command": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "build_runtime": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "deployment_id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "framework": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "install_command": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "logging": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "output_directory": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "timeout": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_storage_bucket": {
+      "version": 0,
+      "attributes": {
+        "allowed_file_extensions": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "antivirus": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "compression": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "encryption": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "file_security": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "maximum_file_size": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_tablesdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "engine": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "replicas": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specification": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_vectorsdb_specifications": {
+      "version": 0,
+      "attributes": {
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "specifications": {
+          "type": "object",
+          "nesting": "list",
+          "computed": true
+        },
+        "specifications.cpu": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "specifications.included_bandwidth": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.included_storage": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.max_connections": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.memory": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "specifications.price": {
+          "type": "tftypes.Number",
+          "computed": true
+        },
+        "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_webhook": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "events": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "tls": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "url": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    }
+  },
+  "ephemeral_resources": {
+    "appwrite_auth_jwt": {
+      "version": 0,
+      "attributes": {
+        "duration_seconds": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "jwt": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "session_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
+    "appwrite_auth_session": {
+      "version": 0,
+      "attributes": {
+        "expire": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
+    "appwrite_project_ephemeral_key": {
+      "version": 0,
+      "attributes": {
+        "duration_seconds": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "expire": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "scopes": {
+          "type": "tftypes.Set[tftypes.String]",
+          "required": true
+        },
+        "secret": {
+          "type": "tftypes.String",
+          "computed": true,
+          "sensitive": true
+        }
+      }
+    }
+  }
+}

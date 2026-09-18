@@ -7,11 +7,13 @@ import (
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/client"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
@@ -58,6 +60,7 @@ type appwriteProviderModel struct {
 	OrganizationAPIKey types.String `tfsdk:"organization_api_key"`
 	SelfSigned         types.Bool   `tfsdk:"self_signed"`
 	HTTPTimeoutSeconds types.Int64  `tfsdk:"http_timeout_seconds"`
+	MaxRetries         types.Int64  `tfsdk:"max_retries"`
 }
 
 func New(version string) func() provider.Provider {
@@ -105,6 +108,13 @@ func (p *appwriteProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "How long to wait for a single API response before giving up. Defaults to 120. The SDK's own default is 10 seconds, which is too short for operations the server completes inline, such as updating a connection pooler.",
 				Optional:    true,
 			},
+			"max_retries": schema.Int64Attribute{
+				Description: "How many times to retry a request that failed for a reason likely to pass, such as a rate limit or a gateway error. Defaults to 5. Set to 0 to disable retrying. Rate-limited requests are retried whatever they were doing, because the server rejected them without acting; a create or update interrupted by a server error or a dropped connection is not retried, since the server may already have applied it and a second attempt would duplicate the resource. Note that Terraform applies resources in parallel, so raising both this and -parallelism against a rate-limited endpoint makes throttling more likely, not less.",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
 		},
 	}
 }
@@ -151,21 +161,35 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		httpTimeout = time.Duration(config.HTTPTimeoutSeconds.ValueInt64()) * time.Second
 	}
 
+	maxRetries := common.DefaultMaxRetries
+	if !config.MaxRetries.IsNull() && !config.MaxRetries.IsUnknown() {
+		maxRetries = int(config.MaxRetries.ValueInt64())
+	}
+
+	httpConfig := common.HTTPConfig{
+		Timeout:    httpTimeout,
+		SelfSigned: !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool(),
+		MaxRetries: maxRetries,
+	}
+
+	// WithHTTPTransport goes last, and appwrite.WithSelfSigned is not used at
+	// all. WithTimeout replaces the whole http.Client, so anything installing a
+	// transport has to come after it; and the SDK's self-signed handling
+	// type-asserts the transport to *http.Transport, which a wrapped transport
+	// is not. WithHTTPTransport owns both concerns instead.
 	baseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(apiKey),
 		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
+		common.WithHTTPTransport(httpConfig),
 	}
 	organizationBaseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(organizationAPIKey),
 		appwrite.WithTimeout(httpTimeout),
 		common.WithUserAgent(p.version),
-	}
-	if !config.SelfSigned.IsNull() && config.SelfSigned.ValueBool() {
-		baseOpts = append(baseOpts, appwrite.WithSelfSigned(true))
-		organizationBaseOpts = append(organizationBaseOpts, appwrite.WithSelfSigned(true))
+		common.WithHTTPTransport(httpConfig),
 	}
 
 	clients := &common.AppwriteClients{

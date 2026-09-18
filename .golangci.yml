@@ -1,86 +1,98 @@
+version: "2"
 linters:
   enable:
-    # Default linters
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-
-    # Code style
-    - gofmt
-    - goimports
-    - misspell
-    - unconvert
-    - whitespace
-
-    # Bug detection
     - bodyclose
-    - durationcheck
-    - nilerr
-    - noctx
-    - rowserrcheck
-    - sqlclosecheck
-    - wastedassign
-
-    # Code complexity & maintenance
     - copyloopvar
     - dupword
+    - durationcheck
     - errname
     - errorlint
     - fatcontext
     - goconst
     - goprintffuncname
     - makezero
+    - misspell
+    - nilerr
+    - noctx
     - nosprintfhostport
     - prealloc
     - predeclared
     - reassign
     - revive
-    - usetesting
+    - rowserrcheck
+    - sqlclosecheck
     - tparallel
+    - unconvert
     - usestdlibvars
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  misspell:
-    locale: US
-  revive:
-    rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: exported
-        disabled: true
-      - name: increment-decrement
-      - name: var-naming
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-      - name: empty-block
-      - name: superfluous-else
-      - name: unused-parameter
-        disabled: true
-      - name: unreachable-code
-      - name: redefines-builtin-id
-
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    errcheck:
+      check-type-assertions: true
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+      # Schema attribute names are map keys, and a provider repeats them by
+      # design -- "project_id" appearing in twenty schemas is the convention,
+      # not a missing constant. Without this, goconst reports 182 of them and
+      # the signal from every other linter is lost in the noise.
+      ignore-map-keys: true
+      # Fixture strings repeat by nature -- a scope name in three test configs,
+      # a status literal across table-driven cases. Flagging those trades real
+      # signal for churn in files that are already the most readable when the
+      # literal is written out.
+      ignore-tests: true
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+          disabled: true
+        - name: increment-decrement
+        - name: var-naming
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+          disabled: true
+        - name: unreachable-code
+        - name: redefines-builtin-id
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-dirs:
-    - vendor
   max-issues-per-linter: 0
   max-same-issues: 0
-
-run:
-  timeout: 5m
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
