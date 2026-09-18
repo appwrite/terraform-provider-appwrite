@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccFunctionResource_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -53,7 +53,7 @@ resource "appwrite_function" "test" {
 }
 
 func TestAccFunctionResource_with_events(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

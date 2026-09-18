@@ -15,7 +15,7 @@ import (
 // variable is deliberately not marked secret, which is when the API hands the
 // value back.
 func TestAccFunctionVariableResource_writeOnlyValueStaysOutOfState(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_11_0),

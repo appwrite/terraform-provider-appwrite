@@ -15,7 +15,7 @@ import (
 // regression here, because a write-only attribute is absent from state by
 // definition -- so this asserts on the raw state instead.
 func TestAccUserResource_writeOnlyPassword(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		// Write-only arguments arrived in Terraform 1.11.
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -60,7 +60,7 @@ resource "appwrite_auth_user" "wo" {
 // that transition, nothing compared unequal, and the apply reported success
 // while Appwrite kept the old password.
 func TestAccUserResource_migrateToWriteOnlyPassword(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_11_0),

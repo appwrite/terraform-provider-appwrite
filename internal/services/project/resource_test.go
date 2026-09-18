@@ -15,7 +15,7 @@ func TestAccProjectResource_basic(t *testing.T) {
 	organizationID := os.Getenv("APPWRITE_ORGANIZATION_ID")
 	region := os.Getenv("APPWRITE_TEST_REGION")
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.OrganizationPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

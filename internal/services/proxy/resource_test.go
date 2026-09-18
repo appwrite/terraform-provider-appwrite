@@ -15,7 +15,7 @@ func TestAccProxyRuleResource_site(t *testing.T) {
 	domain := testDomain("tf")
 	projectID := os.Getenv("APPWRITE_PROJECT_ID")
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -48,7 +48,7 @@ func TestAccProxyRuleResource_site(t *testing.T) {
 func TestAccProxyRuleResource_function(t *testing.T) {
 	domain := testDomain("tf-function")
 
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck:                 func() { acceptance.PreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccProjectEphemeralKey_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		// Ephemeral resources arrived in Terraform 1.10.
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -54,7 +54,7 @@ resource "echo" "test" {}
 // cannot reach past the scopes it was asked for. Matching the token's format
 // instead would pass for a key that authenticates nowhere.
 func TestAccProjectEphemeralKey_secretIsUsableWithinItsScopes(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	acceptance.ResourceTest(t, resource.TestCase{
 		PreCheck: func() { acceptance.PreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_10_0),
