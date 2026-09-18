@@ -204,7 +204,7 @@ func VariableKeyValidators() []validator.String {
 // ProjectIDAttribute returns the shared schema attribute for project_id on resources.
 func ProjectIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   "The Appwrite project ID. Defaults to the provider-level project_id.",
+		Description:   ProjectIDDescription,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
@@ -215,7 +215,7 @@ func ProjectIDAttribute() schema.StringAttribute {
 // organization_id on organization-scoped resources.
 func OrganizationIDAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
-		Description:   "The Appwrite organization ID. Defaults to the provider-level organization_id.",
+		Description:   OrganizationIDDescription,
 		Optional:      true,
 		Computed:      true,
 		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},

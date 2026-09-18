@@ -85,11 +85,11 @@ func (d *statusDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 		),
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description: "The dedicated database ID.",
+				Description: common.DedicatedDatabaseIDDescription,
 				Required:    true,
 			},
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				Computed:    true,
 			},

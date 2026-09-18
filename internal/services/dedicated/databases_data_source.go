@@ -68,7 +68,7 @@ func (d *databasesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 		),
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
-				Description: "The Appwrite project ID. Defaults to the provider-level project_id.",
+				Description: common.ProjectIDDescription,
 				Optional:    true,
 				Computed:    true,
 			},
@@ -86,7 +86,7 @@ func (d *databasesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":            schema.StringAttribute{Description: "The database ID.", Computed: true},
+						"id":            schema.StringAttribute{Description: common.DatabaseIDDescription, Computed: true},
 						"name":          schema.StringAttribute{Description: "The database display name.", Computed: true},
 						"engine":        schema.StringAttribute{Description: "The database engine.", Computed: true},
 						"version":       schema.StringAttribute{Description: "The engine version.", Computed: true},
@@ -94,8 +94,8 @@ func (d *databasesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 						"status":        schema.StringAttribute{Description: "The database status.", Computed: true},
 						"hostname":      schema.StringAttribute{Description: "The hostname to connect to.", Computed: true},
 						"replicas":      schema.Int64Attribute{Description: "The number of high availability replicas.", Computed: true},
-						"cpu":           schema.Int64Attribute{Description: "The allocated CPU in millicores.", Computed: true},
-						"memory":        schema.Int64Attribute{Description: "The allocated memory in MB.", Computed: true},
+						"cpu":           schema.Int64Attribute{Description: common.CPUMillicoresDescription, Computed: true},
+						"memory":        schema.Int64Attribute{Description: common.MemoryMBDescription, Computed: true},
 						"storage":       schema.Int64Attribute{Description: "The allocated storage in GB.", Computed: true},
 						"created_at":    schema.StringAttribute{Description: "The creation timestamp in ISO 8601 format.", Computed: true},
 						"updated_at":    schema.StringAttribute{Description: "The last update timestamp in ISO 8601 format.", Computed: true},

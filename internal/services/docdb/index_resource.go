@@ -72,7 +72,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"database_id": schema.StringAttribute{
-				Description:   "The database ID.",
+				Description:   common.DatabaseIDDescription,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

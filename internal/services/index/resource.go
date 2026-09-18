@@ -52,7 +52,7 @@ func (r *indexResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 		Description: "Manages an index on an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description:   "The database ID.",
+				Description:   common.DatabaseIDDescription,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

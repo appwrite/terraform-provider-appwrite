@@ -80,7 +80,7 @@ func (r *columnResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Description: "Manages a column in an Appwrite table.",
 		Attributes: map[string]schema.Attribute{
 			"database_id": schema.StringAttribute{
-				Description:   "The database ID.",
+				Description:   common.DatabaseIDDescription,
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -826,18 +826,18 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 		model.Size = types.Int64Value(int64(size))
 	}
 	if minVal, ok := generic["min"].(float64); ok {
-		columnType := model.Type.ValueString()
-		if columnType == colTypeInteger || columnType == colTypeBigInt {
+		switch model.Type.ValueString() {
+		case colTypeInteger, colTypeBigInt:
 			model.Min = types.Int64Value(int64(minVal))
-		} else if columnType == colTypeFloat {
+		case colTypeFloat:
 			model.FloatMin = types.Float64Value(minVal)
 		}
 	}
 	if maxVal, ok := generic["max"].(float64); ok {
-		columnType := model.Type.ValueString()
-		if columnType == colTypeInteger || columnType == colTypeBigInt {
+		switch model.Type.ValueString() {
+		case colTypeInteger, colTypeBigInt:
 			model.Max = types.Int64Value(int64(maxVal))
-		} else if columnType == colTypeFloat {
+		case colTypeFloat:
 			model.FloatMax = types.Float64Value(maxVal)
 		}
 	}

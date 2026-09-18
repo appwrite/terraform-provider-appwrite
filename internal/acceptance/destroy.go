@@ -115,6 +115,11 @@ var destroyChecks = map[string]fetchFunc{
 	},
 }
 
+const (
+	reasonBillable  = "billable; tests skipped in CI"
+	reasonCloudOnly = "Cloud-only; tests skipped in CI"
+)
+
 // destroyCheckGaps lists resource types with no destroy check, each with the
 // reason it is absent. Present so the coverage test can tell a deliberate
 // omission from an oversight: a new resource type appears in neither map and
@@ -133,31 +138,31 @@ var destroyCheckGaps = map[string]string{
 	// skipped unless APPWRITE_DEDICATED_DATABASE_TESTS is set, so a check here
 	// would never run in CI. Worth adding alongside the first CI run that
 	// exercises them.
-	"appwrite_postgresql_database":       "billable; tests skipped in CI",
-	"appwrite_mysql_database":            "billable; tests skipped in CI",
-	"appwrite_mongo_database":            "billable; tests skipped in CI",
-	"appwrite_postgresql_backup_policy":  "billable; tests skipped in CI",
-	"appwrite_mysql_backup_policy":       "billable; tests skipped in CI",
-	"appwrite_mongo_backup_policy":       "billable; tests skipped in CI",
-	"appwrite_postgresql_backup_storage": "billable; tests skipped in CI",
-	"appwrite_mysql_backup_storage":      "billable; tests skipped in CI",
-	"appwrite_mongo_backup_storage":      "billable; tests skipped in CI",
-	"appwrite_postgresql_branch":         "billable; tests skipped in CI",
-	"appwrite_mysql_branch":              "billable; tests skipped in CI",
-	"appwrite_mongo_branch":              "billable; tests skipped in CI",
-	"appwrite_postgresql_pooler":         "billable; tests skipped in CI",
-	"appwrite_mysql_pooler":              "billable; tests skipped in CI",
-	"appwrite_postgresql_extension":      "billable; tests skipped in CI",
+	"appwrite_postgresql_database":       reasonBillable,
+	"appwrite_mysql_database":            reasonBillable,
+	"appwrite_mongo_database":            reasonBillable,
+	"appwrite_postgresql_backup_policy":  reasonBillable,
+	"appwrite_mysql_backup_policy":       reasonBillable,
+	"appwrite_mongo_backup_policy":       reasonBillable,
+	"appwrite_postgresql_backup_storage": reasonBillable,
+	"appwrite_mysql_backup_storage":      reasonBillable,
+	"appwrite_mongo_backup_storage":      reasonBillable,
+	"appwrite_postgresql_branch":         reasonBillable,
+	"appwrite_mysql_branch":              reasonBillable,
+	"appwrite_mongo_branch":              reasonBillable,
+	"appwrite_postgresql_pooler":         reasonBillable,
+	"appwrite_mysql_pooler":              reasonBillable,
+	"appwrite_postgresql_extension":      reasonBillable,
 	// DocumentsDB and VectorsDB are Cloud-only and skipped unless
 	// APPWRITE_CLOUD_TESTS is set.
-	"appwrite_documentsdb":            "Cloud-only; tests skipped in CI",
-	"appwrite_documentsdb_collection": "Cloud-only; tests skipped in CI",
-	"appwrite_documentsdb_index":      "Cloud-only; tests skipped in CI",
-	"appwrite_documentsdb_document":   "Cloud-only; tests skipped in CI",
-	"appwrite_vectorsdb":              "Cloud-only; tests skipped in CI",
-	"appwrite_vectorsdb_collection":   "Cloud-only; tests skipped in CI",
-	"appwrite_vectorsdb_index":        "Cloud-only; tests skipped in CI",
-	"appwrite_vectorsdb_document":     "Cloud-only; tests skipped in CI",
+	"appwrite_documentsdb":            reasonCloudOnly,
+	"appwrite_documentsdb_collection": reasonCloudOnly,
+	"appwrite_documentsdb_index":      reasonCloudOnly,
+	"appwrite_documentsdb_document":   reasonCloudOnly,
+	"appwrite_vectorsdb":              reasonCloudOnly,
+	"appwrite_vectorsdb_collection":   reasonCloudOnly,
+	"appwrite_vectorsdb_index":        reasonCloudOnly,
+	"appwrite_vectorsdb_document":     reasonCloudOnly,
 }
 
 // CheckDestroy returns a destroy check covering every resource left in state.

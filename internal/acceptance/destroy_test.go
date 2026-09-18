@@ -60,8 +60,9 @@ func registeredResourceTypes(t *testing.T) []string {
 	t.Helper()
 
 	ctx := context.Background()
-	var types []string
-	for _, newResource := range provider.New("test")().Resources(ctx) {
+	factories := provider.New("test")().Resources(ctx)
+	types := make([]string, 0, len(factories))
+	for _, newResource := range factories {
 		var resp resource.MetadataResponse
 		newResource().Metadata(ctx, resource.MetadataRequest{ProviderTypeName: "appwrite"}, &resp)
 		if resp.TypeName == "" {
