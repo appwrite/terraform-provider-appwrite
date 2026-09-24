@@ -23,7 +23,9 @@
 # Terraform Registry recorded those checksums when the version was published and
 # verifies downloads against them, so rewriting the file would invalidate the
 # signature and risk breaking `terraform init` for anyone pinning that version.
-# The backfilled SBOMs get their own checksum file, signed with the same key.
+# The backfilled SBOMs get their own checksum file, signed with the key this
+# runs with. For a release published before a key rotation that is not the key
+# which signed the release itself, which is why the two manifests are separate.
 set -euo pipefail
 
 TAG="${1:-}"
@@ -71,7 +73,12 @@ for archive in *.zip; do
 done
 
 sha256 ./*.sbom.json | sed 's| \./| |' > "$SUMS"
-gpg --batch --local-user "$GPG_FINGERPRINT" \
+# No --batch here. The release workflow can use it because the GPG action
+# preloads the passphrase into the agent; run locally against an ordinary
+# keyring, --batch leaves gpg unable to ask for the passphrase and signing
+# fails with "Inappropriate ioctl for device". This script is interactive
+# anyway -- it prompts before uploading.
+gpg --local-user "$GPG_FINGERPRINT" \
     --output "${SUMS}.sig" --detach-sign "$SUMS"
 
 echo
