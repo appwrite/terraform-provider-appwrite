@@ -513,3 +513,14 @@ func DatabaseProductGuidance(resourceName string, scopes ...string) string {
 		resourceName, formatRequiredScopes(scopes),
 	)
 }
+
+// Deref returns the value p points to, or the zero value when p is nil. The
+// SDK models nullable response fields as pointers; the provider has always
+// stored a null from the API as the zero value.
+func Deref[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
+}

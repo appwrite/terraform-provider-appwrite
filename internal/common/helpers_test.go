@@ -156,3 +156,19 @@ func TestVariableKeyValidators(t *testing.T) {
 		})
 	}
 }
+
+func TestDeref(t *testing.T) {
+	if got := common.Deref[string](nil); got != "" {
+		t.Fatalf("Deref(nil string) = %q, want empty", got)
+	}
+	if got := common.Deref[bool](nil); got {
+		t.Fatal("Deref(nil bool) = true, want false")
+	}
+	s, n := "replica", 3
+	if got := common.Deref(&s); got != s {
+		t.Fatalf("Deref(&%q) = %q", s, got)
+	}
+	if got := common.Deref(&n); got != n {
+		t.Fatalf("Deref(&%d) = %d", n, got)
+	}
+}

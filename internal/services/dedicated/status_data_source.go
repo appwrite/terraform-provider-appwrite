@@ -184,11 +184,11 @@ func (d *statusDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.ConnectionsMax = types.Int64Value(int64(status.Connections.Max))
 
 	config.SyncMode = types.StringValue(status.SyncMode)
-	config.EffectiveSyncMode = types.StringValue(status.EffectiveSyncMode)
+	config.EffectiveSyncMode = types.StringValue(common.Deref(status.EffectiveSyncMode))
 	config.SyncDegraded = types.BoolValue(status.SyncDegraded)
 	config.SyncAcknowledgements = types.Int64Value(int64(status.SyncAcknowledgements))
 	config.SyncStandbyCount = types.Int64Value(int64(status.SyncStandbyCount))
-	config.SyncStateConfirmed = types.BoolValue(status.SyncStateConfirmed)
+	config.SyncStateConfirmed = types.BoolValue(common.Deref(status.SyncStateConfirmed))
 
 	config.Replicas = make([]statusReplica, 0, len(status.Replicas))
 	for _, replica := range status.Replicas {
@@ -196,8 +196,8 @@ func (d *statusDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			Index:       types.Int64Value(int64(replica.Index)),
 			Role:        types.StringValue(replica.Role),
 			Healthy:     types.BoolValue(replica.Healthy),
-			Replicating: types.BoolValue(replica.Replicating),
-			LagSeconds:  types.Float64Value(replica.LagSeconds),
+			Replicating: types.BoolValue(common.Deref(replica.Replicating)),
+			LagSeconds:  types.Float64Value(common.Deref(replica.LagSeconds)),
 		})
 	}
 

@@ -289,8 +289,8 @@ func (r *backupPolicyResource) mapToState(ctx context.Context, policy *models.Ba
 	model.Retention = types.Int64Value(int64(policy.Retention))
 	model.Type = types.StringValue(policy.Type)
 	model.Enabled = types.BoolValue(policy.Enabled)
-	model.ResourceID = types.StringValue(policy.ResourceId)
-	model.ResourceType = types.StringValue(policy.ResourceType)
+	model.ResourceID = types.StringValue(common.Deref(policy.ResourceId))
+	model.ResourceType = types.StringValue(common.Deref(policy.ResourceType))
 	model.CreatedAt = types.StringValue(policy.CreatedAt)
 	model.UpdatedAt = types.StringValue(policy.UpdatedAt)
 

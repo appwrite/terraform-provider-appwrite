@@ -43,6 +43,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   attributes, which were published with blank descriptions
 - The column build wait is no longer capped at a hard-coded five minutes, which
   was too short for a backfill on a large table
+- Upgraded `sdk-for-go` to `v7.4.0`, which targets Appwrite `2.0.x` and sends
+  response format `2.3.0`. Required path parameters are validated before a
+  request leaves the client, and JSON responses are requested with an explicit
+  `accept` header
+- The SDK now models nullable response fields as pointers, so a `null` from the
+  API is no longer decoded as the zero value. The provider keeps storing such a
+  `null` as an empty string, `0` or `false`, so no existing state changes. The
+  SDK's other breaking changes (removed log listing, dev keys and organization
+  key methods, and pricing on `DedicatedDatabaseSpecificationList`) touch
+  nothing the provider exposes
 
 ### Security
 
@@ -59,13 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Appwrite's structured error `type` rather than by matching the prose of the
   message, which silently turned a poll into a hard failure whenever the message
   was reworded
-
-- Upgraded `sdk-for-go` to `v7.3.0`, which targets Appwrite `2.0.x`. Required
-  path parameters are now validated before a request leaves the client, and
-  responses decoded as JSON are requested with an explicit `accept` header
-- The SDK removed `DedicatedDatabaseSpecificationList.Pricing` and moved the
-  rates onto each specification. The provider never exposed pricing, so no
-  resource or data source schema changes
 
 ## [2.0.0-beta.2] - 2026-08-19
 

@@ -268,7 +268,7 @@ func (r *ruleResource) client(projectID string) (*proxy.Proxy, error) {
 func (r *ruleResource) mapToState(rule *models.ProxyRule, model *ruleResourceModel) {
 	model.ID = types.StringValue(rule.Id)
 	model.Domain = types.StringValue(rule.Domain)
-	model.Type = types.StringValue(rule.DeploymentResourceType)
+	model.Type = types.StringValue(common.Deref(rule.DeploymentResourceType))
 	model.ResourceID = types.StringValue(rule.DeploymentResourceId)
 	model.Status = types.StringValue(rule.Status)
 	model.Logs = types.StringValue(rule.Logs)
