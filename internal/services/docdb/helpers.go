@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appwrite/sdk-for-go/v7/models"
+	"github.com/appwrite/terraform-provider-appwrite/internal/common"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -99,18 +100,19 @@ func waitForReady(ctx context.Context, get func() (*models.Database, error), dat
 			return nil, fmt.Errorf("error checking status of database %q: %w", databaseID, err)
 		}
 
+		status := common.Deref(database.Status)
 		switch {
-		case terminalFailureStatuses[database.Status]:
-			return nil, fmt.Errorf("database %q entered the %s state", databaseID, database.Status)
-		case !transitionalStatuses[database.Status]:
+		case terminalFailureStatuses[status]:
+			return nil, fmt.Errorf("database %q entered the %s state", databaseID, status)
+		case !transitionalStatuses[status]:
 			return database, nil
 		}
 
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("timed out waiting for database %q to finish %s", databaseID, database.Status)
+			return nil, fmt.Errorf("timed out waiting for database %q to finish %s", databaseID, status)
 		case <-deadline:
-			return nil, fmt.Errorf("database %q was still %s after %s", databaseID, database.Status, provisionTimeout)
+			return nil, fmt.Errorf("database %q was still %s after %s", databaseID, status, provisionTimeout)
 		case <-time.After(pollInterval):
 		}
 	}

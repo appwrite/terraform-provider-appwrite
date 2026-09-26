@@ -271,8 +271,8 @@ func (r *policyResource) mapToState(ctx context.Context, policy *models.BackupPo
 	if policy.Name != "" {
 		model.Name = types.StringValue(policy.Name)
 	}
-	if policy.ResourceId != "" {
-		model.ResourceID = types.StringValue(policy.ResourceId)
+	if resourceID := common.Deref(policy.ResourceId); resourceID != "" {
+		model.ResourceID = types.StringValue(resourceID)
 	}
 
 	servicesList, diags := types.ListValueFrom(ctx, types.StringType, policy.Services)
