@@ -181,14 +181,14 @@ func (p *appwriteProvider) Configure(ctx context.Context, req provider.Configure
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(apiKey),
 		appwrite.WithTimeout(httpTimeout),
-		common.WithUserAgent(p.version),
+		common.WithIdentity(p.version, req.TerraformVersion),
 		common.WithHTTPTransport(httpConfig),
 	}
 	organizationBaseOpts := []client.ClientOption{
 		appwrite.WithEndpoint(endpoint),
 		appwrite.WithKey(organizationAPIKey),
 		appwrite.WithTimeout(httpTimeout),
-		common.WithUserAgent(p.version),
+		common.WithIdentity(p.version, req.TerraformVersion),
 		common.WithHTTPTransport(httpConfig),
 	}
 

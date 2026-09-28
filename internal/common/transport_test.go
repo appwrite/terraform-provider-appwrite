@@ -556,22 +556,6 @@ func TestAppendedUserAgent(t *testing.T) {
 	}
 }
 
-func TestWithUserAgentAppendsEnvironment(t *testing.T) {
-	t.Setenv("TF_APPEND_USER_AGENT", "terragrunt/0.55.0")
-
-	clt := newTestClient()
-	if err := WithUserAgent("2.1.0")(&clt); err != nil {
-		t.Fatalf("WithUserAgent: %v", err)
-	}
-	got := clt.Headers["user-agent"]
-	if !strings.HasPrefix(got, "terraform-provider-appwrite/2.1.0") {
-		t.Errorf("user-agent = %q, want it to start with the provider and version", got)
-	}
-	if !strings.Contains(got, "terragrunt/0.55.0") {
-		t.Errorf("user-agent = %q, want TF_APPEND_USER_AGENT appended", got)
-	}
-}
-
 // newTestClient returns an SDK client shaped the way appwrite.NewClient leaves
 // one: maps initialized, no transport yet.
 func newTestClient() client.Client {
