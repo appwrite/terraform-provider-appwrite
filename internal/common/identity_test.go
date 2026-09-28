@@ -1,59 +1,88 @@
 package common
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 )
 
+// sentHeaders issues one request through an SDK client configured with
+// WithIdentity and returns the headers Appwrite would have received.
+func sentHeaders(t *testing.T, providerVersion string, terraformVersion string) http.Header {
+	t.Helper()
+
+	var received http.Header
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		received = r.Header.Clone()
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+
+	clt := appwrite.NewClient(
+		appwrite.WithEndpoint(server.URL),
+		WithIdentity(providerVersion, terraformVersion),
+	)
+	if _, err := clt.Call(http.MethodGet, "/health", nil, nil); err != nil {
+		t.Fatalf("request: %v", err)
+	}
+	if received == nil {
+		t.Fatal("the server received no request")
+	}
+	return received
+}
+
 // Requests used to report x-sdk-name "Go", so Appwrite attributed provider
 // traffic to the Go SDK and only the User-Agent told them apart.
-func TestWithIdentityReplacesSDKHeaders(t *testing.T) {
+func TestWithIdentityReportsTerraform(t *testing.T) {
 	t.Setenv("TF_APPEND_USER_AGENT", "")
 
-	clt := appwrite.NewClient(WithIdentity("2.1.0", "1.9.5"))
+	headers := sentHeaders(t, "2.1.0", "1.9.5")
 
-	want := map[string]string{
-		"x-sdk-name":     "Terraform",
-		"x-sdk-platform": "server",
-		"x-sdk-language": "terraform",
-		"x-sdk-version":  "2.1.0",
+	if got := headers.Get("X-SDK-Name"); got != "Terraform" {
+		t.Errorf("x-sdk-name = %q, want Terraform", got)
 	}
-	for name, value := range want {
-		if got := clt.Headers[name]; got != value {
-			t.Errorf("%s = %q, want %q", name, got, value)
-		}
+	if got := headers.Get("X-SDK-Language"); got != "terraform" {
+		t.Errorf("x-sdk-language = %q, want terraform", got)
+	}
+	if got := headers.Get("X-SDK-Platform"); got != "server" {
+		t.Errorf("x-sdk-platform = %q, want server", got)
+	}
+	if got := headers.Get("X-SDK-Version"); got != "2.1.0" {
+		t.Errorf("x-sdk-version = %q, want the provider version", got)
 	}
 }
 
 func TestWithIdentityUserAgent(t *testing.T) {
-	sdk := appwrite.NewClient().Headers["user-agent"]
+	t.Setenv("TF_APPEND_USER_AGENT", "terragrunt/0.55.0")
 
-	tests := []struct {
-		name      string
-		terraform string
-		appended  string
-		want      string
-	}{
-		{
-			name:      "full",
-			terraform: "1.9.5",
-			appended:  "terragrunt/0.55.0",
-			want:      "Terraform/1.9.5 terraform-provider-appwrite/2.1.0 " + sdk + " terragrunt/0.55.0",
-		},
-		{
-			name: "unknown terraform version",
-			want: "terraform-provider-appwrite/2.1.0 " + sdk,
-		},
+	userAgent := sentHeaders(t, "2.1.0", "1.9.5").Get("User-Agent")
+
+	if !strings.HasPrefix(userAgent, "Terraform/1.9.5 terraform-provider-appwrite/2.1.0 ") {
+		t.Errorf("user-agent = %q, want it to lead with Terraform core and then the provider", userAgent)
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Setenv("TF_APPEND_USER_AGENT", test.appended)
+	if !strings.Contains(userAgent, "AppwriteGoSDK/") {
+		t.Errorf("user-agent = %q, want the underlying SDK kept traceable", userAgent)
+	}
+	if !strings.HasSuffix(userAgent, " terragrunt/0.55.0") {
+		t.Errorf("user-agent = %q, want TF_APPEND_USER_AGENT last", userAgent)
+	}
+}
 
-			clt := appwrite.NewClient(WithIdentity("2.1.0", test.terraform))
-			if got := clt.Headers["user-agent"]; got != test.want {
-				t.Errorf("user-agent = %q, want %q", got, test.want)
-			}
-		})
+// Terraform core does not always report its version; a blank one must not
+// leave an empty "Terraform/" token.
+func TestWithIdentityUserAgentWithoutTerraformVersion(t *testing.T) {
+	t.Setenv("TF_APPEND_USER_AGENT", "")
+
+	userAgent := sentHeaders(t, "2.1.0", "").Get("User-Agent")
+
+	if strings.Contains(userAgent, "Terraform/") {
+		t.Errorf("user-agent = %q, want no Terraform token", userAgent)
+	}
+	if !strings.HasPrefix(userAgent, "terraform-provider-appwrite/2.1.0 ") {
+		t.Errorf("user-agent = %q, want it to lead with the provider", userAgent)
 	}
 }
