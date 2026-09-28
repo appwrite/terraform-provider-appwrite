@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   attributes, which were published with blank descriptions
 - The column build wait is no longer capped at a hard-coded five minutes, which
   was too short for a backfill on a large table
-- Upgraded `sdk-for-go` to `v7.4.0`, which targets Appwrite `2.0.x` and sends
+- Upgraded `sdk-for-go` to `v7.5.0`, which targets Appwrite `2.3.x` and sends
   response format `2.3.0`. Required path parameters are validated before a
   request leaves the client, and JSON responses are requested with an explicit
   `accept` header
