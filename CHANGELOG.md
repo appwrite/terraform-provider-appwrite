@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Requests now identify as the provider rather than the Go SDK it is built on:
+  `x-sdk-name: Terraform`, `x-sdk-language: terraform` and `x-sdk-version` set
+  to the provider version. The User-Agent now leads with the Terraform version
+  and keeps the Go SDK token after the provider's, so Appwrite can tell
+  Terraform traffic apart from direct Go SDK use
 - Every argument that cannot be changed in place now says so in its
   documentation, with the sentence "Changing this forces a new resource to be
   created." 170 attributes were affected and none of them mentioned it, so the

@@ -36,7 +36,6 @@ type HTTPConfig struct {
 	Timeout    time.Duration
 	SelfSigned bool
 	MaxRetries int
-	UserAgent  string
 }
 
 // WithHTTPTransport installs the provider's transport chain on an SDK client.
@@ -375,10 +374,9 @@ func safeHeaders(h http.Header) map[string]string {
 // AppendedUserAgent returns the value of TF_APPEND_USER_AGENT.
 //
 // terraform-plugin-sdk honors this variable for free; a framework-only provider
-// has to do it itself, which is why it currently has no effect here. It is how
-// Terraform Cloud, Terragrunt and in-house wrappers identify themselves, and
-// without it their traffic is indistinguishable from a developer's laptop in
-// Appwrite's logs.
+// has to do it itself. It is how Terraform Cloud, Terragrunt and in-house
+// wrappers identify themselves, and without it their traffic is
+// indistinguishable from a developer's laptop in Appwrite's logs.
 func AppendedUserAgent() string {
 	return strings.TrimSpace(os.Getenv("TF_APPEND_USER_AGENT"))
 }

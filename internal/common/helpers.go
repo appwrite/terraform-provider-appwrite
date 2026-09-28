@@ -53,25 +53,6 @@ type AppwriteClients struct {
 	OrganizationID string
 }
 
-// WithUserAgent returns a ClientOption that sets the User-Agent header to identify
-// Terraform provider traffic. This is required for HashiCorp partner providers.
-//
-// TF_APPEND_USER_AGENT is appended when set. terraform-plugin-sdk honors that
-// variable for free, but a framework-only provider has to do it itself, so it
-// previously had no effect here -- and it is how Terraform Cloud, Terragrunt and
-// in-house wrappers identify themselves. Without it their traffic looks the same
-// as a developer's laptop in Appwrite's logs.
-func WithUserAgent(version string) client.ClientOption {
-	return func(clt *client.Client) error {
-		userAgent := fmt.Sprintf("terraform-provider-appwrite/%s", version)
-		if appended := AppendedUserAgent(); appended != "" {
-			userAgent = userAgent + " " + appended
-		}
-		clt.Headers["user-agent"] = userAgent
-		return nil
-	}
-}
-
 // ClientForProject creates a new SDK client targeting a specific project.
 func (ac *AppwriteClients) ClientForProject(projectID string) client.Client {
 	opts := make([]client.ClientOption, 0, len(ac.BaseOptions)+1)
