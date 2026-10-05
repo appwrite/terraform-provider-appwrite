@@ -76,10 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   was reworded
 - `idle_timeout_minutes` on `appwrite_postgresql_database`,
   `appwrite_mysql_database` and `appwrite_mongo_database` is now validated as 5
-  to 60 at plan time, and no longer documents `0` as always-on. The API has
-  rejected values outside 5 to 60 since the endpoints were added (2026-01-17),
-  before v2.0.0-beta.1 first shipped these resources, so no value outside the
-  range was ever accepted by the API and no working configuration is broken
+  to 60 at plan time and documented as applying to shared-pool specifications
+  only, no longer as `0` meaning always-on. The API has rejected values outside
+  5 to 60 since before v2.0.0-beta.1 first shipped these resources, so no
+  working configuration is broken
 
 ## [2.0.0-beta.2] - 2026-08-19
 

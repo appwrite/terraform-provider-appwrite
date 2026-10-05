@@ -204,6 +204,9 @@ func TestIdleTimeoutMinutesValidation(t *testing.T) {
 		t.Run(string(engine), func(t *testing.T) {
 			schemaResp := &resource.SchemaResponse{}
 			dedicated.NewDatabaseResource(engine)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
+			if schemaResp.Diagnostics.HasError() {
+				t.Fatalf("%s schema returned errors: %v", engine, schemaResp.Diagnostics)
+			}
 
 			attribute, ok := schemaResp.Schema.Attributes["idle_timeout_minutes"].(schema.Int64Attribute)
 			if !ok {
