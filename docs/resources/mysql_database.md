@@ -49,7 +49,7 @@ resource "appwrite_mysql_database" "production" {
 ### Optional
 
 - `id` (String) The database ID. Must be unique within the project. Generated when omitted. Changing this forces a new resource to be created.
-- `idle_timeout_minutes` (Number) Minutes of inactivity before the database container scales to zero. Set to 0 to keep it always on.
+- `idle_timeout_minutes` (Number) Minutes of inactivity, from 5 to 60, before the database container scales to zero.
 - `maintenance_window_day` (String) The day of the week the maintenance window starts. One of `sun`, `mon`, `tue`, `wed`, `thu`, `fri` or `sat`. Must be set together with `maintenance_window_hour_utc`.
 - `maintenance_window_hour_utc` (Number) The hour in UTC (0-23) the maintenance window starts. Must be set together with `maintenance_window_day`.
 - `network_idle_timeout_seconds` (Number) How long an idle client connection is held open before the server closes it.

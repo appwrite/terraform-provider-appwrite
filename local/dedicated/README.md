@@ -105,7 +105,8 @@ set `postgresql_specification` and friends.
 ## Keeping it cheap
 
 `idle_timeout_minutes` defaults to `15`, so each database scales to zero after
-fifteen minutes of inactivity. Set it to `0` for always-on, which costs more.
+fifteen minutes of inactivity. It accepts 5 to 60, and every database scales to
+zero once idle for that long; there is no setting that keeps one running.
 
 Branches (`create_branches = true`) and a custom backup destination
 (`backup_storage = {...}`) are off by default because the first costs extra and
