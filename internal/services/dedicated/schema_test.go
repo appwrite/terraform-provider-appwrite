@@ -6,7 +6,12 @@ import (
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var engines = []dedicated.Engine{
@@ -174,5 +179,61 @@ func TestPoolerWritableAttributesAreConfigurable(t *testing.T) {
 				t.Errorf("%s pooler attribute %q should be configurable", engine, name)
 			}
 		}
+	}
+}
+
+func TestIdleTimeoutMinutesValidation(t *testing.T) {
+	ctx := t.Context()
+
+	cases := []struct {
+		name      string
+		value     types.Int64
+		wantError bool
+	}{
+		{"0", types.Int64Value(0), true},
+		{"4", types.Int64Value(4), true},
+		{"61", types.Int64Value(61), true},
+		{"5", types.Int64Value(5), false},
+		{"15", types.Int64Value(15), false},
+		{"60", types.Int64Value(60), false},
+		{"null", types.Int64Null(), false},
+		{"unknown", types.Int64Unknown(), false},
+	}
+
+	for _, engine := range engines {
+		t.Run(string(engine), func(t *testing.T) {
+			schemaResp := &resource.SchemaResponse{}
+			dedicated.NewDatabaseResource(engine)().Schema(ctx, resource.SchemaRequest{}, schemaResp)
+
+			attribute, ok := schemaResp.Schema.Attributes["idle_timeout_minutes"].(schema.Int64Attribute)
+			if !ok {
+				t.Fatalf("%s idle_timeout_minutes is not an Int64Attribute", engine)
+			}
+			validators := attribute.Int64Validators()
+			if len(validators) == 0 {
+				t.Fatalf("%s idle_timeout_minutes has no validators", engine)
+			}
+
+			for _, tc := range cases {
+				t.Run(tc.name, func(t *testing.T) {
+					var diagnostics diag.Diagnostics
+					for _, v := range validators {
+						validateResp := &validator.Int64Response{}
+						v.ValidateInt64(ctx, validator.Int64Request{
+							Path:        path.Root("idle_timeout_minutes"),
+							ConfigValue: tc.value,
+						}, validateResp)
+						diagnostics.Append(validateResp.Diagnostics...)
+					}
+
+					if tc.wantError && !diagnostics.HasError() {
+						t.Errorf("%s idle_timeout_minutes = %s: want error, got none", engine, tc.name)
+					}
+					if !tc.wantError && diagnostics.HasError() {
+						t.Errorf("%s idle_timeout_minutes = %s: want no error, got %v", engine, tc.name, diagnostics.Errors())
+					}
+				})
+			}
+		})
 	}
 }
