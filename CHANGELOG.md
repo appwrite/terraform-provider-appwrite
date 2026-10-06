@@ -74,6 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Appwrite's structured error `type` rather than by matching the prose of the
   message, which silently turned a poll into a hard failure whenever the message
   was reworded
+- `idle_timeout_minutes` on `appwrite_postgresql_database`,
+  `appwrite_mysql_database` and `appwrite_mongo_database` is now validated as 5
+  to 60 at plan time and documented as applying to shared-pool specifications
+  only, no longer as `0` meaning always-on. The API has rejected values outside
+  5 to 60 since before v2.0.0-beta.1 first shipped these resources, so no
+  working configuration is broken
 
 ## [2.0.0-beta.2] - 2026-08-19
 

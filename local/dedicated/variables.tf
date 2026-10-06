@@ -31,9 +31,15 @@ variable "mongo_specification" {
 }
 
 variable "idle_timeout_minutes" {
-  description = "Minutes of inactivity before a database scales to zero. Keeps a sandbox cheap; 0 means always on."
+  description = "Minutes of inactivity, from 5 to 60, before a database on a shared-pool specification scales to zero. Keeps a sandbox cheap."
   type        = number
   default     = 15
+  nullable    = false
+
+  validation {
+    condition     = floor(var.idle_timeout_minutes) == var.idle_timeout_minutes && var.idle_timeout_minutes >= 5 && var.idle_timeout_minutes <= 60
+    error_message = "The idle timeout must be between 5 and 60 minutes."
+  }
 }
 
 variable "create_branches" {

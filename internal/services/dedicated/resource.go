@@ -180,10 +180,10 @@ func (r *databaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
 		},
 		"idle_timeout_minutes": schema.Int64Attribute{
-			Description:   "Minutes of inactivity before the database container scales to zero. Set to 0 to keep it always on.",
+			Description:   "Minutes of inactivity, from 5 to 60, before the database container scales to zero. Applies to shared-pool specifications only.",
 			Optional:      true,
 			Computed:      true,
-			Validators:    []validator.Int64{int64validator.AtLeast(0)},
+			Validators:    []validator.Int64{int64validator.Between(5, 60)},
 			PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 		},
 		"pitr": schema.BoolAttribute{
