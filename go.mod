@@ -1,6 +1,6 @@
 module github.com/appwrite/terraform-provider-appwrite
 
-go 1.26.6
+go 1.26.9
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
