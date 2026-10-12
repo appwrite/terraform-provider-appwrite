@@ -26,6 +26,12 @@ resource "appwrite_function" "scheduled" {
   timeout  = 60
 }
 
+resource "appwrite_function" "hourly" {
+  name     = "sync-inventory"
+  runtime  = "node-22"
+  interval = 60
+}
+
 resource "appwrite_function" "event_driven" {
   name       = "on-user-create"
   runtime    = "node-22"
@@ -54,6 +60,7 @@ resource "appwrite_function" "event_driven" {
 - `execute` (List of String) Execution permissions (e.g. users, teams, roles).
 - `id` (String) The function ID. Changing this forces a new resource to be created.
 - `installation_id` (String) VCS (Version Control System) installation ID.
+- `interval` (Number) Minutes between scheduled executions. Appwrite picks a fixed offset for each function, so runs are spread out rather than all starting on the hour. Free and Education plans on Appwrite Cloud require at least 60. Conflicts with `schedule`.
 - `logging` (Boolean) Whether execution logs are enabled. When disabled, executions will be slightly faster. Defaults to true.
 - `project_id` (String) The Appwrite project ID. Defaults to the provider-level project_id. Changing this forces a new resource to be created.
 - `provider_branch` (String) VCS (Version Control System) branch name.
@@ -61,7 +68,7 @@ resource "appwrite_function" "event_driven" {
 - `provider_root_directory` (String) Path to function in VCS repository.
 - `provider_silent_mode` (Boolean) Whether VCS silent mode is enabled (no comments on pull requests).
 - `runtime_specification` (String) Machine specification for executions.
-- `schedule` (String) Function execution schedule in CRON format.
+- `schedule` (String) Function execution schedule in CRON format. Conflicts with `interval`.
 - `scopes` (List of String) Allowed permission scopes.
 - `timeout` (Number) Function execution timeout in seconds. Defaults to 15.
 

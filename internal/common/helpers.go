@@ -385,6 +385,27 @@ func CheckStringNotIgnored(planned types.String, actual string, attrName string,
 	return AttrCheck{}
 }
 
+// CheckInt64NotIgnored returns an error diagnostic if the planned int64 value differs from
+// the API response, indicating the server doesn't support this attribute.
+func CheckInt64NotIgnored(planned types.Int64, actual int64, attrName string, resourceDesc string) AttrCheck {
+	if planned.IsNull() || planned.IsUnknown() {
+		return AttrCheck{}
+	}
+	if planned.ValueInt64() != actual {
+		return AttrCheck{
+			Summary: fmt.Sprintf("Attribute %q not supported", attrName),
+			Detail: fmt.Sprintf(
+				"The server did not accept the %q setting for %s (sent %d, got %d). "+
+					"This feature may not be supported on this Appwrite server version. "+
+					"Remove the %q attribute from your configuration or upgrade your server.",
+				attrName, resourceDesc, planned.ValueInt64(), actual, attrName,
+			),
+			Mismatch: true,
+		}
+	}
+	return AttrCheck{}
+}
+
 // ImportColumnState parses a "database_id/table_id/key" import ID into state.
 func ImportColumnState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "/", 3)

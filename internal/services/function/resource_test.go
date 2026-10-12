@@ -1,6 +1,7 @@
 package function_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
@@ -73,6 +74,87 @@ resource "appwrite_function" "test_events" {
 					resource.TestCheckResourceAttr("appwrite_function.test_events", "entrypoint", "index.js"),
 					resource.TestCheckResourceAttr("appwrite_function.test_events", "commands", "npm install"),
 				),
+			},
+		},
+	})
+}
+
+// Intervals reached Appwrite Cloud before a self-hosted release, and CI runs self-hosted.
+func TestAccFunctionResource_interval(t *testing.T) {
+	acceptance.ResourceTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.CloudPreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "appwrite_function" "test_interval" {
+  name     = "Interval Function"
+  runtime  = "node-22"
+  interval = 60
+}
+
+data "appwrite_function" "test_interval" {
+  id = appwrite_function.test_interval.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_function.test_interval", "interval", "60"),
+					resource.TestCheckResourceAttr("data.appwrite_function.test_interval", "interval", "60"),
+					resource.TestCheckNoResourceAttr("appwrite_function.test_interval", "schedule"),
+				),
+			},
+			{
+				ResourceName:      "appwrite_function.test_interval",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+resource "appwrite_function" "test_interval" {
+  name     = "Interval Function"
+  runtime  = "node-22"
+  schedule = "0 * * * *"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_function.test_interval", "schedule", "0 * * * *"),
+					resource.TestCheckNoResourceAttr("appwrite_function.test_interval", "interval"),
+				),
+			},
+			{
+				Config: `
+resource "appwrite_function" "test_interval" {
+  name     = "Interval Function"
+  runtime  = "node-22"
+  interval = 120
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("appwrite_function.test_interval", "interval", "120"),
+					resource.TestCheckNoResourceAttr("appwrite_function.test_interval", "schedule"),
+				),
+			},
+			{
+				Config: `
+resource "appwrite_function" "test_interval" {
+  name    = "Interval Function"
+  runtime = "node-22"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("appwrite_function.test_interval", "interval"),
+				),
+			},
+			{
+				Config: `
+resource "appwrite_function" "test_interval" {
+  name     = "Interval Function"
+  runtime  = "node-22"
+  interval = 60
+  schedule = "0 * * * *"
+}
+`,
+				ExpectError: regexp.MustCompile(`Invalid Attribute Combination`),
 			},
 		},
 	})

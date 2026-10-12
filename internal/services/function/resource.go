@@ -9,6 +9,7 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/id"
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -41,6 +42,7 @@ type functionResourceModel struct {
 	Entrypoint           types.String `tfsdk:"entrypoint"`
 	Commands             types.String `tfsdk:"commands"`
 	Schedule             types.String `tfsdk:"schedule"`
+	Interval             types.Int64  `tfsdk:"interval"`
 	Timeout              types.Int64  `tfsdk:"timeout"`
 	Execute              types.List   `tfsdk:"execute"`
 	Events               types.List   `tfsdk:"events"`
@@ -108,8 +110,16 @@ func (r *functionResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 			},
 			"schedule": schema.StringAttribute{
-				Description: "Function execution schedule in CRON format.",
+				Description: "Function execution schedule in CRON format. Conflicts with `interval`.",
 				Optional:    true,
+			},
+			"interval": schema.Int64Attribute{
+				Description: "Minutes between scheduled executions. Appwrite picks a fixed offset for each function, so runs are spread out rather than all starting on the hour. Free and Education plans on Appwrite Cloud require at least 60. Conflicts with `schedule`.",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+					int64validator.ConflictsWith(path.MatchRoot("schedule")),
+				},
 			},
 			"timeout": schema.Int64Attribute{
 				Description: "Function execution timeout in seconds. Defaults to 15.",
@@ -237,6 +247,9 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 	if !plan.Schedule.IsNull() {
 		opts = append(opts, functionsClient.WithCreateSchedule(plan.Schedule.ValueString()))
 	}
+	if !plan.Interval.IsNull() {
+		opts = append(opts, functionsClient.WithCreateInterval(int(plan.Interval.ValueInt64())))
+	}
 	if !plan.Timeout.IsNull() && !plan.Timeout.IsUnknown() {
 		opts = append(opts, functionsClient.WithCreateTimeout(int(plan.Timeout.ValueInt64())))
 	}
@@ -300,21 +313,20 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(ctx, function, &plan, &resp.Diagnostics)
 
+	// Saved before the checks so a rejected function is tainted in state rather than orphaned.
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
 	checks := []common.AttrCheck{
 		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
 		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
 		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+		common.CheckInt64NotIgnored(planned.Interval, int64(common.Deref(function.Interval)), "interval", "function"),
 	}
 	for _, c := range checks {
 		if c.Mismatch {
 			resp.Diagnostics.AddError(c.Summary, c.Detail)
 		}
 	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *functionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -379,6 +391,8 @@ func (r *functionResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.Schedule.IsNull() {
 		opts = append(opts, functionsClient.WithUpdateSchedule(plan.Schedule.ValueString()))
 	}
+	// Appwrite keeps the stored interval when it is omitted, so removing it from config must send 0.
+	opts = append(opts, functionsClient.WithUpdateInterval(int(plan.Interval.ValueInt64())))
 	if !plan.Timeout.IsNull() && !plan.Timeout.IsUnknown() {
 		opts = append(opts, functionsClient.WithUpdateTimeout(int(plan.Timeout.ValueInt64())))
 	}
@@ -446,6 +460,7 @@ func (r *functionResource) Update(ctx context.Context, req resource.UpdateReques
 		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
 		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
 		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+		common.CheckInt64NotIgnored(planned.Interval, int64(common.Deref(function.Interval)), "interval", "function"),
 	}
 	for _, c := range checks {
 		if c.Mismatch {
@@ -502,6 +517,10 @@ func (r *functionResource) mapToState(ctx context.Context, function *models.Func
 	}
 	if function.Schedule != "" {
 		model.Schedule = types.StringValue(function.Schedule)
+	}
+	model.Interval = types.Int64Null()
+	if interval := common.Deref(function.Interval); interval > 0 {
+		model.Interval = types.Int64Value(int64(interval))
 	}
 	if function.InstallationId != "" {
 		model.InstallationID = types.StringValue(function.InstallationId)
