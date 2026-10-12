@@ -305,7 +305,7 @@ func (r *branchResource) mapToState(branch *models.DedicatedDatabaseBranch, mode
 	model.Namespace = types.StringValue(branch.Namespace)
 	model.ExpiresAt = types.Int64Value(int64(branch.ExpiresAt))
 	model.Host = types.StringValue(branch.Host)
-	model.Port = types.Int64Value(int64(branch.Port))
+	model.Port = types.Int64Value(int64(common.Deref(branch.Port)))
 	model.Database = types.StringValue(branch.Database)
 	model.Username = types.StringValue(branch.Username)
 	model.Password = types.StringValue(branch.Password)

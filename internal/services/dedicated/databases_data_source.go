@@ -155,7 +155,7 @@ func (d *databasesDataSource) Read(ctx context.Context, req datasource.ReadReque
 		config.Databases = append(config.Databases, databaseSummary{
 			ID:            types.StringValue(db.Id),
 			Name:          types.StringValue(db.Name),
-			Engine:        types.StringValue(db.Engine),
+			Engine:        types.StringValue(common.Deref(db.Engine)),
 			Version:       types.StringValue(db.Version),
 			Specification: types.StringValue(db.Specification),
 			Status:        types.StringValue(db.Status),
