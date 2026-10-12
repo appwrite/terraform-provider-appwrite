@@ -313,6 +313,9 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 	plan.ProjectID = types.StringValue(projectID)
 	r.mapToState(ctx, function, &plan, &resp.Diagnostics)
 
+	// Saved before the checks so a rejected function is tainted in state rather than orphaned.
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
 	checks := []common.AttrCheck{
 		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
 		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
@@ -324,11 +327,6 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 			resp.Diagnostics.AddError(c.Summary, c.Detail)
 		}
 	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *functionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

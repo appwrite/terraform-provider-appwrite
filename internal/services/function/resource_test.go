@@ -92,9 +92,14 @@ resource "appwrite_function" "test_interval" {
   runtime  = "node-22"
   interval = 60
 }
+
+data "appwrite_function" "test_interval" {
+  id = appwrite_function.test_interval.id
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("appwrite_function.test_interval", "interval", "60"),
+					resource.TestCheckResourceAttr("data.appwrite_function.test_interval", "interval", "60"),
 					resource.TestCheckNoResourceAttr("appwrite_function.test_interval", "schedule"),
 				),
 			},
