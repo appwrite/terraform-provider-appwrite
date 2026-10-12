@@ -79,9 +79,10 @@ resource "appwrite_function" "test_events" {
 	})
 }
 
+// Intervals reached Appwrite Cloud before a self-hosted release, and CI runs self-hosted.
 func TestAccFunctionResource_interval(t *testing.T) {
 	acceptance.ResourceTest(t, resource.TestCase{
-		PreCheck:                 func() { acceptance.PreCheck(t) },
+		PreCheck:                 func() { acceptance.CloudPreCheck(t) },
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

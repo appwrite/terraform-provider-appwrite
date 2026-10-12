@@ -317,6 +317,7 @@ func (r *functionResource) Create(ctx context.Context, req resource.CreateReques
 		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
 		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
 		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+		common.CheckInt64NotIgnored(planned.Interval, int64(common.Deref(function.Interval)), "interval", "function"),
 	}
 	for _, c := range checks {
 		if c.Mismatch {
@@ -461,6 +462,7 @@ func (r *functionResource) Update(ctx context.Context, req resource.UpdateReques
 		common.CheckBoolNotIgnored(planned.Logging, function.Logging, "logging", "function"),
 		common.CheckStringNotIgnored(planned.BuildSpecification, function.BuildSpecification, "build_specification", "function"),
 		common.CheckStringNotIgnored(planned.RuntimeSpecification, function.RuntimeSpecification, "runtime_specification", "function"),
+		common.CheckInt64NotIgnored(planned.Interval, int64(common.Deref(function.Interval)), "interval", "function"),
 	}
 	for _, c := range checks {
 		if c.Mismatch {
