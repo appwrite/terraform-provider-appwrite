@@ -12,6 +12,12 @@ resource "appwrite_function" "scheduled" {
   timeout  = 60
 }
 
+resource "appwrite_function" "hourly" {
+  name     = "sync-inventory"
+  runtime  = "node-22"
+  interval = 60
+}
+
 resource "appwrite_function" "event_driven" {
   name       = "on-user-create"
   runtime    = "node-22"

@@ -29,6 +29,7 @@ type functionDataSourceModel struct {
 	Entrypoint   types.String `tfsdk:"entrypoint"`
 	Commands     types.String `tfsdk:"commands"`
 	Schedule     types.String `tfsdk:"schedule"`
+	Interval     types.Int64  `tfsdk:"interval"`
 	Timeout      types.Int64  `tfsdk:"timeout"`
 	Execute      types.List   `tfsdk:"execute"`
 	Events       types.List   `tfsdk:"events"`
@@ -81,6 +82,10 @@ func (d *functionDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			},
 			"schedule": schema.StringAttribute{
 				Description: "Function execution schedule in CRON format.",
+				Computed:    true,
+			},
+			"interval": schema.Int64Attribute{
+				Description: "Minutes between scheduled executions. Null when the function has no interval.",
 				Computed:    true,
 			},
 			"timeout": schema.Int64Attribute{
@@ -177,6 +182,9 @@ func (d *functionDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 	if fn.Schedule != "" {
 		config.Schedule = types.StringValue(fn.Schedule)
+	}
+	if interval := common.Deref(fn.Interval); interval > 0 {
+		config.Interval = types.Int64Value(int64(interval))
 	}
 
 	execList, diags := types.ListValueFrom(ctx, types.StringType, fn.Execute)

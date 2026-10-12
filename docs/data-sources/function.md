@@ -41,6 +41,7 @@ output "function_runtime" {
 - `entrypoint` (String) The entrypoint file.
 - `events` (List of String) Events that trigger the function.
 - `execute` (List of String) Execution permissions.
+- `interval` (Number) Minutes between scheduled executions. Null when the function has no interval.
 - `logging` (Boolean) Whether execution logs are enabled.
 - `name` (String) The function name.
 - `runtime` (String) The function execution runtime.
