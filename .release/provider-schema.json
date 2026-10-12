@@ -451,6 +451,10 @@
           "type": "tftypes.String",
           "optional": true
         },
+        "interval": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
         "logging": {
           "type": "tftypes.Bool",
           "optional": true,
@@ -3541,6 +3545,10 @@
         "id": {
           "type": "tftypes.String",
           "required": true
+        },
+        "interval": {
+          "type": "tftypes.Number",
+          "computed": true
         },
         "logging": {
           "type": "tftypes.Bool",
