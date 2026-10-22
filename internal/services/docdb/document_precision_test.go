@@ -26,6 +26,7 @@ func TestDocumentDataSentWithIntegerPrecision(t *testing.T) {
 
 	const configured = `{"big":9007199254740993}`
 	sent := make(chan string, 1)
+	updated := make(chan string, 1)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		body, _ := io.ReadAll(req.Body)
 		var in struct {
@@ -34,6 +35,9 @@ func TestDocumentDataSentWithIntegerPrecision(t *testing.T) {
 		_ = json.Unmarshal(body, &in)
 		if req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/documents") {
 			sent <- string(in.Data)
+		}
+		if req.Method == http.MethodPatch && strings.Contains(req.URL.Path, "/documents/") {
+			updated <- string(in.Data)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"$id":"doc1","$sequence":"1","$collectionId":"col","$databaseId":"db",` +
@@ -72,5 +76,28 @@ func TestDocumentDataSentWithIntegerPrecision(t *testing.T) {
 		}
 	default:
 		t.Fatal("no create request reached the server")
+	}
+
+	// Update sends the data through a separate SDK option, so check it too.
+	const changed = `{"big":9007199254740997}`
+	var current documentResourceModel
+	resp.State.Get(ctx, &current)
+	current.Data = types.StringValue(changed)
+	updatePlan := tfsdk.Plan{Schema: sch, Raw: null}
+	if diags := updatePlan.Set(ctx, &current); diags.HasError() {
+		t.Fatal(diags)
+	}
+	updateResp := resource.UpdateResponse{State: resp.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: updatePlan, State: resp.State}, &updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatal(updateResp.Diagnostics)
+	}
+	select {
+	case got := <-updated:
+		if got != changed {
+			t.Errorf("document data sent to Appwrite on update:\n got %s\nwant %s", got, changed)
+		}
+	default:
+		t.Fatal("no update request reached the server")
 	}
 }

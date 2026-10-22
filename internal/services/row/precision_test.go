@@ -31,7 +31,9 @@ func (f *fakeRowServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	body, _ := io.ReadAll(req.Body)
-	if req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/rows") {
+	isCreate := req.Method == http.MethodPost && strings.HasSuffix(req.URL.Path, "/rows")
+	isUpdate := req.Method == http.MethodPatch && strings.Contains(req.URL.Path, "/rows/")
+	if isCreate || isUpdate {
 		var in struct {
 			Data json.RawMessage `json:"data"`
 		}
@@ -108,5 +110,26 @@ func TestRowDataKeepsIntegerPrecision(t *testing.T) {
 	readResp.State.Get(ctx, &read)
 	if got := read.Data.ValueString(); got != configured {
 		t.Errorf("data in state after refresh:\n got %s\nwant %s", got, configured)
+	}
+
+	// Update sends the data through a separate SDK option, so check it too.
+	const updated = `{"big":9007199254740997,"max":9223372036854775806,"ratio":0.5,"tags":[9007199254740999]}`
+	updatePlan := tfsdk.Plan{Schema: sch, Raw: null}
+	read.Data = types.StringValue(updated)
+	if diags := updatePlan.Set(ctx, &read); diags.HasError() {
+		t.Fatal(diags)
+	}
+	updateResp := resource.UpdateResponse{State: readResp.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: updatePlan, State: readResp.State}, &updateResp)
+	if updateResp.Diagnostics.HasError() {
+		t.Fatal(updateResp.Diagnostics)
+	}
+	if server.sent != updated {
+		t.Errorf("row data sent to Appwrite on update:\n got %s\nwant %s", server.sent, updated)
+	}
+	var afterUpdate rowResourceModel
+	updateResp.State.Get(ctx, &afterUpdate)
+	if got := afterUpdate.Data.ValueString(); got != updated {
+		t.Errorf("data in state after update:\n got %s\nwant %s", got, updated)
 	}
 }
