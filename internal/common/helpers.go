@@ -299,10 +299,10 @@ func FormatErrorWithAuthGuidance(err error, guidance string) string {
 	}
 }
 
-// GetColumnRaw fetches a column using a raw API call, bypassing the SDK's
+// GetColumnRawJSON fetches a column using a raw API call, bypassing the SDK's
 // type-matching logic which doesn't handle all column types (e.g. text,
 // longtext, mediumtext, varchar, point, line, polygon).
-func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]interface{}, error) {
+func GetColumnRawJSON(c client.Client, databaseID, tableID, key string) ([]byte, error) {
 	path := fmt.Sprintf("/tablesdb/%s/tables/%s/columns/%s", databaseID, tableID, key)
 	resp, err := c.Call("GET", path, map[string]interface{}{
 		// The Appwrite Go SDK stores the project id in client.Config["project"]
@@ -328,6 +328,16 @@ func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]
 	body, err := client.ResponseBody(resp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read column response: %w", err)
+	}
+	return body, nil
+}
+
+// GetColumnRaw is GetColumnRawJSON decoded into a map. Numbers become float64,
+// so use GetColumnRawJSON where integers beyond 2^53 must stay exact.
+func GetColumnRaw(c client.Client, databaseID, tableID, key string) (map[string]interface{}, error) {
+	body, err := GetColumnRawJSON(c, databaseID, tableID, key)
+	if err != nil {
+		return nil, err
 	}
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {

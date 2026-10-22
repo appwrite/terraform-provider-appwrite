@@ -543,7 +543,9 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 	sdkClient := r.clients.ClientForProject(projectID)
 
-	generic, err := common.GetColumnRaw(sdkClient, state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	// Keep the raw response: decoding it into a map would round bigint bounds
+	// beyond 2^53 before readResponseIntoState reads them.
+	responseJSON, err := common.GetColumnRawJSON(sdkClient, state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -553,7 +555,6 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	responseJSON, _ := json.Marshal(generic)
 	r.readResponseIntoState(ctx, responseJSON, &state, &resp.Diagnostics)
 	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
