@@ -1,10 +1,12 @@
 package common
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"time"
@@ -514,6 +516,65 @@ func DatabaseProductGuidance(resourceName string, scopes ...string) string {
 			"if the Appwrite Console does not offer them, set them on the key through the project keys API instead.",
 		resourceName, formatRequiredScopes(scopes),
 	)
+}
+
+// DecodeJSONObject decodes a JSON object that is about to be sent to Appwrite,
+// such as a row or document body.
+//
+// Numbers are kept as json.Number, which the SDK re-encodes verbatim. Decoding
+// into interface{} turns them into float64 instead, so an integer beyond 2^53
+// -- a bigint ID, a counter -- is silently rounded before it ever reaches the
+// server.
+func DecodeJSONObject(s string) (map[string]interface{}, error) {
+	decoder := json.NewDecoder(strings.NewReader(s))
+	decoder.UseNumber()
+	var object map[string]interface{}
+	if err := decoder.Decode(&object); err != nil {
+		return nil, err
+	}
+	if _, err := decoder.Token(); !errors.Is(err, io.EOF) {
+		return nil, errors.New("unexpected data after the JSON object")
+	}
+	return object, nil
+}
+
+// DecodeJSONValue decodes a JSON value read back from Appwrite so that it
+// re-encodes the way Terraform's jsonencode would write it.
+//
+// An integer that fits in int64 keeps its exact digits. Decoding it as float64
+// rounds anything beyond 2^53, and the rounded value would be written to state.
+// Every other number still goes through float64, so a response's 5.0 reads
+// back as 5, the same as before.
+func DecodeJSONValue(raw []byte) (interface{}, error) {
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	var value interface{}
+	if err := decoder.Decode(&value); err != nil {
+		return nil, err
+	}
+	return normalizeJSONNumbers(value), nil
+}
+
+func normalizeJSONNumbers(value interface{}) interface{} {
+	switch v := value.(type) {
+	case json.Number:
+		if _, err := v.Int64(); err == nil {
+			return v
+		}
+		if f, err := v.Float64(); err == nil {
+			return f
+		}
+		return v
+	case map[string]interface{}:
+		for key, element := range v {
+			v[key] = normalizeJSONNumbers(element)
+		}
+	case []interface{}:
+		for i, element := range v {
+			v[i] = normalizeJSONNumbers(element)
+		}
+	}
+	return value
 }
 
 // Deref returns the value p points to, or the zero value when p is nil. The

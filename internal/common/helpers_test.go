@@ -1,6 +1,7 @@
 package common_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -170,5 +171,58 @@ func TestDeref(t *testing.T) {
 	}
 	if got := common.Deref(&n); got != n {
 		t.Fatalf("Deref(&%d) = %d", n, got)
+	}
+}
+
+func TestDecodeJSONObjectKeepsIntegers(t *testing.T) {
+	t.Parallel()
+
+	object, err := common.DecodeJSONObject(`{"big":9007199254740993,"nested":{"list":[9223372036854775807]},"ratio":0.5}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := json.Marshal(object)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := `{"big":9007199254740993,"nested":{"list":[9223372036854775807]},"ratio":0.5}`; string(encoded) != want {
+		t.Errorf("re-encoded:\n got %s\nwant %s", encoded, want)
+	}
+
+	for _, invalid := range []string{``, `[1]`, `{"a":1} {"b":2}`, `{"a":1} x`, `{"a":`} {
+		if _, err := common.DecodeJSONObject(invalid); err == nil {
+			t.Errorf("DecodeJSONObject(%q) returned no error", invalid)
+		}
+	}
+	if object, err := common.DecodeJSONObject("  {\"a\":1}\n"); err != nil || len(object) != 1 {
+		t.Errorf("surrounding whitespace rejected: %v", err)
+	}
+}
+
+func TestDecodeJSONValueKeepsIntegersAndNormalizesFloats(t *testing.T) {
+	t.Parallel()
+
+	for raw, want := range map[string]string{
+		`9007199254740993`:               `9007199254740993`,
+		`-9223372036854775808`:           `-9223372036854775808`,
+		`5.0`:                            `5`,
+		`1e3`:                            `1000`,
+		`0.1`:                            `0.1`,
+		`[9007199254740993, 2.50]`:       `[9007199254740993,2.5]`,
+		`{"a": {"b": 9007199254740993}}`: `{"a":{"b":9007199254740993}}`,
+		`"text"`:                         `"text"`,
+		`null`:                           `null`,
+	} {
+		value, err := common.DecodeJSONValue([]byte(raw))
+		if err != nil {
+			t.Fatalf("DecodeJSONValue(%s): %v", raw, err)
+		}
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(encoded) != want {
+			t.Errorf("DecodeJSONValue(%s) re-encoded as %s, want %s", raw, encoded, want)
+		}
 	}
 }
