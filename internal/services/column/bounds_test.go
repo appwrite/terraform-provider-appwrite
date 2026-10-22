@@ -94,6 +94,24 @@ func TestReadResponseIntoStateKeepsConfiguredBounds(t *testing.T) {
 		t.Errorf("max = %v, want 100", model.Max)
 	}
 
+	// math.MaxInt64 comes back as the float64 2^63, which does not fit in an
+	// int64. A configured maximum at the type's limit must still be kept.
+	maxModel := columnResourceModel{
+		Type:     types.StringValue(colTypeBigInt),
+		Min:      types.Int64Null(),
+		Max:      types.Int64Value(math.MaxInt64),
+		FloatMin: types.Float64Null(),
+		FloatMax: types.Float64Null(),
+	}
+	r.readResponseIntoState(context.Background(),
+		[]byte(`{"key":"big","type":"bigint","min":-9223372036854775808,"max":9223372036854775807}`), &maxModel, &d)
+	if got := maxModel.Max.ValueInt64(); maxModel.Max.IsNull() || got != math.MaxInt64 {
+		t.Errorf("max = %v, want %d: a configured bound must be kept even at the type's limit", maxModel.Max, int64(math.MaxInt64))
+	}
+	if !maxModel.Min.IsNull() {
+		t.Errorf("min = %v, want null", maxModel.Min)
+	}
+
 	floatModel := columnResourceModel{
 		Type:     types.StringValue(colTypeFloat),
 		Min:      types.Int64Null(),

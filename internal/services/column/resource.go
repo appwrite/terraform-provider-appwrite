@@ -834,7 +834,7 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 		switch model.Type.ValueString() {
 		case colTypeInteger, colTypeBigInt:
 			if !model.Min.IsNull() || !isUnboundedIntMin(minVal) {
-				model.Min = types.Int64Value(int64(minVal))
+				model.Min = int64Bound(model.Min, minVal)
 			}
 		case colTypeFloat:
 			if !model.FloatMin.IsNull() || !isUnboundedFloatMin(minVal) {
@@ -846,7 +846,7 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 		switch model.Type.ValueString() {
 		case colTypeInteger, colTypeBigInt:
 			if !model.Max.IsNull() || !isUnboundedIntMax(maxVal) {
-				model.Max = types.Int64Value(int64(maxVal))
+				model.Max = int64Bound(model.Max, maxVal)
 			}
 		case colTypeFloat:
 			if !model.FloatMax.IsNull() || !isUnboundedFloatMax(maxVal) {
