@@ -84,6 +84,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   only, no longer as `0` meaning always-on. The API has rejected values outside
   5 to 60 since before v2.0.0-beta.1 first shipped these resources, so no
   working configuration is broken
+- `appwrite_tablesdb_column` of type `integer`, `bigint` or `float` created
+  without `min`/`max` (or `float_min`/`float_max`) failed with "Provider
+  produced inconsistent result after apply". Appwrite fills an omitted bound
+  with the widest value the type allows and returns it, and the provider wrote
+  that into the unset argument; the column was tainted and the next apply
+  replaced it, deleting its data. A bound the configuration leaves out now stays
+  null when the server reports that default
 
 ## [2.0.0-beta.2] - 2026-08-19
 

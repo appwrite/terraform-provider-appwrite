@@ -825,20 +825,33 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	if size, ok := generic["size"].(float64); ok && size > 0 {
 		model.Size = types.Int64Value(int64(size))
 	}
+	// A bound left out of the configuration is not left out by the server: it
+	// stores the widest value the type allows and returns it like any other.
+	// Adopting that into an argument the configuration leaves null is an
+	// inconsistent result after apply, which taints the column and replaces it
+	// -- dropping its data -- on the next apply. Keep such a bound null.
 	if minVal, ok := generic["min"].(float64); ok {
 		switch model.Type.ValueString() {
 		case colTypeInteger, colTypeBigInt:
-			model.Min = types.Int64Value(int64(minVal))
+			if !model.Min.IsNull() || !isUnboundedIntMin(minVal) {
+				model.Min = types.Int64Value(int64(minVal))
+			}
 		case colTypeFloat:
-			model.FloatMin = types.Float64Value(minVal)
+			if !model.FloatMin.IsNull() || !isUnboundedFloatMin(minVal) {
+				model.FloatMin = types.Float64Value(minVal)
+			}
 		}
 	}
 	if maxVal, ok := generic["max"].(float64); ok {
 		switch model.Type.ValueString() {
 		case colTypeInteger, colTypeBigInt:
-			model.Max = types.Int64Value(int64(maxVal))
+			if !model.Max.IsNull() || !isUnboundedIntMax(maxVal) {
+				model.Max = types.Int64Value(int64(maxVal))
+			}
 		case colTypeFloat:
-			model.FloatMax = types.Float64Value(maxVal)
+			if !model.FloatMax.IsNull() || !isUnboundedFloatMax(maxVal) {
+				model.FloatMax = types.Float64Value(maxVal)
+			}
 		}
 	}
 	if encrypt, ok := generic["encrypt"].(bool); ok {
