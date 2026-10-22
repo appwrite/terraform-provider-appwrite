@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/id"
@@ -830,28 +831,31 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	// Adopting that into an argument the configuration leaves null is an
 	// inconsistent result after apply, which taints the column and replaces it
 	// -- dropping its data -- on the next apply. Keep such a bound null.
-	if minVal, ok := generic["min"].(float64); ok {
-		switch model.Type.ValueString() {
-		case colTypeInteger, colTypeBigInt:
-			if !model.Min.IsNull() || !isUnboundedIntMin(minVal) {
-				model.Min = int64Bound(model.Min, minVal)
-			}
-		case colTypeFloat:
-			if !model.FloatMin.IsNull() || !isUnboundedFloatMin(minVal) {
-				model.FloatMin = types.Float64Value(minVal)
+	// Integer bounds are read as exact integers: through float64, distinct
+	// values near the int64 limits would collapse into one.
+	var bounds struct {
+		Min *json.Number `json:"min"`
+		Max *json.Number `json:"max"`
+	}
+	_ = json.Unmarshal(responseJSON, &bounds)
+	switch model.Type.ValueString() {
+	case colTypeInteger, colTypeBigInt:
+		if bounds.Min != nil {
+			if v, ok := exactInt64(*bounds.Min); ok && (!model.Min.IsNull() || v != math.MinInt64) {
+				model.Min = types.Int64Value(v)
 			}
 		}
-	}
-	if maxVal, ok := generic["max"].(float64); ok {
-		switch model.Type.ValueString() {
-		case colTypeInteger, colTypeBigInt:
-			if !model.Max.IsNull() || !isUnboundedIntMax(maxVal) {
-				model.Max = int64Bound(model.Max, maxVal)
+		if bounds.Max != nil {
+			if v, ok := exactInt64(*bounds.Max); ok && (!model.Max.IsNull() || v != math.MaxInt64) {
+				model.Max = types.Int64Value(v)
 			}
-		case colTypeFloat:
-			if !model.FloatMax.IsNull() || !isUnboundedFloatMax(maxVal) {
-				model.FloatMax = types.Float64Value(maxVal)
-			}
+		}
+	case colTypeFloat:
+		if minVal, ok := generic["min"].(float64); ok && (!model.FloatMin.IsNull() || !isUnboundedFloatMin(minVal)) {
+			model.FloatMin = types.Float64Value(minVal)
+		}
+		if maxVal, ok := generic["max"].(float64); ok && (!model.FloatMax.IsNull() || !isUnboundedFloatMax(maxVal)) {
+			model.FloatMax = types.Float64Value(maxVal)
 		}
 	}
 	if encrypt, ok := generic["encrypt"].(bool); ok {

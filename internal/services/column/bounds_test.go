@@ -112,6 +112,21 @@ func TestReadResponseIntoStateKeepsConfiguredBounds(t *testing.T) {
 		t.Errorf("min = %v, want null", maxModel.Min)
 	}
 
+	// math.MaxInt64-1 and math.MaxInt64 are the same float64. When the server
+	// reports a different bound than the configured one, that drift must show.
+	driftModel := columnResourceModel{
+		Type:     types.StringValue(colTypeBigInt),
+		Min:      types.Int64Null(),
+		Max:      types.Int64Value(math.MaxInt64 - 1),
+		FloatMin: types.Float64Null(),
+		FloatMax: types.Float64Null(),
+	}
+	r.readResponseIntoState(context.Background(),
+		[]byte(`{"key":"big","type":"bigint","min":-9223372036854775808,"max":9223372036854775807}`), &driftModel, &d)
+	if got := driftModel.Max.ValueInt64(); got != math.MaxInt64 {
+		t.Errorf("max = %d, want %d: a different server bound must surface as drift", got, int64(math.MaxInt64))
+	}
+
 	floatModel := columnResourceModel{
 		Type:     types.StringValue(colTypeFloat),
 		Min:      types.Int64Null(),
