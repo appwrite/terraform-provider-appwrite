@@ -1,6 +1,7 @@
 package column_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
@@ -153,6 +154,66 @@ resource "appwrite_tablesdb_column" "test" {
 					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "key", "reading_time_minutes"),
 					resource.TestCheckResourceAttr("appwrite_tablesdb_column.test", "type", "float"),
 				),
+			},
+		},
+	})
+}
+
+// Appwrite fills an omitted bound with the widest value the type allows and
+// returns it. Each step must apply cleanly, and the harness's no-replace guard
+// fails the test if the column is tainted and planned for replacement.
+func TestAccColumnResource_unbounded(t *testing.T) {
+	const columns = `
+resource "appwrite_tablesdb_column" "count" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "view_count"
+  type        = "integer"
+  %s
+}
+
+resource "appwrite_tablesdb_column" "ratio" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "ratio"
+  type        = "float"
+}
+`
+	unbounded := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckNoResourceAttr("appwrite_tablesdb_column.count", "min"),
+		resource.TestCheckNoResourceAttr("appwrite_tablesdb_column.count", "max"),
+		resource.TestCheckNoResourceAttr("appwrite_tablesdb_column.ratio", "float_min"),
+		resource.TestCheckNoResourceAttr("appwrite_tablesdb_column.ratio", "float_max"),
+	)
+
+	acceptance.ResourceTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccColumnBaseConfig + fmt.Sprintf(columns, ""),
+				Check:  unbounded,
+			},
+			{
+				Config: testAccColumnBaseConfig + fmt.Sprintf(columns, "max = 1000"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("appwrite_tablesdb_column.count", "min"),
+					resource.TestCheckResourceAttr("appwrite_tablesdb_column.count", "max", "1000"),
+				),
+			},
+			// Removing the bound must reset it on the server: an update that
+			// omits a bound keeps the stored one.
+			{
+				Config: testAccColumnBaseConfig + fmt.Sprintf(columns, ""),
+				Check:  unbounded,
+			},
+			{
+				ResourceName:                         "appwrite_tablesdb_column.count",
+				ImportState:                          true,
+				ImportStateId:                        "blog/articles/view_count",
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "key",
+				ImportStateVerifyIgnore:              []string{"updated_at"},
 			},
 		},
 	})
