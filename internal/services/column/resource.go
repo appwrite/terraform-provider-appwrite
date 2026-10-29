@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/id"
@@ -542,7 +543,9 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 	sdkClient := r.clients.ClientForProject(projectID)
 
-	generic, err := common.GetColumnRaw(sdkClient, state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
+	// Keep the raw response: decoding it into a map would round bigint bounds
+	// beyond 2^53 before readResponseIntoState reads them.
+	responseJSON, err := common.GetColumnRawJSON(sdkClient, state.DatabaseID.ValueString(), state.TableID.ValueString(), state.Key.ValueString())
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			resp.State.RemoveResource(ctx)
@@ -552,7 +555,6 @@ func (r *columnResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	responseJSON, _ := json.Marshal(generic)
 	r.readResponseIntoState(ctx, responseJSON, &state, &resp.Diagnostics)
 	state.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -630,46 +632,25 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case colTypeInteger:
-		var opts []tablesdb.UpdateIntegerColumnOption
-		if !plan.Min.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMin(int(plan.Min.ValueInt64())))
+	case colTypeInteger, colTypeBigInt:
+		def := int64(parseIntDefault(defaultStr))
+		if columnType == colTypeBigInt {
+			d, parseErr := parseBigIntDefault(defaultStr)
+			if parseErr != nil {
+				resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+				return
+			}
+			def = int64(d)
 		}
-		if !plan.Max.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMax(int(plan.Max.ValueInt64())))
-		}
-		col, e := tablesdbClient.UpdateIntegerColumn(databaseID, tableID, key, required, parseIntDefault(defaultStr), opts...)
-		err = e
-		if col != nil {
-			responseJSON, _ = json.Marshal(col)
-		}
-
-	case colTypeBigInt:
-		var opts []tablesdb.UpdateBigIntColumnOption
-		if !plan.Min.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMin(int(plan.Min.ValueInt64())))
-		}
-		if !plan.Max.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMax(int(plan.Max.ValueInt64())))
-		}
-		def, parseErr := parseBigIntDefault(defaultStr)
-		if parseErr != nil {
-			resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
-			return
-		}
-		col, e := tablesdbClient.UpdateBigIntColumn(databaseID, tableID, key, required, def, opts...)
-		err = e
-		if col != nil {
-			responseJSON, _ = json.Marshal(col)
-		}
+		minVal, maxVal := updateIntBounds(plan.Min, plan.Max)
+		responseJSON, err = updateIntegerColumn(r.clients.ClientForProject(projectID),
+			columnType, databaseID, tableID, key, required, def, minVal, maxVal)
 
 	case colTypeFloat:
-		var opts []tablesdb.UpdateFloatColumnOption
-		if !plan.FloatMin.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMin(plan.FloatMin.ValueFloat64()))
-		}
-		if !plan.FloatMax.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMax(plan.FloatMax.ValueFloat64()))
+		minVal, maxVal := updateFloatBounds(plan.FloatMin, plan.FloatMax)
+		opts := []tablesdb.UpdateFloatColumnOption{
+			tablesdbClient.WithUpdateFloatColumnMin(minVal),
+			tablesdbClient.WithUpdateFloatColumnMax(maxVal),
 		}
 		col, e := tablesdbClient.UpdateFloatColumn(databaseID, tableID, key, required, parseFloatDefault(defaultStr), opts...)
 		err = e
@@ -825,19 +806,35 @@ func (r *columnResource) readResponseIntoState(ctx context.Context, responseJSON
 	if size, ok := generic["size"].(float64); ok && size > 0 {
 		model.Size = types.Int64Value(int64(size))
 	}
-	if minVal, ok := generic["min"].(float64); ok {
-		switch model.Type.ValueString() {
-		case colTypeInteger, colTypeBigInt:
-			model.Min = types.Int64Value(int64(minVal))
-		case colTypeFloat:
+	// A bound left out of the configuration is not left out by the server: it
+	// stores the widest value the type allows and returns it like any other.
+	// Adopting that into an argument the configuration leaves null is an
+	// inconsistent result after apply, which taints the column and replaces it
+	// -- dropping its data -- on the next apply. Keep such a bound null.
+	// Integer bounds are read as exact integers: through float64, distinct
+	// values near the int64 limits would collapse into one.
+	var bounds struct {
+		Min *json.Number `json:"min"`
+		Max *json.Number `json:"max"`
+	}
+	_ = json.Unmarshal(responseJSON, &bounds)
+	switch model.Type.ValueString() {
+	case colTypeInteger, colTypeBigInt:
+		if bounds.Min != nil {
+			if v, ok := exactInt64(*bounds.Min); ok && (!model.Min.IsNull() || v != math.MinInt64) {
+				model.Min = types.Int64Value(v)
+			}
+		}
+		if bounds.Max != nil {
+			if v, ok := exactInt64(*bounds.Max); ok && (!model.Max.IsNull() || v != math.MaxInt64) {
+				model.Max = types.Int64Value(v)
+			}
+		}
+	case colTypeFloat:
+		if minVal, ok := generic["min"].(float64); ok && (!model.FloatMin.IsNull() || !isUnboundedFloatMin(minVal)) {
 			model.FloatMin = types.Float64Value(minVal)
 		}
-	}
-	if maxVal, ok := generic["max"].(float64); ok {
-		switch model.Type.ValueString() {
-		case colTypeInteger, colTypeBigInt:
-			model.Max = types.Int64Value(int64(maxVal))
-		case colTypeFloat:
+		if maxVal, ok := generic["max"].(float64); ok && (!model.FloatMax.IsNull() || !isUnboundedFloatMax(maxVal)) {
 			model.FloatMax = types.Float64Value(maxVal)
 		}
 	}
