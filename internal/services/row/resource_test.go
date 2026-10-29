@@ -91,3 +91,71 @@ resource "appwrite_tablesdb_row" "test" {
 }
 `
 }
+
+// An integer beyond 2^53 cannot be held by a float64. Row data used to be
+// decoded through one before it was sent, so Appwrite stored a rounded value
+// and the apply failed with an inconsistent result.
+func TestAccTablesDBRowResource_bigintPrecision(t *testing.T) {
+	acceptance.ResourceTest(t, resource.TestCase{
+		PreCheck:                 func() { acceptance.PreCheck(t) },
+		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRowBigintConfig("9007199254740993"),
+				Check: resource.TestCheckResourceAttr("appwrite_tablesdb_row.test", "data",
+					`{"external_id":9007199254740993}`),
+			},
+			{
+				ResourceName: "appwrite_tablesdb_row.test",
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["appwrite_tablesdb_row.test"]
+					if !ok {
+						return "", fmt.Errorf("resource appwrite_tablesdb_row.test not found in state")
+					}
+					return fmt.Sprintf("%s/%s/%s",
+						rs.Primary.Attributes["database_id"],
+						rs.Primary.Attributes["table_id"],
+						rs.Primary.Attributes["id"],
+					), nil
+				},
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRowBigintConfig("9007199254740995"),
+				Check: resource.TestCheckResourceAttr("appwrite_tablesdb_row.test", "data",
+					`{"external_id":9007199254740995}`),
+			},
+		},
+	})
+}
+
+func testAccRowBigintConfig(value string) string {
+	return `
+resource "appwrite_tablesdb" "test" {
+  name = "row-bigint-test-db"
+}
+
+resource "appwrite_tablesdb_table" "test" {
+  database_id = appwrite_tablesdb.test.id
+  name        = "orders"
+}
+
+resource "appwrite_tablesdb_column" "external_id" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  key         = "external_id"
+  type        = "bigint"
+  min         = 0
+  max         = 9000000000000000000
+}
+
+resource "appwrite_tablesdb_row" "test" {
+  database_id = appwrite_tablesdb.test.id
+  table_id    = appwrite_tablesdb_table.test.id
+  data        = jsonencode({ external_id = ` + value + ` })
+
+  depends_on = [appwrite_tablesdb_column.external_id]
+}
+`
+}

@@ -87,6 +87,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   only, no longer as `0` meaning always-on. The API has rejected values outside
   5 to 60 since before v2.0.0-beta.1 first shipped these resources, so no
   working configuration is broken
+- `appwrite_tablesdb_row` rounded integers beyond 2^53 in `data` before sending
+  them, so Appwrite stored a different number than the configuration (for
+  example `9007199254740993` was written as `9007199254740992`), and the row was
+  then tainted by an inconsistent result after apply. `data` is now sent with
+  its numbers exactly as written, and integers read back keep every digit.
+  `appwrite_documentsdb_document` and `appwrite_vectorsdb_document` already read
+  such values back exactly but still rounded them on create and update; they
+  now send them unchanged as well
 
 ## [2.0.0-beta.2] - 2026-08-19
 

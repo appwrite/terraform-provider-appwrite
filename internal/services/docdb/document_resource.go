@@ -144,8 +144,8 @@ func (r *documentResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(plan.Data.ValueString()), &data); err != nil {
+	data, err := common.DecodeJSONObject(plan.Data.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Invalid document data", fmt.Sprintf("data must be a JSON object: %s", err))
 		return
 	}
@@ -214,8 +214,8 @@ func (r *documentResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(plan.Data.ValueString()), &data); err != nil {
+	data, err := common.DecodeJSONObject(plan.Data.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Invalid document data", fmt.Sprintf("data must be a JSON object: %s", err))
 		return
 	}
