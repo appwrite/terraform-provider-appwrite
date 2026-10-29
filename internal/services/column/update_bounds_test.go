@@ -28,6 +28,7 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 		name    string
 		colType string
 		apiType string
+		path    string
 		prior   func(*columnResourceModel)
 		wantMin string
 		wantMax string
@@ -36,6 +37,7 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 			name:    "integer",
 			colType: colTypeInteger,
 			apiType: "integer",
+			path:    "/v1/tablesdb/db/tables/tbl/columns/integer/n",
 			prior:   func(m *columnResourceModel) { m.Min = types.Int64Value(0); m.Max = types.Int64Value(100) },
 			wantMin: "-9223372036854775808",
 			wantMax: "9223372036854775807",
@@ -44,6 +46,7 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 			name:    "bigint",
 			colType: colTypeBigInt,
 			apiType: "bigint",
+			path:    "/v1/tablesdb/db/tables/tbl/columns/bigint/n",
 			prior:   func(m *columnResourceModel) { m.Max = types.Int64Value(100) },
 			wantMin: "-9223372036854775808",
 			wantMax: "9223372036854775807",
@@ -52,6 +55,7 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 			name:    "float",
 			colType: colTypeFloat,
 			apiType: "double",
+			path:    "/v1/tablesdb/db/tables/tbl/columns/float/n",
 			prior: func(m *columnResourceModel) {
 				m.FloatMin = types.Float64Value(0.5)
 				m.FloatMax = types.Float64Value(60)
@@ -67,14 +71,17 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 			ctx := context.Background()
 
 			type bounds struct {
-				Min json.RawMessage `json:"min"`
-				Max json.RawMessage `json:"max"`
+				Method string          `json:"-"`
+				Path   string          `json:"-"`
+				Min    json.RawMessage `json:"min"`
+				Max    json.RawMessage `json:"max"`
 			}
 			requests := make(chan bounds, 1)
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				body, _ := io.ReadAll(req.Body)
 				var sent bounds
 				_ = json.Unmarshal(body, &sent)
+				sent.Method, sent.Path = req.Method, req.URL.Path
 				requests <- sent
 				// Like Appwrite, return the bounds the update stored.
 				w.Header().Set("Content-Type", "application/json")
@@ -126,6 +133,9 @@ func TestUpdateResetsRemovedBound(t *testing.T) {
 			case sent = <-requests:
 			default:
 				t.Fatal("no update request reached the server")
+			}
+			if sent.Method != http.MethodPatch || sent.Path != tc.path {
+				t.Errorf("request = %s %s, want PATCH %s", sent.Method, sent.Path, tc.path)
 			}
 			if string(sent.Min) != tc.wantMin || string(sent.Max) != tc.wantMax {
 				t.Errorf("bounds sent = [%s, %s], want [%s, %s]", sent.Min, sent.Max, tc.wantMin, tc.wantMax)

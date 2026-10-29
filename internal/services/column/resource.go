@@ -632,34 +632,19 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 			responseJSON, _ = json.Marshal(col)
 		}
 
-	case colTypeInteger:
+	case colTypeInteger, colTypeBigInt:
+		def := int64(parseIntDefault(defaultStr))
+		if columnType == colTypeBigInt {
+			d, parseErr := parseBigIntDefault(defaultStr)
+			if parseErr != nil {
+				resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
+				return
+			}
+			def = int64(d)
+		}
 		minVal, maxVal := updateIntBounds(plan.Min, plan.Max)
-		opts := []tablesdb.UpdateIntegerColumnOption{
-			tablesdbClient.WithUpdateIntegerColumnMin(minVal),
-			tablesdbClient.WithUpdateIntegerColumnMax(maxVal),
-		}
-		col, e := tablesdbClient.UpdateIntegerColumn(databaseID, tableID, key, required, parseIntDefault(defaultStr), opts...)
-		err = e
-		if col != nil {
-			responseJSON, _ = json.Marshal(col)
-		}
-
-	case colTypeBigInt:
-		minVal, maxVal := updateIntBounds(plan.Min, plan.Max)
-		opts := []tablesdb.UpdateBigIntColumnOption{
-			tablesdbClient.WithUpdateBigIntColumnMin(minVal),
-			tablesdbClient.WithUpdateBigIntColumnMax(maxVal),
-		}
-		def, parseErr := parseBigIntDefault(defaultStr)
-		if parseErr != nil {
-			resp.Diagnostics.AddError("Invalid default value", parseErr.Error())
-			return
-		}
-		col, e := tablesdbClient.UpdateBigIntColumn(databaseID, tableID, key, required, def, opts...)
-		err = e
-		if col != nil {
-			responseJSON, _ = json.Marshal(col)
-		}
+		responseJSON, err = updateIntegerColumn(r.clients.ClientForProject(projectID),
+			columnType, databaseID, tableID, key, required, def, minVal, maxVal)
 
 	case colTypeFloat:
 		minVal, maxVal := updateFloatBounds(plan.FloatMin, plan.FloatMax)

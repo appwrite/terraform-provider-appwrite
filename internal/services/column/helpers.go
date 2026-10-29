@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
+	"github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -19,18 +21,45 @@ func isUnboundedFloatMax(v float64) bool { return v >= math.MaxFloat64 }
 // Update keeps the stored bound when one is omitted, so a bound removed from
 // the configuration would stay in place on the server. Update therefore sends
 // the unbounded default for a bound the plan leaves null, the value Create
-// leaves it at. The SDK takes an int, so this is the int64 limit on 64-bit
-// builds.
+// leaves it at.
 
-func updateIntBounds(minV, maxV types.Int64) (int, int) {
-	lo, hi := math.MinInt, math.MaxInt
+func updateIntBounds(minV, maxV types.Int64) (int64, int64) {
+	lo, hi := int64(math.MinInt64), int64(math.MaxInt64)
 	if !minV.IsNull() {
-		lo = int(minV.ValueInt64())
+		lo = minV.ValueInt64()
 	}
 	if !maxV.IsNull() {
-		hi = int(maxV.ValueInt64())
+		hi = maxV.ValueInt64()
 	}
 	return lo, hi
+}
+
+// updateIntegerColumn updates an integer or bigint column with a raw call and
+// returns the response body. The SDK takes the bounds as int and parses them
+// back into an *int, and neither holds PHP_INT_MIN/PHP_INT_MAX on the 32-bit
+// builds this provider ships: resetting a removed bound would instead narrow
+// the column to the int32 range.
+func updateIntegerColumn(c client.Client, columnType, databaseID, tableID, key string, required bool, def, minVal, maxVal int64) ([]byte, error) {
+	path := fmt.Sprintf("/tablesdb/%s/tables/%s/columns/%s/%s",
+		client.EncodePath(databaseID), client.EncodePath(tableID), columnType, client.EncodePath(key))
+	resp, err := c.Call("PATCH", path, map[string]interface{}{
+		// client.Call does not add the project header; see common.GetColumnRawJSON.
+		"X-Appwrite-Project": c.Config["project"],
+		"content-type":       "application/json",
+		"accept":             "application/json",
+	}, map[string]interface{}{
+		"required": required,
+		"min":      minVal,
+		"max":      maxVal,
+		"default":  def,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(resp.Type, "application/json") {
+		return nil, fmt.Errorf("unexpected response type: %s", resp.Type)
+	}
+	return client.ResponseBody(resp)
 }
 
 func updateFloatBounds(minV, maxV types.Float64) (float64, float64) {
