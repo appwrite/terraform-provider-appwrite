@@ -94,6 +94,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that into the unset argument; the column was tainted and the next apply
   replaced it, deleting its data. A bound the configuration leaves out now stays
   null when the server reports that default
+- Removing `min`/`max` (or `float_min`/`float_max`) from an
+  `appwrite_tablesdb_column` left the old bound in place, because Appwrite keeps
+  a bound an update omits, and the apply failed with "Provider produced
+  inconsistent result after apply". The update now resets a removed bound to
+  the type's widest value, the same as a column created without it
 
 ## [2.0.0-beta.2] - 2026-08-19
 

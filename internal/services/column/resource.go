@@ -633,12 +633,10 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 
 	case colTypeInteger:
-		var opts []tablesdb.UpdateIntegerColumnOption
-		if !plan.Min.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMin(int(plan.Min.ValueInt64())))
-		}
-		if !plan.Max.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateIntegerColumnMax(int(plan.Max.ValueInt64())))
+		minVal, maxVal := updateIntBounds(plan.Min, plan.Max)
+		opts := []tablesdb.UpdateIntegerColumnOption{
+			tablesdbClient.WithUpdateIntegerColumnMin(minVal),
+			tablesdbClient.WithUpdateIntegerColumnMax(maxVal),
 		}
 		col, e := tablesdbClient.UpdateIntegerColumn(databaseID, tableID, key, required, parseIntDefault(defaultStr), opts...)
 		err = e
@@ -647,12 +645,10 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 
 	case colTypeBigInt:
-		var opts []tablesdb.UpdateBigIntColumnOption
-		if !plan.Min.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMin(int(plan.Min.ValueInt64())))
-		}
-		if !plan.Max.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateBigIntColumnMax(int(plan.Max.ValueInt64())))
+		minVal, maxVal := updateIntBounds(plan.Min, plan.Max)
+		opts := []tablesdb.UpdateBigIntColumnOption{
+			tablesdbClient.WithUpdateBigIntColumnMin(minVal),
+			tablesdbClient.WithUpdateBigIntColumnMax(maxVal),
 		}
 		def, parseErr := parseBigIntDefault(defaultStr)
 		if parseErr != nil {
@@ -666,12 +662,10 @@ func (r *columnResource) Update(ctx context.Context, req resource.UpdateRequest,
 		}
 
 	case colTypeFloat:
-		var opts []tablesdb.UpdateFloatColumnOption
-		if !plan.FloatMin.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMin(plan.FloatMin.ValueFloat64()))
-		}
-		if !plan.FloatMax.IsNull() {
-			opts = append(opts, tablesdbClient.WithUpdateFloatColumnMax(plan.FloatMax.ValueFloat64()))
+		minVal, maxVal := updateFloatBounds(plan.FloatMin, plan.FloatMax)
+		opts := []tablesdb.UpdateFloatColumnOption{
+			tablesdbClient.WithUpdateFloatColumnMin(minVal),
+			tablesdbClient.WithUpdateFloatColumnMax(maxVal),
 		}
 		col, e := tablesdbClient.UpdateFloatColumn(databaseID, tableID, key, required, parseFloatDefault(defaultStr), opts...)
 		err = e
