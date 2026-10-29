@@ -121,8 +121,8 @@ func (r *rowResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 	tablesdbClient := appwrite.NewTablesDB(r.clients.ClientForProject(projectID))
 
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(plan.Data.ValueString()), &data); err != nil {
+	data, err := common.DecodeJSONObject(plan.Data.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Invalid data JSON", fmt.Sprintf("Failed to parse data: %s", err))
 		return
 	}
@@ -208,8 +208,8 @@ func (r *rowResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	var opts []tablesdb.UpdateRowOption
 
-	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(plan.Data.ValueString()), &data); err != nil {
+	data, err := common.DecodeJSONObject(plan.Data.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Invalid data JSON", fmt.Sprintf("Failed to parse data: %s", err))
 		return
 	}
@@ -286,8 +286,9 @@ func (r *rowResource) mapToState(ctx context.Context, row *models.Row, model *ro
 	diagnostics.Append(diags...)
 	model.Permissions = permsList
 
-	// Decode the full row response to extract user data (excluding system fields)
-	var rawData map[string]interface{}
+	// Decode the full row response to extract user data (excluding system
+	// fields). Values are decoded individually below, keeping exact integers.
+	var rawData map[string]json.RawMessage
 	if err := row.Decode(&rawData); err != nil {
 		diagnostics.AddError("Error decoding row data", err.Error())
 		return
@@ -303,15 +304,21 @@ func (r *rowResource) mapToState(ctx context.Context, row *models.Row, model *ro
 
 	// Filter response to only include keys from the plan (or all non-system keys on import)
 	filtered := make(map[string]interface{})
-	for key, val := range rawData {
+	for key, raw := range rawData {
 		if strings.HasPrefix(key, "$") {
 			continue
 		}
-		if planData == nil {
-			filtered[key] = val
-		} else if _, exists := planData[key]; exists {
-			filtered[key] = val
+		if planData != nil {
+			if _, exists := planData[key]; !exists {
+				continue
+			}
 		}
+		val, err := common.DecodeJSONValue(raw)
+		if err != nil {
+			diagnostics.AddError("Error decoding row data", err.Error())
+			return
+		}
+		filtered[key] = val
 	}
 
 	dataJSON, err := json.Marshal(filtered)
