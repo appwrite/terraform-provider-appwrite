@@ -69,6 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `golang.org/x/text` to `v0.39.0` and `cloudflare/circl` to `v1.6.3`, and the
   Go directive to `1.26.6`, clearing ten vulnerabilities reachable from provider
   code. One of them, in grpc's HTTP/2 server, was reachable from `main.go`
+- Built with Go `1.26.10`, which distrusts the compromised intermediate
+  certificates in GO-2026-6809. Every TLS connection to Appwrite verifies its
+  chain through the affected `crypto/x509` code
 
 ### Fixed
 
