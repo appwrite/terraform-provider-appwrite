@@ -60,6 +60,12 @@ func TestAccDomain_records(t *testing.T) {
 
 					resource.TestCheckResourceAttr("appwrite_domain_record.txt", "comment", "SPF"),
 
+					resource.TestCheckResourceAttr("appwrite_domain_record.aaaa", "value", "2001:db8::10"),
+					resource.TestCheckResourceAttr("appwrite_domain_record.alias", "value", "target.example.org"),
+					resource.TestCheckResourceAttr("appwrite_domain_record.caa", "value", `0 iodef "mailto:security@example.org"`),
+					resource.TestCheckResourceAttr("appwrite_domain_record.https", "value", "1 . alpn=h2"),
+					resource.TestCheckResourceAttr("appwrite_domain_record.ns", "value", "ns1.example.org"),
+
 					resource.TestCheckResourceAttrPair("data.appwrite_domain.test", "id", "appwrite_domain.test", "id"),
 					resource.TestCheckResourceAttrPair("data.appwrite_domain.test", "appwrite_nameservers.#", "appwrite_domain.test", "appwrite_nameservers.#"),
 				),
@@ -83,6 +89,9 @@ func TestAccDomain_records(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("appwrite_domain_record.a", "value", "203.0.113.11"),
 					resource.TestCheckResourceAttr("appwrite_domain_record.a", "ttl", "600"),
+					// The NS record shares the TTL, so the update route of a
+					// second type is exercised too.
+					resource.TestCheckResourceAttr("appwrite_domain_record.ns", "ttl", "600"),
 					resource.TestCheckNoResourceAttr("appwrite_domain_record.txt", "comment"),
 				),
 			},
@@ -129,6 +138,46 @@ resource "appwrite_domain_record" "cname" {
   type      = "CNAME"
   name      = "Blog.%[1]s."
   value     = "Target.Example.org."
+}
+
+# One of each remaining type, so every create and update route reaches the
+# server at least once.
+resource "appwrite_domain_record" "aaaa" {
+  domain_id = appwrite_domain.test.id
+  type      = "AAAA"
+  name      = "www"
+  value     = "2001:db8::10"
+}
+
+resource "appwrite_domain_record" "alias" {
+  domain_id = appwrite_domain.test.id
+  type      = "ALIAS"
+  name      = "edge"
+  value     = "target.example.org"
+}
+
+# Appwrite holds its own locked "issue" records at the apex, so an iodef
+# record cannot duplicate one of them.
+resource "appwrite_domain_record" "caa" {
+  domain_id = appwrite_domain.test.id
+  type      = "CAA"
+  name      = "@"
+  value     = "0 iodef \"mailto:security@example.org\""
+}
+
+resource "appwrite_domain_record" "https" {
+  domain_id = appwrite_domain.test.id
+  type      = "HTTPS"
+  name      = "svc"
+  value     = "1 . alpn=h2"
+}
+
+resource "appwrite_domain_record" "ns" {
+  domain_id = appwrite_domain.test.id
+  type      = "NS"
+  name      = "delegated"
+  value     = "ns1.example.org"
+  ttl       = %[3]d
 }
 
 resource "appwrite_domain_record" "mx" {
