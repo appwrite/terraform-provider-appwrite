@@ -95,8 +95,8 @@ var nameserverPattern = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9
 // normalizeRecordName returns a record name in the form Appwrite stores it,
 // which is what the API returns on every read.
 //
-// It mirrors Appwrite\Cloud\DNS\Records::normalize: lowercase, no trailing dot,
-// "@" for the zone apex, and relative to the zone when written in full. The
+// It mirrors how Appwrite stores names: lowercase, no trailing dot, "@" for
+// the zone apex, and relative to the zone when written in full. The
 // provider needs the same rule so that a name written "www.example.com." in
 // configuration is recognized as the "www" the server hands back, rather than
 // shown as a change on every plan.

@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// The cases are Appwrite's own, from tests/unit/DNS/RecordsTest.php in the
-// cloud repository. The provider has to agree with the server on every one of
-// them, or a configuration that spells a name differently from how the server
-// stores it plans a change on every run.
+// Each case is a name and value as written, and the form Appwrite stores them
+// in. The provider has to agree with the server on every one of them, or a
+// configuration that spells a name differently from how the server stores it
+// plans a change on every run.
 func TestNormalizeMatchesTheServer(t *testing.T) {
 	t.Parallel()
 
