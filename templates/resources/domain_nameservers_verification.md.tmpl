@@ -1,0 +1,31 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Domains"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Appwrite records whether a domain is delegated to its nameservers when the domain is added, and afterwards only when a check is requested. A domain added before its registrar was updated therefore stays unverified until something asks again; in the Console that is the retry button, and in Terraform it is this resource. Creating it asks Appwrite to check every 30 seconds until the check passes, and fails when the create timeout expires, naming the nameservers the registrar should list.
+
+The resource does not recheck later: refreshing it never changes anything, and destroying it only removes it from state. Make resources that need a delegated domain depend on it.
+
+Domains are available on Appwrite Cloud. An organization API key with `domains.read` and `domains.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+-> Registrars usually publish a nameserver change within minutes, but resolvers can keep the previous delegation for up to 48 hours. The default create timeout is 30 minutes; raise it in a `timeouts` block when the change is recent.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## See Also
+
+- [appwrite_domain](domain.md) - Add a domain to an organization
+- [appwrite_domain_nameservers](domain_nameservers.md) - Set the nameservers of a domain registered through Appwrite

@@ -1,0 +1,1 @@
+terraform import appwrite_domain.example organization-id/5ababd603b22780302dd8d83498e5172

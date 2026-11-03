@@ -1,0 +1,59 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Domains"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Adding a domain does not register it. A domain registered elsewhere stays with its registrar; Appwrite serves its DNS once the registrar delegates it to the nameservers in `appwrite_nameservers`. Use [appwrite_domain_nameservers_verification](domain_nameservers_verification.md) to wait for that, and [appwrite_domain_record](domain_record.md) to manage the zone's records.
+
+Domains are available on Appwrite Cloud. An organization API key with `domains.read` and `domains.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+~> **Warning:** Destroying this resource deletes the domain's DNS zone in Appwrite, including every record in it, and the domain stops resolving if it is delegated to Appwrite. For a domain bought through Appwrite it also removes the domain from the organization without cancelling the registration, which can still renew; see [Delete a domain](https://appwrite.io/docs/products/domains/delete). To manage the records of a domain Terraform should not own, such as one bought through the Console, read it with the [appwrite_domain data source](../data-sources/domain.md) instead.
+
+When the domain is added, Appwrite creates locked records it needs for routing: apex `A`, `AAAA`, `CAA` and `NS` records and a wildcard `CNAME`. They cannot be changed or deleted, and records that conflict with them are rejected.
+
+The domain ID is derived from the domain name, so replacing a domain with the same name, for example by changing `organization_id`, gives it the same ID. Its records are deleted with the old domain but Terraform does not plan to recreate them, because their `domain_id` has not changed; the next plan finds them missing and creates them again. Use `replace_triggered_by` on the records to recreate them in the same apply.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization and domain ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, the domain ID alone can be used:
+
+```shell
+terraform import appwrite_domain.example 5ababd603b22780302dd8d83498e5172
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_domain.example
+  id = "organization-id/5ababd603b22780302dd8d83498e5172"
+}
+```
+
+The domain ID is the MD5 hash of the lowercase domain name.
+{{- end }}
+
+## See Also
+
+- [appwrite_domain_record](domain_record.md) - Manage the domain's DNS records
+- [appwrite_domain_nameservers_verification](domain_nameservers_verification.md) - Wait for the domain to be delegated to Appwrite
+- [appwrite_domain_nameservers](domain_nameservers.md) - Set the nameservers of a domain registered through Appwrite

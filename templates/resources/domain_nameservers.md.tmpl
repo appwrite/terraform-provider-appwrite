@@ -1,0 +1,43 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Domains"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Only domains whose `registrar` is `appwrite` can have their nameservers set here; the API rejects any other. With `nameservers` omitted, the domain is delegated to Appwrite's nameservers, which is what lets Appwrite serve the records managed with [appwrite_domain_record](domain_record.md). With a list, the domain is delegated to those nameservers instead, and Appwrite's records stop resolving.
+
+Domains are available on Appwrite Cloud. An organization API key with `domains.read` and `domains.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+~> **Note:** Appwrite does not report the nameservers a domain is delegated to, so this resource cannot detect a change made in the Console or at the registry. It sets the nameservers when it is created and whenever `nameservers` changes in configuration.
+
+~> **Note:** Destroying this resource does not change the nameservers. The domain stays delegated where it was last set, and Terraform stops managing it.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization and domain ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, the domain ID alone can be used.
+
+Because the current nameservers cannot be read, an import leaves `nameservers` empty in state. If the configuration sets `nameservers`, the next apply sets them; if it omits them, the next apply changes nothing, even when the domain is delegated elsewhere.
+{{- end }}
+
+## See Also
+
+- [appwrite_domain](domain.md) - Add a domain to an organization
+- [appwrite_domain_nameservers_verification](domain_nameservers_verification.md) - Wait for a domain registered elsewhere to be delegated to Appwrite

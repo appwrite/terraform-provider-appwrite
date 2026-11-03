@@ -23,6 +23,7 @@ import (
 	databasesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/database"
 	dedicatedsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
 	docdbsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/docdb"
+	domainsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/domain"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
@@ -214,6 +215,10 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		projectsvc.NewProjectResource,
 		projectsvc.NewKeyResource,
 		proxysvc.NewRuleResource,
+		domainsvc.NewDomainResource,
+		domainsvc.NewRecordResource,
+		domainsvc.NewNameserversResource,
+		domainsvc.NewVerificationResource,
 		databasesvc.NewDatabaseResource,
 		tablesvc.NewTableResource,
 		columnsvc.NewColumnResource,
@@ -288,6 +293,7 @@ func (p *appwriteProvider) DataSources(_ context.Context) []func() datasource.Da
 		sitesvc.NewSiteDataSource,
 		topicsvc.NewTopicDataSource,
 		webhooksvc.NewWebhookDataSource,
+		domainsvc.NewDomainDataSource,
 
 		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EnginePostgresql),
 		dedicatedsvc.NewDatabaseDataSource(dedicatedsvc.EngineMysql),

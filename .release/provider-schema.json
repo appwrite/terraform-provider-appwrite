@@ -401,6 +401,167 @@
         }
       }
     },
+    "appwrite_domain": {
+      "version": 0,
+      "attributes": {
+        "appwrite_nameservers": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "auto_renewal": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "expires_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "nameservers_verified": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "registrar": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_domain_nameservers": {
+      "version": 0,
+      "attributes": {
+        "domain_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "nameservers": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_domain_nameservers_verification": {
+      "version": 0,
+      "attributes": {
+        "domain_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "timeouts": {
+          "type": "block",
+          "nesting": "single"
+        },
+        "timeouts.create": {
+          "type": "tftypes.String",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_domain_record": {
+      "version": 0,
+      "attributes": {
+        "comment": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "locked": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "priority": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "ttl": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "value": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "weight": {
+          "type": "tftypes.Number",
+          "optional": true
+        }
+      }
+    },
     "appwrite_function": {
       "version": 0,
       "attributes": {
@@ -3506,6 +3667,54 @@
           "computed": true
         },
         "specifications.slug": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_domain": {
+      "version": 0,
+      "attributes": {
+        "appwrite_nameservers": {
+          "type": "tftypes.List[tftypes.String]",
+          "computed": true
+        },
+        "auto_renewal": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "expires_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "nameservers_verified": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "registrar": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "updated_at": {
           "type": "tftypes.String",
           "computed": true
         }

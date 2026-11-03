@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Domains and DNS on Appwrite Cloud, authenticated with the organization key's
+  `domains.read` and `domains.write` scopes:
+  - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
+    DNS zone, and reports the nameservers to delegate it to. Destroying it
+    deletes the zone and every record in it
+  - `appwrite_domain_record` manages A, AAAA, ALIAS, CAA, CNAME, HTTPS, MX, NS,
+    SRV and TXT records. A name or host name value written in full, in another
+    case or with a trailing dot is kept as written rather than shown as a diff
+    against the relative, lowercase form Appwrite stores. Locked records, which
+    Appwrite creates for its own routing, cannot be imported
+  - `appwrite_domain_nameservers` sets the registrar nameservers of a domain
+    registered through Appwrite. Appwrite does not report them back, so a
+    change made outside Terraform is not detected, and destroying it leaves
+    the nameservers as they are
+  - `appwrite_domain_nameservers_verification` asks Appwrite to check a
+    domain's delegation until it passes, since Appwrite otherwise only checks
+    when the domain is added
+  - The `appwrite_domain` data source reads a domain by ID or name, for
+    managing the records of one Terraform does not own
 - `interval` on `appwrite_function` and the `appwrite_function` data source,
   running the function every N minutes as an alternative to a cron `schedule`.
   The two conflict. Removing `interval` from the configuration stops it. Free

@@ -48,6 +48,10 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_postgresql_pooler",
 		"appwrite_mysql_pooler",
 		"appwrite_postgresql_extension",
+		"appwrite_domain",
+		"appwrite_domain_record",
+		"appwrite_domain_nameservers",
+		"appwrite_domain_nameservers_verification",
 	}
 	for _, name := range wantResources {
 		if _, ok := resp.ResourceSchemas[name]; !ok {
@@ -72,6 +76,7 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_mysql_backups",
 		"appwrite_mongo_backups",
 		"appwrite_postgresql_extensions",
+		"appwrite_domain",
 	}
 	for _, name := range wantDataSources {
 		if _, ok := resp.DataSourceSchemas[name]; !ok {
