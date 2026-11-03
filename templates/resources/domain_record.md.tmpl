@@ -1,0 +1,57 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Domains"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Domains are available on Appwrite Cloud. An organization API key with `domains.read` and `domains.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+The record's zone can belong to an [appwrite_domain](domain.md) resource, or to a domain read with the [appwrite_domain data source](../data-sources/domain.md). Records only resolve once the domain is delegated to Appwrite's nameservers.
+
+Appwrite stores names relative to the domain, lowercase and without a trailing dot, and host name values lowercase without a trailing dot. `www`, `WWW` and `www.example.com.` are the same name, and the provider keeps whichever spelling the configuration uses. A zone holds each record once and a name holds at most one `CNAME`, so a duplicate is rejected when it is created.
+
+`priority` is required for `MX` and `SRV` records, and `weight` and `port` for `SRV` records. They are rejected for other types. Changing `type`, `domain_id` or `organization_id` replaces the record; every other argument is updated in place.
+
+Locked records, which Appwrite creates for its own routing, cannot be imported.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization, domain and record ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, `domain_id/record_id` can be used:
+
+```shell
+terraform import appwrite_domain_record.example 5ababd603b22780302dd8d83498e5172/6a1f0c2e000b3d7e9f42
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_domain_record.example
+  id = "organization-id/5ababd603b22780302dd8d83498e5172/6a1f0c2e000b3d7e9f42"
+}
+```
+
+An import has no configuration to compare against, so it stores `name` and `value` as Appwrite returns them. If the configuration spells either differently, for example `www.example.com.` for a stored `www`, the first plan after the import shows an in-place update. Applying it sends the same record and changes nothing on the server; the plan is empty afterwards.
+{{- end }}
+
+## See Also
+
+- [appwrite_domain](domain.md) - Add a domain to an organization

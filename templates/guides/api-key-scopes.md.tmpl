@@ -18,7 +18,8 @@ The provider takes two, because Appwrite has two kinds of administrative route:
 - `api_key` — a **project** key. Used for everything inside a project: tables,
   buckets, users, functions, sites, webhooks.
 - `organization_api_key` — an **organization** key. Used for organization-level
-  administration: creating projects, and managing a project's API keys.
+  administration: creating projects, managing a project's API keys, and managing
+  domains and their DNS records.
 
 If `organization_api_key` is not set it falls back to `api_key`. That fallback
 exists for backwards compatibility and is not a good configuration to adopt: it
@@ -49,6 +50,8 @@ what to add. For reference:
 | `appwrite_project_key` | organization | `keys.read`, `keys.write` |
 | `appwrite_project_ephemeral_key` | organization | `keys.write` |
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
+| `appwrite_domain`, `appwrite_domain_record`, `appwrite_domain_nameservers`, `appwrite_domain_nameservers_verification` | organization | `domains.read`, `domains.write` |
+| `appwrite_domain` data source | organization | `domains.read` |
 | `appwrite_auth_jwt` | project | `users.read`, `sessions.write` |
 | `appwrite_auth_session` | project | `sessions.write` |
 

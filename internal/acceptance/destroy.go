@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -114,6 +115,14 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewBackups(projectScoped(t, attrs)).GetPolicy(attrs["id"])
 		return err
 	},
+	"appwrite_domain": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).Get(attrs["id"])
+		return err
+	},
+	"appwrite_domain_record": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
+		return err
+	},
 }
 
 const (
@@ -154,6 +163,12 @@ var destroyCheckGaps = map[string]string{
 	"appwrite_postgresql_pooler":         reasonBillable,
 	"appwrite_mysql_pooler":              reasonBillable,
 	"appwrite_postgresql_extension":      reasonBillable,
+	// Destroying these changes nothing on the server by design: the first
+	// leaves the registrar nameservers where they are rather than moving the
+	// domain's DNS as a side effect, and the second records a check that has
+	// no undo. Their ID is the domain's, which outlives them.
+	"appwrite_domain_nameservers":              "destroy deliberately leaves the server unchanged",
+	"appwrite_domain_nameservers_verification": "destroy deliberately leaves the server unchanged",
 	// DocumentsDB and VectorsDB are Cloud-only and skipped unless
 	// APPWRITE_CLOUD_TESTS is set.
 	"appwrite_documentsdb":            reasonCloudOnly,
@@ -256,4 +271,26 @@ func projectScoped(t *testing.T, attrs map[string]string) sdkclient.Client {
 		return ClientForProjectID(t, projectID)
 	}
 	return ProjectClient(t)
+}
+
+// organizationScoped builds a client for the organization an organization
+// resource belongs to. It authenticates the way the provider does, with the
+// organization key and the api_key fallback.
+func organizationScoped(t *testing.T, attrs map[string]string) sdkclient.Client {
+	t.Helper()
+	organizationID := attrs["organization_id"]
+	if organizationID == "" {
+		organizationID = os.Getenv("APPWRITE_ORGANIZATION_ID")
+	}
+	key := os.Getenv("APPWRITE_ORGANIZATION_API_KEY")
+	if key == "" {
+		key = os.Getenv("APPWRITE_API_KEY")
+	}
+	c := appwrite.NewClient(
+		appwrite.WithEndpoint(os.Getenv("APPWRITE_ENDPOINT")),
+		appwrite.WithKey(key),
+		appwrite.WithProject("console"),
+	)
+	c.AddHeader("X-Appwrite-Organization", organizationID)
+	return c
 }
