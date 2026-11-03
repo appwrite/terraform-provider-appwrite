@@ -179,6 +179,9 @@ jobs:
     # Only meaningful on a pull request: a push to main has no PR to inspect.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -192,11 +195,14 @@ jobs:
       # attributable act.
       - name: Require a changelog entry or the skip-changelog label
         env:
-          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        # Labels are read live, not from the event: Renovate labels a PR just
+        # after opening it, so the opened event does not carry skip-changelog.
         run: |
-          if printf '%s' "$LABELS" | grep -q '"skip-changelog"'; then
+          if gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.labels[].name' | grep -qx 'skip-changelog'; then
             echo "skip-changelog label is present; not requiring an entry."
             exit 0
           fi
