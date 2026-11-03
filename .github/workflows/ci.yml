@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # labeled/unlabeled so adding skip-changelog re-runs the changelog check.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 # Least privilege by default. Nothing in this workflow writes to the repository,
 # and a job that needs more should ask for it rather than inherit it.
