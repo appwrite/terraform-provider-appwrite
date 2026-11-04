@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_project_services` and `appwrite_project_protocols` enable and
+  disable a project's API services (account, tablesdb, storage, functions and
+  the rest Appwrite lets a project switch off) and its REST, GraphQL and
+  WebSocket protocols, with the project key's `project.read` and
+  `project.write` scopes. Only the switches set in configuration are managed;
+  removing one, or destroying the resource, enables it again. Requests made
+  with an API key, the provider's included, are not blocked by a disabled
+  service or by disabled REST, but are blocked by disabled GraphQL
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
