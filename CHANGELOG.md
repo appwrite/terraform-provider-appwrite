@@ -54,6 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   had no effect
 - Guides for [API key scopes](docs/guides/api-key-scopes.md) and
   [debugging](docs/guides/debugging.md)
+- `appwrite_proxy_rule` supports `type = "api"`, serving the Appwrite API on a
+  custom domain, and `type = "redirect"`, redirecting a domain to
+  `redirect_url` with `redirect_status_code` (301, 302, 307 or 308). A redirect
+  rule is attached to a site or function through `resource_id` and the new
+  `redirect_resource_type`, and Appwrite deletes it along with that resource.
+  `resource_id` is now optional, since API rules take none; it is still
+  required for site, function and redirect rules, and each type's arguments are
+  checked at plan time. Existing site and function rules plan no changes
 
 ### Changed
 
