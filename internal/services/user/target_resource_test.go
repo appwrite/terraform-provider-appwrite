@@ -16,14 +16,14 @@ import (
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
 )
 
-// TestAccUserTarget_basic creates one target of each type, subscribes the
+// TestAccAuthUserTarget_basic creates one target of each type, subscribes the
 // email target to a topic, changes everything that can change in place, and
 // imports.
 //
 // The user is a fixture rather than an appwrite_auth_user, so it outlives the
 // configuration: deleting a user deletes its targets, and with the user still
 // there the destroy check shows the targets were deleted by this resource.
-func TestAccUserTarget_basic(t *testing.T) {
+func TestAccAuthUserTarget_basic(t *testing.T) {
 	userID, cleanup := acceptance.User(t)
 	defer cleanup()
 
@@ -52,21 +52,21 @@ func TestAccUserTarget_basic(t *testing.T) {
 			{
 				Config: before.String(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("appwrite_user_target.email", "id"),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "user_id", userID),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "provider_type", "email"),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "identifier", before.email),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "name", "Work"),
-					resource.TestCheckResourceAttrPair("appwrite_user_target.email", "provider_id", "appwrite_messaging_provider.first", "id"),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "expired", "false"),
-					resource.TestCheckResourceAttrSet("appwrite_user_target.email", "created_at"),
-					resource.TestCheckResourceAttr("appwrite_user_target.sms", "identifier", before.phone),
-					resource.TestCheckNoResourceAttr("appwrite_user_target.sms", "name"),
-					resource.TestCheckNoResourceAttr("appwrite_user_target.sms", "provider_id"),
-					resource.TestCheckResourceAttr("appwrite_user_target.push", "id", fmt.Sprintf("tf-acc-test-push-%s", suffix)),
-					resource.TestCheckResourceAttr("appwrite_user_target.push", "provider_type", "push"),
-					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.email", "target_id", "appwrite_user_target.email", "id"),
-					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.push", "target_id", "appwrite_user_target.push", "id"),
+					resource.TestCheckResourceAttrSet("appwrite_auth_user_target.email", "id"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "user_id", userID),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "provider_type", "email"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "identifier", before.email),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "name", "Work"),
+					resource.TestCheckResourceAttrPair("appwrite_auth_user_target.email", "provider_id", "appwrite_messaging_provider.first", "id"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "expired", "false"),
+					resource.TestCheckResourceAttrSet("appwrite_auth_user_target.email", "created_at"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.sms", "identifier", before.phone),
+					resource.TestCheckNoResourceAttr("appwrite_auth_user_target.sms", "name"),
+					resource.TestCheckNoResourceAttr("appwrite_auth_user_target.sms", "provider_id"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.push", "id", fmt.Sprintf("tf-acc-test-push-%s", suffix)),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.push", "provider_type", "push"),
+					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.email", "target_id", "appwrite_auth_user_target.email", "id"),
+					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.push", "target_id", "appwrite_auth_user_target.push", "id"),
 				),
 			},
 			{
@@ -75,21 +75,21 @@ func TestAccUserTarget_basic(t *testing.T) {
 				// subscribers keep pointing at the same targets.
 				Config: after.String(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "identifier", after.email),
-					resource.TestCheckResourceAttr("appwrite_user_target.email", "name", "Home"),
-					resource.TestCheckResourceAttrPair("appwrite_user_target.email", "provider_id", "appwrite_messaging_provider.second", "id"),
-					resource.TestCheckResourceAttr("appwrite_user_target.sms", "identifier", after.phone),
-					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.email", "target_id", "appwrite_user_target.email", "id"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "identifier", after.email),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.email", "name", "Home"),
+					resource.TestCheckResourceAttrPair("appwrite_auth_user_target.email", "provider_id", "appwrite_messaging_provider.second", "id"),
+					resource.TestCheckResourceAttr("appwrite_auth_user_target.sms", "identifier", after.phone),
+					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.email", "target_id", "appwrite_auth_user_target.email", "id"),
 				),
 			},
 			{
-				ResourceName:      "appwrite_user_target.email",
+				ResourceName:      "appwrite_auth_user_target.email",
 				ImportState:       true,
-				ImportStateIdFunc: targetImportID("appwrite_user_target.email"),
+				ImportStateIdFunc: targetImportID("appwrite_auth_user_target.email"),
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName:      "appwrite_user_target.push",
+				ResourceName:      "appwrite_auth_user_target.push",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/tf-acc-test-push-%s", userID, suffix),
 				ImportStateVerify: true,
@@ -97,7 +97,7 @@ func TestAccUserTarget_basic(t *testing.T) {
 			{
 				// The target Appwrite keeps for the user's own email address
 				// is refused, since Appwrite manages it alongside the user.
-				ResourceName: "appwrite_user_target.email",
+				ResourceName: "appwrite_auth_user_target.email",
 				ImportState:  true,
 				ImportStateIdFunc: func(*terraform.State) (string, error) {
 					user, err := appwrite.NewUsers(acceptance.ProjectClient(t)).Get(userID)
@@ -117,12 +117,12 @@ func TestAccUserTarget_basic(t *testing.T) {
 	})
 }
 
-// TestAccUserTarget_removingNameReplaces covers the arguments Appwrite cannot
+// TestAccAuthUserTarget_removingNameReplaces covers the arguments Appwrite cannot
 // clear: removing one from the configuration has to replace the target, or the
 // apply would report success and leave the old value in place. It also covers
 // a target on a user Terraform manages, and the subscriber following the
 // replacement to the target's new ID.
-func TestAccUserTarget_removingNameReplaces(t *testing.T) {
+func TestAccAuthUserTarget_removingNameReplaces(t *testing.T) {
 	suffix := strconv.FormatInt(time.Now().UnixNano(), 36)
 	config := func(name string) string {
 		nameLine := ""
@@ -135,7 +135,7 @@ resource "appwrite_auth_user" "test" {
   email = "tf-acc-test-target-%[1]s@example.com"
 }
 
-resource "appwrite_user_target" "test" {
+resource "appwrite_auth_user_target" "test" {
   user_id       = appwrite_auth_user.test.id
   provider_type = "email"
   identifier    = "tf-acc-test-target-%[1]s-alerts@example.com"
@@ -148,7 +148,7 @@ resource "appwrite_messaging_topic" "test" {
 
 resource "appwrite_messaging_subscriber" "test" {
   topic_id  = appwrite_messaging_topic.test.id
-  target_id = appwrite_user_target.test.id
+  target_id = appwrite_auth_user_target.test.id
 }
 `, suffix, nameLine)
 	}
@@ -159,19 +159,19 @@ resource "appwrite_messaging_subscriber" "test" {
 		Steps: []resource.TestStep{
 			{
 				Config: config("Alerts"),
-				Check:  resource.TestCheckResourceAttr("appwrite_user_target.test", "name", "Alerts"),
+				Check:  resource.TestCheckResourceAttr("appwrite_auth_user_target.test", "name", "Alerts"),
 			},
 			{
 				Config: config(""),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("appwrite_user_target.test", plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction("appwrite_auth_user_target.test", plancheck.ResourceActionDestroyBeforeCreate),
 						plancheck.ExpectResourceAction("appwrite_messaging_subscriber.test", plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckNoResourceAttr("appwrite_user_target.test", "name"),
-					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.test", "target_id", "appwrite_user_target.test", "id"),
+					resource.TestCheckNoResourceAttr("appwrite_auth_user_target.test", "name"),
+					resource.TestCheckResourceAttrPair("appwrite_messaging_subscriber.test", "target_id", "appwrite_auth_user_target.test", "id"),
 				),
 			},
 			acceptance.ExpectEmptyPlanAfterApply(config("")),
@@ -179,11 +179,11 @@ resource "appwrite_messaging_subscriber" "test" {
 	})
 }
 
-// TestAccUserTarget_providerOfWrongType covers a provider Appwrite's create
+// TestAccAuthUserTarget_providerOfWrongType covers a provider Appwrite's create
 // route would accept without checking. The provider has the server check it,
 // and the target it already created is recorded as tainted rather than lost:
 // the destroy check confirms Terraform still deletes it.
-func TestAccUserTarget_providerOfWrongType(t *testing.T) {
+func TestAccAuthUserTarget_providerOfWrongType(t *testing.T) {
 	userID, cleanup := acceptance.User(t)
 	defer cleanup()
 	suffix := strconv.FormatInt(time.Now().UnixNano(), 36)
@@ -203,7 +203,7 @@ resource "appwrite_messaging_provider" "sms" {
   from        = "+14155550100"
 }
 
-resource "appwrite_user_target" "test" {
+resource "appwrite_auth_user_target" "test" {
   user_id       = %[2]q
   provider_type = "email"
   identifier    = "tf-acc-test-%[1]s@example.com"
@@ -232,12 +232,12 @@ resource "appwrite_user_target" "test" {
 	}
 }
 
-// TestAccUserTarget_invalidIdentifier checks that an identifier the provider
+// TestAccAuthUserTarget_invalidIdentifier checks that an identifier the provider
 // type cannot take fails at plan time rather than mid-apply.
-func TestAccUserTarget_invalidIdentifier(t *testing.T) {
+func TestAccAuthUserTarget_invalidIdentifier(t *testing.T) {
 	config := func(providerType, identifier string) string {
 		return fmt.Sprintf(`
-resource "appwrite_user_target" "test" {
+resource "appwrite_auth_user_target" "test" {
   user_id       = "tf-acc-test-unused"
   provider_type = %q
   identifier    = %q
@@ -294,7 +294,7 @@ resource "appwrite_messaging_provider" "second" {
   from_email = "noreply@example.com"
 }
 
-resource "appwrite_user_target" "email" {
+resource "appwrite_auth_user_target" "email" {
   user_id       = %[2]q
   provider_type = "email"
   identifier    = %[3]q
@@ -302,13 +302,13 @@ resource "appwrite_user_target" "email" {
   provider_id   = appwrite_messaging_provider.%[6]s.id
 }
 
-resource "appwrite_user_target" "sms" {
+resource "appwrite_auth_user_target" "sms" {
   user_id       = %[2]q
   provider_type = "sms"
   identifier    = %[4]q
 }
 
-resource "appwrite_user_target" "push" {
+resource "appwrite_auth_user_target" "push" {
   id            = "tf-acc-test-push-%[1]s"
   user_id       = %[2]q
   provider_type = "push"
@@ -322,12 +322,12 @@ resource "appwrite_messaging_topic" "test" {
 
 resource "appwrite_messaging_subscriber" "email" {
   topic_id  = appwrite_messaging_topic.test.id
-  target_id = appwrite_user_target.email.id
+  target_id = appwrite_auth_user_target.email.id
 }
 
 resource "appwrite_messaging_subscriber" "push" {
   topic_id  = appwrite_messaging_topic.test.id
-  target_id = appwrite_user_target.push.id
+  target_id = appwrite_auth_user_target.push.id
 }
 `, c.suffix, c.userID, c.email, c.phone, c.name, c.provider)
 }

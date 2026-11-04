@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `appwrite_user_target` manages a user's messaging targets: an email address,
+- `appwrite_auth_user_target` manages a user's messaging targets: an email address,
   phone number or push token that `appwrite_messaging_subscriber` can subscribe
   to a topic. Until now the only targets a subscriber could use were the ones
   Appwrite creates for a user's own email address and phone number, which this

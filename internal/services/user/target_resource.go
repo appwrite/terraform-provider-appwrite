@@ -51,7 +51,7 @@ func NewTargetResource() resource.Resource {
 }
 
 func (r *targetResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_user_target"
+	resp.TypeName = req.ProviderTypeName + "_auth_user_target"
 }
 
 // requiresReplaceIfRemoved plans a replacement when an argument that was set is

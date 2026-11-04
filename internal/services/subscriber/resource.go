@@ -60,7 +60,7 @@ func (r *subscriberResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"target_id": schema.StringAttribute{
-				Description:   "The ID of the target to subscribe: an appwrite_user_target, or a target Appwrite created for a user's email address or phone number. Changing this forces a new resource to be created.",
+				Description:   "The ID of the target to subscribe: an appwrite_auth_user_target, or a target Appwrite created for a user's email address or phone number. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

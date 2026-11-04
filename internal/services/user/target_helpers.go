@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	targetResourceName = "appwrite_user_target"
+	targetResourceName = "appwrite_auth_user_target"
 
 	providerTypeEmail = "email"
 	providerTypeSMS   = "sms"

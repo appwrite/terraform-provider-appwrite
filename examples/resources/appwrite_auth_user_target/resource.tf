@@ -4,7 +4,7 @@ resource "appwrite_auth_user" "jane" {
 }
 
 # A second address for Jane, delivered through a specific provider.
-resource "appwrite_user_target" "jane_alerts" {
+resource "appwrite_auth_user_target" "jane_alerts" {
   user_id       = appwrite_auth_user.jane.id
   provider_type = "email"
   identifier    = "jane.alerts@example.com"
@@ -12,13 +12,13 @@ resource "appwrite_user_target" "jane_alerts" {
   provider_id   = appwrite_messaging_provider.smtp.id
 }
 
-resource "appwrite_user_target" "jane_phone" {
+resource "appwrite_auth_user_target" "jane_phone" {
   user_id       = appwrite_auth_user.jane.id
   provider_type = "sms"
   identifier    = "+14155550100"
 }
 
-resource "appwrite_user_target" "jane_device" {
+resource "appwrite_auth_user_target" "jane_device" {
   user_id       = appwrite_auth_user.jane.id
   provider_type = "push"
   identifier    = var.jane_device_token
@@ -31,5 +31,5 @@ resource "appwrite_messaging_topic" "incidents" {
 
 resource "appwrite_messaging_subscriber" "jane_alerts" {
   topic_id  = appwrite_messaging_topic.incidents.id
-  target_id = appwrite_user_target.jane_alerts.id
+  target_id = appwrite_auth_user_target.jane_alerts.id
 }

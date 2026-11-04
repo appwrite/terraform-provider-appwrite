@@ -165,7 +165,7 @@ func ClientWithJWT(t *testing.T, jwt string) sdkclient.Client {
 // MessagingTarget provisions a user whose email address gives it a messaging
 // target, and returns that target's ID along with a cleanup function.
 //
-// Subscribers subscribe a target to a topic. appwrite_user_target creates
+// Subscribers subscribe a target to a topic. appwrite_auth_user_target creates
 // targets of its own, but the one Appwrite creates implicitly for a user's
 // email address is surfaced nowhere -- not on appwrite_auth_user, not on its
 // data source -- and cannot be imported, so there is no way to reach it from
