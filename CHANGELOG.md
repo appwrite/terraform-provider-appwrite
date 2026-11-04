@@ -28,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     when the domain is added
   - The `appwrite_domain` data source reads a domain by ID or name, for
     managing the records of one Terraform does not own
+- `appwrite_project_platform` registers a web, Android, Apple, Linux or Windows
+  app as a platform of a project, chosen by `type`, so its client SDK requests
+  are accepted. Authenticated with the project key's `platforms.read` and
+  `platforms.write` scopes. The type's identifying argument (`hostname`,
+  `application_id`, `bundle_identifier`, `package_name` or
+  `package_identifier_name`) is checked at plan time, and changing it or the
+  name updates the platform in place; changing `type` replaces it
 - `interval` on `appwrite_function` and the `appwrite_function` data source,
   running the function every N minutes as an alternative to a cron `schedule`.
   The two conflict. Removing `interval` from the configuration stops it. Free
