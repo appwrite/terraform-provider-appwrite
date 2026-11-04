@@ -45,6 +45,10 @@ func Register() {
 		Name: "appwrite_site",
 		F:    sweepSites,
 	})
+	resource.AddTestSweepers("appwrite_project_variable", &resource.Sweeper{
+		Name: "appwrite_project_variable",
+		F:    sweepProjectVariables,
+	})
 	resource.AddTestSweepers("appwrite_proxy_rule", &resource.Sweeper{
 		Name: "appwrite_proxy_rule",
 		F:    sweepProxyRules,
@@ -257,6 +261,32 @@ func sweepSites(string) error {
 		e.ok()
 	}
 	return e.result("sites")
+}
+
+// Project variables have server-assigned IDs and keys that cannot contain
+// Prefix, so they are matched on a TF_ACC_TEST_ key prefix instead.
+func sweepProjectVariables(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListVariables()
+	if err != nil {
+		return err
+	}
+	var e errs
+	for _, v := range list.Variables {
+		if !Sweepable(v.Id) && !SweepableKey(v.Key) {
+			continue
+		}
+		if _, err := svc.DeleteVariable(v.Id); err != nil {
+			e.fail("project variable", v.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("project variables")
 }
 
 func sweepProxyRules(string) error {
