@@ -54,6 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   had no effect
 - Guides for [API key scopes](docs/guides/api-key-scopes.md) and
   [debugging](docs/guides/debugging.md)
+- Two `appwrite_messaging_provider` types:
+  - `ses`, for Amazon SES email, with `access_key`, `secret_key` and `region`
+    alongside the existing email arguments
+  - `appwrite`, for push messages delivered over Appwrite's own MQTT broker,
+    with `qos` and `expiry`. Needs Appwrite 2.3.0 or later. Both are read back
+    on refresh, and removing one from the configuration clears it
+
+  The new arguments are rejected on any other type
 
 ### Changed
 
@@ -96,6 +104,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Example configuration for `appwrite_storage_bucket` was not `terraform fmt`
   clean
+- Updating an `appwrite_messaging_provider` whose `type` the provider does not
+  support, such as one imported from a type added to Appwrite later, crashed
+  the provider. It now fails with an error naming the type
 - Errors reporting that a column is still being built are now recognised from
   Appwrite's structured error `type` rather than by matching the prose of the
   message, which silently turned a poll into a hard failure whenever the message

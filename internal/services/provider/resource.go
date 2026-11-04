@@ -2,27 +2,37 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
 	"github.com/appwrite/sdk-for-go/v7/id"
-	"github.com/appwrite/sdk-for-go/v7/messaging"
 	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
-	_ resource.Resource                = &providerResource{}
-	_ resource.ResourceWithConfigure   = &providerResource{}
-	_ resource.ResourceWithImportState = &providerResource{}
+	_ resource.Resource                   = &providerResource{}
+	_ resource.ResourceWithConfigure      = &providerResource{}
+	_ resource.ResourceWithImportState    = &providerResource{}
+	_ resource.ResourceWithValidateConfig = &providerResource{}
 )
+
+// maxPushExpiry is the longest an appwrite provider may keep a message for
+// offline delivery: Appwrite's push ledger retention, 7 days.
+const maxPushExpiry = 7 * 24 * 60 * 60
 
 type providerResource struct {
 	clients *common.AppwriteClients
@@ -60,6 +70,11 @@ type providerResourceModel struct {
 	ServiceAccount types.String `tfsdk:"service_account_json"`
 	CustomerID     types.String `tfsdk:"customer_id"`
 	TemplateID     types.String `tfsdk:"template_id"`
+	AccessKey      types.String `tfsdk:"access_key"`
+	SecretKey      types.String `tfsdk:"secret_key"`
+	Region         types.String `tfsdk:"region"`
+	Qos            types.Int64  `tfsdk:"qos"`
+	Expiry         types.Int64  `tfsdk:"expiry"`
 	CreatedAt      types.String `tfsdk:"created_at"`
 	UpdatedAt      types.String `tfsdk:"updated_at"`
 }
@@ -88,7 +103,7 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Required:    true,
 			},
 			"type": schema.StringAttribute{
-				Description:   "The provider type. One of: sendgrid, mailgun, smtp, resend, twilio, vonage, msg91, telesign, textmagic, apns, fcm. Changing this forces a new resource to be created.",
+				Description:   "The provider type. One of: sendgrid, mailgun, smtp, resend, ses, twilio, vonage, msg91, telesign, textmagic, apns, fcm, appwrite. The appwrite type needs Appwrite 2.3.0 or later. Changing this forces a new resource to be created.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -217,6 +232,33 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				Sensitive:   true,
 			},
+			// SES fields
+			"access_key": schema.StringAttribute{
+				Description: "AWS access key ID. Applies to ses type.",
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"secret_key": schema.StringAttribute{
+				Description: "AWS secret access key. Applies to ses type.",
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"region": schema.StringAttribute{
+				Description: "AWS region, for example us-east-1. Applies to ses type.",
+				Optional:    true,
+				Validators:  []validator.String{stringvalidator.LengthBetween(1, 128)},
+			},
+			// Appwrite push fields
+			"qos": schema.Int64Attribute{
+				Description: "Default MQTT QoS, 0 or 1, for topics on this provider. Unset lets each subscriber choose. Applies to appwrite type.",
+				Optional:    true,
+				Validators:  []validator.Int64{int64validator.Between(0, 1)},
+			},
+			"expiry": schema.Int64Attribute{
+				Description: fmt.Sprintf("Default number of seconds a message is kept for offline delivery, at most %d (7 days). Applies to topics with no expiry of their own; the lowest value across a project's enabled appwrite providers wins. Applies to appwrite type.", maxPushExpiry),
+				Optional:    true,
+				Validators:  []validator.Int64{int64validator.Between(0, maxPushExpiry)},
+			},
 			"created_at": schema.StringAttribute{
 				Description: "The provider creation timestamp in ISO 8601 format.",
 				Computed:    true,
@@ -230,6 +272,47 @@ func (r *providerResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			},
 		},
 	}
+}
+
+// ValidateConfig rejects the ses and appwrite arguments on any other type.
+//
+// Only arguments added alongside those two types are checked. The older
+// per-type arguments have always been accepted, and ignored, on a type they
+// do not apply to, and rejecting them now would fail configurations that plan
+// cleanly today.
+func (r *providerResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config providerResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() || config.Type.IsUnknown() || config.Type.IsNull() {
+		return
+	}
+	resp.Diagnostics.Append(validateProviderConfig(config)...)
+}
+
+func validateProviderConfig(config providerResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+	providerType := config.Type.ValueString()
+
+	for _, field := range []struct {
+		name      string
+		value     attr.Value
+		appliesTo string
+	}{
+		{"access_key", config.AccessKey, typeSES},
+		{"secret_key", config.SecretKey, typeSES},
+		{"region", config.Region, typeSES},
+		{"qos", config.Qos, typeAppwrite},
+		{"expiry", config.Expiry, typeAppwrite},
+	} {
+		// A value from another resource may not be known until apply, and
+		// may turn out null. Only a value known now can be judged.
+		if field.value.IsNull() || field.value.IsUnknown() || providerType == field.appliesTo {
+			continue
+		}
+		diags.AddAttributeError(path.Root(field.name), "Unsupported argument",
+			fmt.Sprintf("%s applies only to %s providers, not %s. Remove it from the configuration.", field.name, field.appliesTo, providerType))
+	}
+	return diags
 }
 
 func (r *providerResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -262,240 +345,20 @@ func (r *providerResource) Create(ctx context.Context, req resource.CreateReques
 	if plan.ID.IsNull() || plan.ID.IsUnknown() {
 		provID = id.Unique()
 	}
-	name := plan.Name.ValueString()
-	providerType := plan.Type.ValueString()
 
-	var prov *models.Provider
-
-	switch providerType {
-	case "sendgrid":
-		var opts []messaging.CreateSendgridProviderOption
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderApiKey(v.ValueString()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateSendgridProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateSendgridProvider(provID, name, opts...)
-
-	case "mailgun":
-		var opts []messaging.CreateMailgunProviderOption
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderApiKey(v.ValueString()))
-		}
-		if v := plan.Domain; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderDomain(v.ValueString()))
-		}
-		if v := plan.IsEuRegion; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderIsEuRegion(v.ValueBool()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateMailgunProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateMailgunProvider(provID, name, opts...)
-
-	case "smtp":
-		if plan.Host.IsNull() {
-			resp.Diagnostics.AddError("Missing attribute", "host is required for smtp providers")
-			return
-		}
-		var opts []messaging.CreateSMTPProviderOption
-		if v := plan.Port; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderPort(int(v.ValueInt64())))
-		}
-		if v := plan.Username; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderUsername(v.ValueString()))
-		}
-		if v := plan.Password; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderPassword(v.ValueString()))
-		}
-		if v := plan.Encryption; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderEncryption(v.ValueString()))
-		}
-		if v := plan.AutoTLS; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderAutoTLS(v.ValueBool()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateSMTPProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateSMTPProvider(provID, name, plan.Host.ValueString(), opts...)
-
-	case "resend":
-		var opts []messaging.CreateResendProviderOption
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateResendProviderApiKey(v.ValueString()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateResendProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateResendProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateResendProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateResendProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateResendProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateResendProvider(provID, name, opts...)
-
-	case "twilio":
-		var opts []messaging.CreateTwilioProviderOption
-		if v := plan.AccountSid; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTwilioProviderAccountSid(v.ValueString()))
-		}
-		if v := plan.AuthToken; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTwilioProviderAuthToken(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTwilioProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateTwilioProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateTwilioProvider(provID, name, opts...)
-
-	case "vonage":
-		var opts []messaging.CreateVonageProviderOption
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateVonageProviderApiKey(v.ValueString()))
-		}
-		if v := plan.APISecret; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateVonageProviderApiSecret(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateVonageProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateVonageProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateVonageProvider(provID, name, opts...)
-
-	case "msg91":
-		var opts []messaging.CreateMsg91ProviderOption
-		if v := plan.SenderID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMsg91ProviderSenderId(v.ValueString()))
-		}
-		if v := plan.AuthKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMsg91ProviderAuthKey(v.ValueString()))
-		}
-		if v := plan.TemplateID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateMsg91ProviderTemplateId(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateMsg91ProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateMsg91Provider(provID, name, opts...)
-
-	case "telesign":
-		var opts []messaging.CreateTelesignProviderOption
-		if v := plan.CustomerID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTelesignProviderCustomerId(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTelesignProviderApiKey(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTelesignProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateTelesignProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateTelesignProvider(provID, name, opts...)
-
-	case "textmagic":
-		var opts []messaging.CreateTextmagicProviderOption
-		if v := plan.Username; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTextmagicProviderUsername(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTextmagicProviderApiKey(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateTextmagicProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateTextmagicProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateTextmagicProvider(provID, name, opts...)
-
-	case "apns":
-		var opts []messaging.CreateAPNSProviderOption
-		if v := plan.AuthKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderAuthKey(v.ValueString()))
-		}
-		if v := plan.AuthKeyID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderAuthKeyId(v.ValueString()))
-		}
-		if v := plan.TeamID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderTeamId(v.ValueString()))
-		}
-		if v := plan.BundleID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderBundleId(v.ValueString()))
-		}
-		if v := plan.Sandbox; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderSandbox(v.ValueBool()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateAPNSProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateAPNSProvider(provID, name, opts...)
-
-	case "fcm":
-		var opts []messaging.CreateFCMProviderOption
-		if v := plan.ServiceAccount; !v.IsNull() {
-			opts = append(opts, messagingClient.WithCreateFCMProviderServiceAccountJSON(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithCreateFCMProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.CreateFCMProvider(provID, name, opts...)
-
-	default:
-		resp.Diagnostics.AddError("Unsupported provider type", fmt.Sprintf("Provider type %q is not supported.", providerType))
+	prov, err := createProvider(messagingClient, provID, plan)
+	switch {
+	case errors.Is(err, errSMTPHostRequired):
+		resp.Diagnostics.AddError("Missing attribute", err.Error())
 		return
-	}
-
-	if err != nil {
+	case errors.Is(err, errUnsupportedType):
+		resp.Diagnostics.AddError("Unsupported provider type", fmt.Sprintf("Provider type %q is not supported.", plan.Type.ValueString()))
+		return
+	case plan.Type.ValueString() == typeAppwrite && isRouteMissing(err):
+		resp.Diagnostics.AddError("Error creating messaging provider",
+			"This Appwrite server has no route for the appwrite provider type, which Appwrite 2.3.0 added. Upgrade the server to use it.")
+		return
+	case err != nil:
 		resp.Diagnostics.AddError("Error creating messaging provider", common.FormatError(err))
 		return
 	}
@@ -548,270 +411,14 @@ func (r *providerResource) Update(ctx context.Context, req resource.UpdateReques
 		resp.Diagnostics.AddError("Missing project_id", err.Error())
 		return
 	}
-	messagingClient := appwrite.NewMessaging(r.clients.ClientForProject(projectID))
+	c := r.clients.ClientForProject(projectID)
 
-	id := plan.ID.ValueString()
-	providerType := plan.Type.ValueString()
-
-	var prov *models.Provider
-
-	switch providerType {
-	case "sendgrid":
-		var opts []messaging.UpdateSendgridProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderName(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderApiKey(v.ValueString()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateSendgridProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateSendgridProvider(id, opts...)
-
-	case "mailgun":
-		var opts []messaging.UpdateMailgunProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderName(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderApiKey(v.ValueString()))
-		}
-		if v := plan.Domain; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderDomain(v.ValueString()))
-		}
-		if v := plan.IsEuRegion; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderIsEuRegion(v.ValueBool()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateMailgunProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateMailgunProvider(id, opts...)
-
-	case "smtp":
-		var opts []messaging.UpdateSMTPProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderName(v.ValueString()))
-		}
-		if v := plan.Host; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderHost(v.ValueString()))
-		}
-		if v := plan.Port; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderPort(int(v.ValueInt64())))
-		}
-		if v := plan.Username; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderUsername(v.ValueString()))
-		}
-		if v := plan.Password; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderPassword(v.ValueString()))
-		}
-		if v := plan.Encryption; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderEncryption(v.ValueString()))
-		}
-		if v := plan.AutoTLS; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderAutoTLS(v.ValueBool()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateSMTPProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateSMTPProvider(id, opts...)
-
-	case "resend":
-		var opts []messaging.UpdateResendProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderName(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderApiKey(v.ValueString()))
-		}
-		if v := plan.FromEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderFromEmail(v.ValueString()))
-		}
-		if v := plan.FromName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderFromName(v.ValueString()))
-		}
-		if v := plan.ReplyToEmail; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderReplyToEmail(v.ValueString()))
-		}
-		if v := plan.ReplyToName; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderReplyToName(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateResendProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateResendProvider(id, opts...)
-
-	case "twilio":
-		var opts []messaging.UpdateTwilioProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTwilioProviderName(v.ValueString()))
-		}
-		if v := plan.AccountSid; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTwilioProviderAccountSid(v.ValueString()))
-		}
-		if v := plan.AuthToken; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTwilioProviderAuthToken(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTwilioProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateTwilioProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateTwilioProvider(id, opts...)
-
-	case "vonage":
-		var opts []messaging.UpdateVonageProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateVonageProviderName(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateVonageProviderApiKey(v.ValueString()))
-		}
-		if v := plan.APISecret; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateVonageProviderApiSecret(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateVonageProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateVonageProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateVonageProvider(id, opts...)
-
-	case "msg91":
-		var opts []messaging.UpdateMsg91ProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMsg91ProviderName(v.ValueString()))
-		}
-		if v := plan.SenderID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMsg91ProviderSenderId(v.ValueString()))
-		}
-		if v := plan.AuthKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMsg91ProviderAuthKey(v.ValueString()))
-		}
-		if v := plan.TemplateID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateMsg91ProviderTemplateId(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateMsg91ProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateMsg91Provider(id, opts...)
-
-	case "telesign":
-		var opts []messaging.UpdateTelesignProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTelesignProviderName(v.ValueString()))
-		}
-		if v := plan.CustomerID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTelesignProviderCustomerId(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTelesignProviderApiKey(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTelesignProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateTelesignProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateTelesignProvider(id, opts...)
-
-	case "textmagic":
-		var opts []messaging.UpdateTextmagicProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTextmagicProviderName(v.ValueString()))
-		}
-		if v := plan.Username; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTextmagicProviderUsername(v.ValueString()))
-		}
-		if v := plan.APIKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTextmagicProviderApiKey(v.ValueString()))
-		}
-		if v := plan.From; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateTextmagicProviderFrom(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateTextmagicProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateTextmagicProvider(id, opts...)
-
-	case "apns":
-		var opts []messaging.UpdateAPNSProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderName(v.ValueString()))
-		}
-		if v := plan.AuthKey; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderAuthKey(v.ValueString()))
-		}
-		if v := plan.AuthKeyID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderAuthKeyId(v.ValueString()))
-		}
-		if v := plan.TeamID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderTeamId(v.ValueString()))
-		}
-		if v := plan.BundleID; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderBundleId(v.ValueString()))
-		}
-		if v := plan.Sandbox; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderSandbox(v.ValueBool()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateAPNSProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateAPNSProvider(id, opts...)
-
-	case "fcm":
-		var opts []messaging.UpdateFCMProviderOption
-		if v := plan.Name; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateFCMProviderName(v.ValueString()))
-		}
-		if v := plan.ServiceAccount; !v.IsNull() {
-			opts = append(opts, messagingClient.WithUpdateFCMProviderServiceAccountJSON(v.ValueString()))
-		}
-		if v := plan.Enabled; !v.IsNull() && !v.IsUnknown() {
-			opts = append(opts, messagingClient.WithUpdateFCMProviderEnabled(v.ValueBool()))
-		}
-		prov, err = messagingClient.UpdateFCMProvider(id, opts...)
-	}
-
-	if err != nil {
+	prov, err := updateProvider(c, appwrite.NewMessaging(c), plan)
+	switch {
+	case errors.Is(err, errUnsupportedType):
+		resp.Diagnostics.AddError("Unsupported provider type", fmt.Sprintf("Provider type %q is not supported.", plan.Type.ValueString()))
+		return
+	case err != nil:
 		resp.Diagnostics.AddError("Error updating messaging provider", common.FormatError(err))
 		return
 	}
@@ -870,4 +477,23 @@ func (r *providerResource) mapToState(prov *models.Provider, model *providerReso
 	if s, ok := options["fromName"].(string); ok && s != "" && model.FromName.IsNull() {
 		model.FromName = types.StringValue(s)
 	}
+
+	// qos and expiry are read back on every refresh, unlike the arguments
+	// above. Appwrite stores null for one left unset, and an update that
+	// leaves one unset sends null to clear it, so the server's value always
+	// matches what the configuration asked for and a change made outside
+	// Terraform shows up as drift.
+	if prov.Provider == typeAppwrite {
+		model.Qos = optionalInt64(options["qos"])
+		model.Expiry = optionalInt64(options["expiry"])
+	}
+}
+
+// optionalInt64 reads a nullable number from a provider's options. JSON
+// numbers decode as float64.
+func optionalInt64(v interface{}) types.Int64 {
+	if f, ok := v.(float64); ok {
+		return types.Int64Value(int64(f))
+	}
+	return types.Int64Null()
 }
