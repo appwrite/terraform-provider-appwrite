@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Project email settings, authenticated with a project key:
+  - `appwrite_project_smtp` configures the project's custom SMTP server, with
+    the password as `password` or the write-only `password_wo`. Appwrite
+    connects to the server whenever the configuration is saved enabled, so it
+    must be reachable at apply time. Destroying it disables custom SMTP and
+    clears the credentials and sender details. Once `secure` is set Appwrite
+    cannot remove it, so a plan that removes it fails
+  - `appwrite_project_email_template` replaces the default template for one
+    type of email in one locale. Appwrite accepts and uses custom templates
+    only while custom SMTP is enabled. Appwrite has no API to restore the
+    default, so destroying it leaves the template as last applied, with a
+    warning
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
