@@ -26,6 +26,7 @@ data "appwrite_auth_team" "test" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.appwrite_auth_team.test", "name", "DS Test Team"),
 					resource.TestCheckResourceAttrSet("data.appwrite_auth_team.test", "created_at"),
+					resource.TestCheckResourceAttr("data.appwrite_auth_team.test", "prefs", "{}"),
 				),
 			},
 		},
