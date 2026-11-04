@@ -1,7 +1,10 @@
 package sweep
 
 import (
+	"encoding/json"
+
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	sdkclient "github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -52,6 +55,10 @@ func Register() {
 	resource.AddTestSweepers("appwrite_backup_policy", &resource.Sweeper{
 		Name: "appwrite_backup_policy",
 		F:    sweepBackupPolicies,
+	})
+	resource.AddTestSweepers("appwrite_project_oauth_provider", &resource.Sweeper{
+		Name: "appwrite_project_oauth_provider",
+		F:    sweepOAuthProviders,
 	})
 	// Tables, columns, indexes and rows live inside a database, and deleting the
 	// database takes them with it. One sweeper at the database level is both
@@ -330,4 +337,73 @@ func sweepDatabases(string) error {
 		e.ok()
 	}
 	return e.result("databases")
+}
+
+// sweepOAuthProviders resets OAuth2 providers a test configured. A provider
+// cannot be deleted, so sweeping one means disabling it and clearing what it
+// holds, as destroying the resource does. A provider is the test's when one of
+// its settings carries the prefix; the tests put it in every client ID.
+func sweepOAuthProviders(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	c := cfg.Client()
+	headers := map[string]interface{}{"X-Appwrite-Project": c.Config["project"], "content-type": "application/json"}
+
+	// Read raw: the SDK's GetOAuth2Provider cannot decode every provider.
+	resp, err := c.Call("GET", "/project/oauth2", headers, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	raw, err := sdkclient.ResponseBody(resp)
+	if err != nil {
+		return err
+	}
+	var list struct {
+		Providers []map[string]interface{} `json:"providers"`
+	}
+	if err := json.Unmarshal(raw, &list); err != nil {
+		return err
+	}
+
+	var e errs
+	for _, provider := range list.Providers {
+		id, _ := provider["$id"].(string)
+		var identifiers []string
+		reset := map[string]interface{}{}
+		// The response uses the same keys as the update route, so the reset
+		// is built from it: strings emptied, flags off, ID lists emptied.
+		// prompt falls back to a default rather than to empty, and maxAge
+		// cannot be cleared, so both are left alone.
+		for key, value := range provider {
+			switch v := value.(type) {
+			case string:
+				if key != "$id" {
+					identifiers = append(identifiers, v)
+					reset[key] = ""
+				}
+			case bool:
+				reset[key] = false
+			case []interface{}:
+				if key != "prompt" {
+					for _, item := range v {
+						if s, ok := item.(string); ok {
+							identifiers = append(identifiers, s)
+						}
+					}
+					reset[key] = []string{}
+				}
+			}
+		}
+		if !Sweepable(identifiers...) {
+			continue
+		}
+		if _, err := c.Call("PATCH", "/project/oauth2/"+sdkclient.EncodePath(id), headers, reset); err != nil {
+			e.fail("OAuth2 provider", id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("OAuth2 providers")
 }

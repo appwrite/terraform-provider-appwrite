@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"testing"
 
@@ -96,5 +97,26 @@ func TestCheckDestroyIgnoresForeignResources(t *testing.T) {
 
 	if err := CheckDestroy(t)(state); err != nil {
 		t.Fatalf("a resource from another provider was reported: %v", err)
+	}
+}
+
+// An OAuth2 provider cannot be deleted, only reset, so its destroy check
+// passes on a reset provider and fails on one still holding settings.
+func TestOAuthProviderReset(t *testing.T) {
+	t.Parallel()
+
+	for body, wantReset := range map[string]bool{
+		`{"$id":"github","enabled":false,"clientId":"","clientSecret":""}`:                                    true,
+		`{"$id":"google","enabled":false,"clientId":"","prompt":["consent"],"nativeEnabled":false}`:           true,
+		`{"$id":"oidc","enabled":false,"clientId":"","wellKnownURL":"","prompt":[],"maxAge":600}`:             true,
+		`{"$id":"github","enabled":true,"clientId":"","clientSecret":""}`:                                     false,
+		`{"$id":"github","enabled":false,"clientId":"abc","clientSecret":""}`:                                 false,
+		`{"$id":"keycloak","enabled":false,"clientId":"","endpoint":"","realmName":"main"}`:                   false,
+		`{"$id":"apple","enabled":false,"serviceId":"","nativeEnabled":true,"nativeClientIds":["com.x.app"]}`: false,
+	} {
+		err := oauthProviderReset([]byte(body))
+		if got := errors.Is(err, errReset); got != wantReset {
+			t.Errorf("%s: reset = %v (%v), want %v", body, got, err, wantReset)
+		}
 	}
 }
