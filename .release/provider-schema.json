@@ -3211,6 +3211,53 @@
         }
       }
     },
+    "appwrite_user_target": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expired": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "identifier": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "provider_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
     "appwrite_vectorsdb": {
       "version": 0,
       "attributes": {

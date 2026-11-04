@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_user_target` manages a user's messaging targets: an email address,
+  phone number or push token that `appwrite_messaging_subscriber` can subscribe
+  to a topic. Until now the only targets a subscriber could use were the ones
+  Appwrite creates for a user's own email address and phone number, which this
+  resource refuses to import because Appwrite changes and deletes them along
+  with the user. Identifiers are checked against the provider type at plan
+  time. `identifier`, `name` and `provider_id` update in place; removing `name`
+  or `provider_id` replaces the target, since Appwrite cannot clear them
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
