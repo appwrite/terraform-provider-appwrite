@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_project_variable`, an environment variable shared by every function
+  and site in a project, authenticated with the project key's `project.read`
+  and `project.write` scopes. It takes `value` or the write-only `value_wo`,
+  like `appwrite_function_variable`. Appwrite makes a variable secret unless
+  `secret = false` is set, and cannot make a secret one non-secret, so changing
+  `secret` from `true` to `false` recreates the variable
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
