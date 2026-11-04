@@ -84,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Upgraded `golang.org/x/net` to 0.62.0 and `github.com/yuin/goldmark` to 1.7.17
+  to pick up their security fixes
 - Updated `grpc` to `v1.83.2`, `golang.org/x/net` to `v0.56.0`,
   `golang.org/x/text` to `v0.39.0` and `cloudflare/circl` to `v1.6.3`, and the
   Go directive to `1.26.6`, clearing ten vulnerabilities reachable from provider
