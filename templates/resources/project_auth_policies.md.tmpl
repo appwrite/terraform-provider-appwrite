@@ -1,0 +1,66 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A standard project API key with `project.policies.read` and `project.policies.write` scopes is required. Keys with the older `policies.read` and `policies.write` scopes also work. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+~> **Note:** This resource is authoritative for every policy it lists. An attribute left out of the configuration is set to its default on the next apply, so a policy changed in the Console is changed back unless the configuration sets it too. Import the resource first to see the current settings in the plan.
+
+The defaults are the values Appwrite gives a new project:
+
+| Policy | Default |
+| --- | --- |
+| `password_dictionary`, `password_personal_data` | `false` |
+| `password_history` | `0`, no history |
+| `password_strength` | `min = 8`, nothing else required |
+| `password_pwned` | `enabled = true`, `users = false`, `sessions = false` |
+| `session_alert` | `false` |
+| `session_duration` | `31536000`, one year |
+| `session_invalidation` | `true` |
+| `session_limit` | `10` |
+| `user_limit` | `0`, no limit |
+| `membership_privacy` | every field `false` |
+| `mfa_factors` | `totp`, `email` and `phone` `true`, `custom` `false` |
+| `deny_aliased_email`, `deny_disposable_email`, `deny_free_email`, `deny_corporate_email` | `false` |
+
+The password and email policies are checked whenever a user is created or changes their password or email address, including through the Users API with an API key.
+
+~> **Note:** `password_pwned` needs Appwrite 2.3.0 or later. Against an older server it must be left out or set to its defaults; any other value fails to apply before any other policy is changed.
+
+On Appwrite Cloud, the sign-up email policies are enforced only on plans that include them; the setting is stored either way.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project ID:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_auth_policies.example
+  id = "project-id"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_project_auth_methods](project_auth_methods.md) - Enable or disable sign-in methods

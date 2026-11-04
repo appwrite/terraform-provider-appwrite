@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A project's authentication settings, authenticated with a project key:
+  - `appwrite_project_auth_methods` enables or disables email and password,
+    magic URL, email OTP, anonymous, invite, JWT and phone sign-in
+  - `appwrite_project_auth_policies` manages the password, session, user
+    limit, team membership privacy, MFA factor and sign-up email policies.
+    `password_pwned` needs Appwrite 2.3.0 or later
+  - `appwrite_project_mock_phone` registers a phone number that signs in with
+    a fixed code instead of an SMS
+
+  Every project already has auth methods and policies, so the two singleton
+  resources take them over rather than creating anything. An attribute left
+  out of the configuration is set to Appwrite's default, and destroying the
+  resource resets every setting to its default. Writes to a project's auth
+  settings are serialized, because Appwrite loses one of two concurrent
+  writes to them
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its

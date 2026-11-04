@@ -1,0 +1,1 @@
+terraform import appwrite_project_mock_phone.app_review project-id/+15555550100

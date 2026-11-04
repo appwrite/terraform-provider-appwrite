@@ -1,0 +1,48 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A standard project API key with `project.read` and `project.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+~> **Note:** Applying this resource sets every method: the ones in the configuration to their configured value, the rest to enabled. A method turned off in the Console is turned back on by the first apply unless the configuration turns it off too. Import the resource first to see the current settings in the plan.
+
+Turning a method off only affects users signing in through the client APIs. Server-side requests made with an API key, such as creating a session through the Users API, are not checked against it.
+
+OAuth2 providers are configured separately.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project ID:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_auth_methods.example
+  id = "project-id"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_project_auth_policies](project_auth_policies.md) - Password, session and sign-up policies
+- [appwrite_project_mock_phone](project_mock_phone.md) - Mock phone numbers for testing phone sign-in
