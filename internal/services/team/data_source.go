@@ -23,6 +23,7 @@ type teamDataSource struct {
 type teamDataSourceModel struct {
 	ID        types.String `tfsdk:"id"`
 	Name      types.String `tfsdk:"name"`
+	Prefs     types.String `tfsdk:"prefs"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	UpdatedAt types.String `tfsdk:"updated_at"`
 	ProjectID types.String `tfsdk:"project_id"`
@@ -46,6 +47,10 @@ func (d *teamDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			},
 			"name": schema.StringAttribute{
 				Description: "The team name.",
+				Computed:    true,
+			},
+			"prefs": schema.StringAttribute{
+				Description: prefsDescription,
 				Computed:    true,
 			},
 			"created_at": schema.StringAttribute{
@@ -105,6 +110,12 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	config.Name = types.StringValue(team.Name)
 	config.CreatedAt = types.StringValue(team.CreatedAt)
 	config.UpdatedAt = types.StringValue(team.UpdatedAt)
+	prefs, err := teamPrefs(team, types.StringNull())
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading team preferences", err.Error())
+		return
+	}
+	config.Prefs = prefs
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

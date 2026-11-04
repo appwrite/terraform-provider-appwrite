@@ -36,4 +36,5 @@ output "team_name" {
 
 - `created_at` (String) The team creation timestamp.
 - `name` (String) The team name.
+- `prefs` (String) The team's preferences, shared by every member, as a JSON-encoded object. Use jsonencode to write it and jsondecode to read it.
 - `updated_at` (String) The team last update timestamp.

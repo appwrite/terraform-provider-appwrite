@@ -39,6 +39,12 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewTeams(projectScoped(t, attrs)).Get(attrs["id"])
 		return err
 	},
+	// A membership of a deleted team reads as team_not_found, a 404 like
+	// membership_not_found, so this holds whichever went first.
+	"appwrite_auth_team_membership": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewTeams(projectScoped(t, attrs)).GetMembership(attrs["team_id"], attrs["id"])
+		return err
+	},
 	"appwrite_messaging_topic": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetTopic(attrs["id"])
 		return err
