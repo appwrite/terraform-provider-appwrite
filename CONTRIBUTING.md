@@ -69,6 +69,20 @@ make acceptance-test TESTARGS='-run TestAccPostgresql'
 Run them against a scratch project. A failed run can leave a database behind,
 which keeps billing until it is deleted; check the Console afterwards.
 
+#### Project-wide setting tests
+
+The acceptance packages run in parallel against one project. A few tests change
+settings every other test depends on -- the password and sign-up email
+policies of `appwrite_project_auth_policies` would reject the users the user
+tests are creating at the same moment -- so they are skipped unless the
+project is theirs alone:
+
+```bash
+export APPWRITE_PROJECT_ID="a-project-no-other-test-uses"
+export APPWRITE_EXCLUSIVE_PROJECT_TESTS=1
+make acceptance-test TESTARGS='-run TestAccProjectAuthPolicies'
+```
+
 #### Project API key tests
 
 Appwrite removed the endpoint for creating project API keys, so
