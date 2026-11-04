@@ -16,9 +16,15 @@ resource "appwrite_messaging_topic" "announcements" {
   name = "announcements"
 }
 
-resource "appwrite_messaging_subscriber" "user_email" {
+resource "appwrite_user_target" "jane_newsletter" {
+  user_id       = appwrite_auth_user.jane.id
+  provider_type = "email"
+  identifier    = "jane.newsletter@example.com"
+}
+
+resource "appwrite_messaging_subscriber" "jane_newsletter" {
   topic_id  = appwrite_messaging_topic.announcements.id
-  target_id = "user-email-target-id"
+  target_id = appwrite_user_target.jane_newsletter.id
 }
 ```
 
@@ -27,7 +33,7 @@ resource "appwrite_messaging_subscriber" "user_email" {
 
 ### Required
 
-- `target_id` (String) The target ID (e.g. a user's email or push target). Changing this forces a new resource to be created.
+- `target_id` (String) The ID of the target to subscribe: an appwrite_user_target, or a target Appwrite created for a user's email address or phone number. Changing this forces a new resource to be created.
 - `topic_id` (String) The topic ID to subscribe to. Changing this forces a new resource to be created.
 
 ### Optional
@@ -45,10 +51,11 @@ resource "appwrite_messaging_subscriber" "user_email" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import appwrite_messaging_subscriber.user_email <topic-id>/<subscriber-id>
+terraform import appwrite_messaging_subscriber.jane_newsletter <topic-id>/<subscriber-id>
 ```
 
 ## See Also
 
 - [appwrite_messaging_topic](messaging_topic.md) - Manage the topic this subscriber belongs to
+- [appwrite_user_target](user_target.md) - Manage the target being subscribed
 - [appwrite_messaging_provider](messaging_provider.md) - Manage messaging providers
