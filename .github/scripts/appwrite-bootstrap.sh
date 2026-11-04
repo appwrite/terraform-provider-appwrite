@@ -102,6 +102,18 @@ API_KEY="$(api POST /project/keys/ephemeral "$(jq -nc --argjson s "$SCOPES" \
   -H 'X-Appwrite-Mode: admin' | jq -r '.secret')"
 require "$API_KEY" "the API key"
 
+# The SMTP acceptance tests run a stub mail server in the test process, and
+# Appwrite connects to it whenever custom SMTP is saved enabled. This is the
+# address the container reaches the test machine at: host.docker.internal
+# where Docker defines it (Docker Desktop), otherwise the gateway of the
+# container's network, which is the host on Linux.
+if docker exec "$CONTAINER" getent hosts host.docker.internal > /dev/null 2>&1; then
+  SMTP_HOST="host.docker.internal"
+else
+  SMTP_HOST="$(docker exec "$CONTAINER" ip route | awk '/^default/ { print $3; exit }')"
+fi
+require "$SMTP_HOST" "the address Appwrite reaches this machine at"
+
 # APPWRITE_ORGANIZATION_ID is deliberately not exported. Organization API keys
 # are a Cloud-only feature -- self-hosted Appwrite does not route
 # /v1/organization/keys at all -- and the provider rejects a project key on
@@ -113,10 +125,12 @@ if [ -n "${GITHUB_ENV:-}" ]; then
     echo "APPWRITE_ENDPOINT=${ENDPOINT}/v1"
     echo "APPWRITE_PROJECT_ID=${PROJECT_ID}"
     echo "APPWRITE_API_KEY=${API_KEY}"
+    echo "APPWRITE_TEST_SMTP_HOST=${SMTP_HOST}"
   } >> "$GITHUB_ENV"
   echo "Credentials written to \$GITHUB_ENV (project ${PROJECT_ID})"
 else
   echo "export APPWRITE_ENDPOINT=${ENDPOINT}/v1"
   echo "export APPWRITE_PROJECT_ID=${PROJECT_ID}"
   echo "export APPWRITE_API_KEY=${API_KEY}"
+  echo "export APPWRITE_TEST_SMTP_HOST=${SMTP_HOST}"
 fi
