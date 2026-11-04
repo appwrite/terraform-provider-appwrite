@@ -27,6 +27,7 @@ import (
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
+	organizationsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/organization"
 	projectsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/project"
 	providersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	proxysvc "github.com/appwrite/terraform-provider-appwrite/internal/services/proxy"
@@ -214,6 +215,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		projectsvc.NewProjectResource,
 		projectsvc.NewKeyResource,
+		organizationsvc.NewMembershipResource,
 		proxysvc.NewRuleResource,
 		domainsvc.NewDomainResource,
 		domainsvc.NewRecordResource,

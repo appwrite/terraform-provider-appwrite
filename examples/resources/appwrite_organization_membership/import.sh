@@ -1,0 +1,1 @@
+terraform import appwrite_organization_membership.example organization-id/6a3f1c2b0011aabbccdd

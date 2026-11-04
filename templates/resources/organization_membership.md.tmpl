@@ -1,0 +1,74 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Organizations"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Organization memberships are available on Appwrite Cloud. An organization API key with `organization.memberships.read` and `organization.memberships.write` scopes is required, and only an organization owner can create a key with `organization.memberships.write`. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+## Adding a member
+
+A member added with an API key joins straight away. Appwrite sends no invitation email and nobody has to accept anything, so `confirm` is `true` once the resource is created.
+
+- **By `user_id`**, the account must already exist.
+- **By `email`**, Appwrite adds the account that uses that address. If no account uses it, Appwrite creates one with a random password and still sends no email. That person has to recover the password for the address before they can sign in. Destroying the membership does not delete the account.
+
+If the account already has a pending invitation sent from the Console, Appwrite confirms that invitation instead of creating a new membership, and the provider then sets `roles` to the configured ones. If the account is already a member, creating the resource fails; import the existing membership instead.
+
+## Roles
+
+`roles` is updated in place. The organization roles are `owner`, `developer`, `editor`, `analyst` and `billing`. On plans that support them, a role can be limited to one project with the form `project-<project_id>-<role>`, for example `project-my-app-developer`.
+
+A key with `organization.memberships.write` that was issued before Appwrite restricted that scope to owners cannot grant `owner`. Appwrite refuses with `user_unauthorized` until an owner replaces the key.
+
+~> **Note:** Appwrite requires an organization to keep at least one confirmed owner. It refuses to remove the `owner` role from the last owner, or to delete that owner's membership, and the apply fails with `membership_downgrade_prohibited` or `membership_deletion_prohibited`. Give another member the `owner` role first. Appwrite also refuses to remove the member whose payment method the organization is billed to. A change to `email` or `user_id` replaces the membership, and Terraform deletes the old one first, so replacing the only owner fails the same way. Use `create_before_destroy` to add the new membership first.
+
+Appwrite Cloud plans limit how many members an organization can have. A create beyond the limit, or a project-specific role on a plan without them, fails with `billing_additional_resource_not_allowed`.
+
+## Email addresses
+
+`email` is the address the member was added with, and it is stored as written. Appwrite matches addresses without regard to case, so changing only the letter case updates state without replacing the membership. If the person later changes their account's address, `email` stays as it is and `user_email` shows the new address. Terraform does not treat that as a change.
+
+`name` is only used when Appwrite creates an account for `email`. It is not read back, and changing it later updates state only.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization and membership ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, the membership ID alone can be used:
+
+```shell
+terraform import appwrite_organization_membership.example 6a3f1c2b0011aabbccdd
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_organization_membership.example
+  id = "organization-id/6a3f1c2b0011aabbccdd"
+}
+```
+
+An imported membership's `email` is the account's address as Appwrite stores it, in lowercase. If the configuration writes it in another case, the first plan after import shows an in-place update that changes only state. A membership whose invitation is still pending can be imported. Its `confirm` stays `false` until the invitation is accepted.
+{{- end }}
+
+## See Also
+
+- [appwrite_project](project.md) - Manage the organization's projects

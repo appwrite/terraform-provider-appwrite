@@ -1920,6 +1920,54 @@
         }
       }
     },
+    "appwrite_organization_membership": {
+      "version": 0,
+      "attributes": {
+        "confirm": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "email": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "joined_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "roles": {
+          "type": "tftypes.Set[tftypes.String]",
+          "required": true
+        },
+        "user_email": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "user_name": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
     "appwrite_postgresql_backup_policy": {
       "version": 0,
       "attributes": {

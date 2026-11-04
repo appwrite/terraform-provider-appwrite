@@ -123,6 +123,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
 		return err
 	},
+	"appwrite_organization_membership": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewOrganization(organizationScoped(t, attrs)).GetMembership(attrs["id"])
+		return err
+	},
 }
 
 const (

@@ -28,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     when the domain is added
   - The `appwrite_domain` data source reads a domain by ID or name, for
     managing the records of one Terraform does not own
+- `appwrite_organization_membership` adds a member to an Appwrite Cloud
+  organization by email or user ID and manages their roles in place,
+  authenticated with the organization key's `organization.memberships.read`
+  and `organization.memberships.write` scopes. Members added with a key join
+  immediately, with no invitation email; an email no account uses gets a new
+  account. Appwrite refuses to remove or demote an organization's last owner,
+  and the error says what to do instead
 - `interval` on `appwrite_function` and the `appwrite_function` data source,
   running the function every N minutes as an alternative to a cron `schedule`.
   The two conflict. Removing `interval` from the configuration stops it. Free
