@@ -110,7 +110,7 @@ require "$API_KEY" "the API key"
 if docker exec "$CONTAINER" getent hosts host.docker.internal > /dev/null 2>&1; then
   SMTP_HOST="host.docker.internal"
 else
-  SMTP_HOST="$(docker exec "$CONTAINER" ip route | awk '/^default/ { print $3; exit }')"
+  SMTP_HOST="$(docker exec "$CONTAINER" ip route | awk '/^default/ && !found { print $3; found = 1 }')"
 fi
 require "$SMTP_HOST" "the address Appwrite reaches this machine at"
 
