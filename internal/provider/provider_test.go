@@ -55,6 +55,7 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_project_auth_methods",
 		"appwrite_project_auth_policies",
 		"appwrite_project_mock_phone",
+		"appwrite_waf_rule",
 	}
 	for _, name := range wantResources {
 		if _, ok := resp.ResourceSchemas[name]; !ok {

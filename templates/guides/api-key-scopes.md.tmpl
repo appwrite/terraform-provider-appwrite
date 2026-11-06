@@ -53,6 +53,7 @@ what to add. For reference:
 | `appwrite_project_auth_policies` | project | `project.policies.read`, `project.policies.write` (or the older `policies.read`, `policies.write`) |
 | `appwrite_project_mock_phone` | project | `mocks.read`, `mocks.write` |
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
+| `appwrite_waf_rule` | project | `wafRules.read`, `wafRules.write` |
 | `appwrite_domain`, `appwrite_domain_record`, `appwrite_domain_nameservers`, `appwrite_domain_nameservers_verification` | organization | `domains.read`, `domains.write` |
 | `appwrite_domain` data source | organization | `domains.read` |
 | `appwrite_auth_jwt` | project | `users.read`, `sessions.write` |
