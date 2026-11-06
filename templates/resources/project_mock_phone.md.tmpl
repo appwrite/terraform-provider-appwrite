@@ -1,0 +1,38 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A standard project API key with `mocks.read` and `mocks.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+~> **Warning:** Anyone who knows the number and its code can sign in as the user it belongs to. The code is stored in Terraform state; use an encrypted remote state backend and restrict access to it.
+
+The [phone auth method](project_auth_methods.md) must be enabled for the number to be used to sign in.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project ID and the number:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the number alone can be used.
+{{- end }}
+
+## See Also
+
+- [appwrite_project_auth_methods](project_auth_methods.md) - Enable or disable sign-in methods
