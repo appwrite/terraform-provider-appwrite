@@ -1,0 +1,1 @@
+terraform import appwrite_project_variable.example 69da24c7747e5c2cdfc4
