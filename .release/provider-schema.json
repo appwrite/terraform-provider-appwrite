@@ -2507,6 +2507,57 @@
         }
       }
     },
+    "appwrite_project_platform": {
+      "version": 0,
+      "attributes": {
+        "application_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "bundle_identifier": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "package_identifier_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "package_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
     "appwrite_proxy_rule": {
       "version": 0,
       "attributes": {
