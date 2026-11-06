@@ -3470,6 +3470,110 @@
         }
       }
     },
+    "appwrite_waf_rule": {
+      "version": 0,
+      "attributes": {
+        "challenge_type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "conditions": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "description": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "difficulty": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "interval": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "limit": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "location": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "max_bucket_size": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "priority": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resource_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "resource_type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status_code": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "strategy": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "ttl": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
     "appwrite_webhook": {
       "version": 0,
       "attributes": {
