@@ -1,1 +1,1 @@
-terraform import appwrite_messaging_subscriber.user_email <topic-id>/<subscriber-id>
+terraform import appwrite_messaging_subscriber.jane_newsletter <topic-id>/<subscriber-id>
