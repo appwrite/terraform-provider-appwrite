@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_auth_team_membership` adds a user to a team by user ID, email
+  address or phone number. Created with the provider's API key, the membership
+  is confirmed at once and no invitation is sent. An email address or phone
+  number that matches no user makes Appwrite create one, which destroying the
+  membership leaves in place. Roles change in place; anything else replaces
+  the membership. Imported as `<team_id>/<membership_id>`
+- `prefs` on `appwrite_auth_team` and the `appwrite_auth_team` data source, the
+  team's shared preferences as a JSON object. A configuration without `prefs`
+  leaves the team's preferences as they are. Appwrite rejects an empty object,
+  so preferences cannot be cleared once set, and asking to is refused at plan
+  time
 - `appwrite_waf_rule` manages a web application firewall rule on an Appwrite
   Cloud project, authenticated with the project key's `wafRules.read` and
   `wafRules.write` scopes. One resource covers bypass, challenge, deny,

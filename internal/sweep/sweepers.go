@@ -24,6 +24,8 @@ func Register() {
 		Name: "appwrite_auth_user",
 		F:    sweepUsers,
 	})
+	// Memberships go with their team. A user Appwrite created for a
+	// membership given by email or phone outlives it, and is swept as a user.
 	resource.AddTestSweepers("appwrite_auth_team", &resource.Sweeper{
 		Name: "appwrite_auth_team",
 		F:    sweepTeams,
