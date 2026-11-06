@@ -1,0 +1,117 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A project API key with the `project.oauth2.read` and `project.oauth2.write` scopes is required.
+
+Every provider Appwrite supports is part of every project, enabled or not. Creating this resource therefore takes over whatever the provider is set to, from the Console or elsewhere, and destroying it disables the provider and clears its client ID, secret and other settings. Changing `provider_id` or `project_id` resets the old provider and configures the new one.
+
+Configure each provider of a project with at most one resource. Two resources for the same provider overwrite each other on every apply.
+
+## Credentials
+
+`client_id` and `client_secret` are the OAuth2 application's credentials, whatever the provider calls them. For Sign in with Apple, `client_id` is the Services ID and `client_secret` is the contents of the `.p8` private key file.
+
+Appwrite never returns the secret, so a secret changed outside Terraform is not detected, and after an import the first apply sends the configured secret. Removing the secret from the configuration leaves the stored one in place; destroying the resource clears it. Every other argument is read back, and removing one from the configuration clears it, with two exceptions: `prompt` and `max_age` fall back to Appwrite's default when unset, and removing them keeps the last value, because Appwrite cannot clear them.
+
+Enabling some providers, for example `github`, `microsoft` and `keycloak`, makes Appwrite check the client ID and secret with the provider, and the apply fails if the provider rejects them. Set `enabled = false` to store credentials without enabling sign-in.
+
+## Providers
+
+Each provider takes `client_id`, `client_secret` and `enabled`. The table lists the name Appwrite's API gives the two credentials, which is usually the name the provider's own console uses, and the other arguments each provider accepts. Setting an argument a provider does not take is an error.
+
+| `provider_id` | `client_id` in the API | `client_secret` in the API | Other arguments |
+| --- | --- | --- | --- |
+| `amazon` | `clientId` | `clientSecret` | |
+| `apple` | `serviceId` | `p8File` | `key_id`, `team_id`, `native_client_ids`, `native_enabled` |
+| `appwrite` | `clientId` | `clientSecret` | |
+| `auth0` | `clientId` | `clientSecret` | `endpoint`, `prompt` |
+| `authentik` | `clientId` | `clientSecret` | `endpoint` |
+| `autodesk` | `clientId` | `clientSecret` | |
+| `bitbucket` | `key` | `secret` | |
+| `bitly` | `clientId` | `clientSecret` | |
+| `box` | `clientId` | `clientSecret` | |
+| `cloudflare` | `clientId` | `clientSecret` | |
+| `dailymotion` | `apiKey` | `apiSecret` | |
+| `discord` | `clientId` | `clientSecret` | `prompt` |
+| `disqus` | `publicKey` | `secretKey` | |
+| `dropbox` | `appKey` | `appSecret` | |
+| `etsy` | `keyString` | `sharedSecret` | |
+| `facebook` | `appId` | `appSecret` | |
+| `figma` | `clientId` | `clientSecret` | |
+| `fusionauth` | `clientId` | `clientSecret` | `endpoint` |
+| `github` | `clientId` | `clientSecret` | `prompt` |
+| `gitlab` | `applicationId` | `secret` | `endpoint` |
+| `google` | `clientId` | `clientSecret` | `prompt`, `native_client_ids`, `native_enabled` |
+| `huggingface` | `clientId` | `clientSecret` | |
+| `kakao` | `clientId` | `clientSecret` | `prompt` |
+| `keycloak` | `clientId` | `clientSecret` | `endpoint`, `realm_name` |
+| `kick` | `clientId` | `clientSecret` | |
+| `linkedin` | `clientId` | `primaryClientSecret` | |
+| `microsoft` | `applicationId` | `applicationSecret` | `tenant`, `prompt` |
+| `notion` | `oauthClientId` | `oauthClientSecret` | |
+| `oidc` | `clientId` | `clientSecret` | `well_known_url`, `authorization_url`, `token_url`, `user_info_url`, `prompt`, `max_age` |
+| `okta` | `clientId` | `clientSecret` | `domain`, `authorization_server_id`, `prompt` |
+| `paypal` | `clientId` | `secretKey` | |
+| `paypalSandbox` | `clientId` | `secretKey` | |
+| `podio` | `clientId` | `clientSecret` | |
+| `resend` | `clientId` | `clientSecret` | |
+| `salesforce` | `customerKey` | `customerSecret` | `prompt` |
+| `slack` | `clientId` | `clientSecret` | |
+| `spotify` | `clientId` | `clientSecret` | |
+| `stripe` | `clientId` | `apiSecretKey` | |
+| `tiktok` | `clientId` | `clientSecret` | |
+| `tradeshift` | `oauth2ClientId` | `oauth2ClientSecret` | |
+| `tradeshiftBox` | `oauth2ClientId` | `oauth2ClientSecret` | |
+| `twitch` | `clientId` | `clientSecret` | |
+| `webflow` | `clientId` | `clientSecret` | |
+| `wordpress` | `clientId` | `clientSecret` | |
+| `x` | `customerKey` | `secretKey` | |
+| `yahoo` | `clientId` | `clientSecret` | |
+| `yandex` | `clientId` | `clientSecret` | |
+| `zoho` | `clientId` | `clientSecret` | `prompt` |
+| `zoom` | `clientId` | `clientSecret` | |
+
+`webflow`, and `prompt` for providers other than `google` and `oidc`, need a newer Appwrite than 2.2. Appwrite 2.2 rejects `webflow` and ignores `prompt` for the others.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project ID and provider ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the provider ID alone can be used:
+
+```shell
+terraform import appwrite_project_oauth_provider.github github
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_oauth_provider.github
+  id = "project-id/github"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_project](project.md) - Manage projects
