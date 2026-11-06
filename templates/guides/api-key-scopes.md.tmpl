@@ -52,6 +52,7 @@ what to add. For reference:
 | `appwrite_project_smtp` | project | `project.read`, `project.write` |
 | `appwrite_project_email_template` | project | `templates.read`, `templates.write` |
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
+| `appwrite_waf_rule` | project | `wafRules.read`, `wafRules.write` |
 | `appwrite_domain`, `appwrite_domain_record`, `appwrite_domain_nameservers`, `appwrite_domain_nameservers_verification` | organization | `domains.read`, `domains.write` |
 | `appwrite_domain` data source | organization | `domains.read` |
 | `appwrite_auth_jwt` | project | `users.read`, `sessions.write` |

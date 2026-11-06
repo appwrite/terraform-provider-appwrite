@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     only while custom SMTP is enabled. Appwrite has no API to restore the
     default, so destroying it leaves the template as last applied, with a
     warning
+- `appwrite_waf_rule` manages a web application firewall rule on an Appwrite
+  Cloud project, authenticated with the project key's `wafRules.read` and
+  `wafRules.write` scopes. One resource covers bypass, challenge, deny,
+  rateLimit and redirect rules, chosen by `type`, with each type's settings
+  checked at plan time. Conditions are JSON strings, usually written with
+  `jsonencode`, and a condition stored in Appwrite's own form is not shown as
+  a diff against the configured spelling. Changing `type` or a rate limit's
+  `strategy`, or removing every condition, replaces the rule; everything else
+  updates in place
 - Domains and DNS on Appwrite Cloud, authenticated with the organization key's
   `domains.read` and `domains.write` scopes:
   - `appwrite_domain` adds a domain to an organization so Appwrite hosts its
