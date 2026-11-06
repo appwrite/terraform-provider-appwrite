@@ -1,0 +1,108 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "WAF"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+The web application firewall is available on Appwrite Cloud only; self-hosted Appwrite does not serve its API. A standard project API key with `wafRules.read` and `wafRules.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`. Appwrite Cloud limits how many rules a project can hold, depending on its plan.
+
+## How rules are evaluated
+
+Appwrite evaluates a project's enabled rules in ascending `priority` order, and the first rule whose conditions all match decides what happens to the request:
+
+- `bypass` lets the request through without evaluating the rules after it.
+- `deny` rejects the request.
+- `challenge` makes the visitor solve a proof-of-work challenge, then lets them through for `ttl` seconds.
+- `rateLimit` counts the request against `limit` per `interval`, keyed by client IP or signed-in user, and rejects it once the limit is reached.
+- `redirect` responds with `status_code` and a redirect to `location`.
+
+Give rules that can match the same request different priorities: the order of rules with equal priority is not defined.
+
+`resource_type = "api"`, the default, applies a rule to the project's API. Rules apply to requests made with an API key too, so a broad `deny` or `rateLimit` rule can affect Terraform's own requests for other resources in the project. Requests that manage WAF rules are not filtered, so a rule can always be changed or removed. `functions` and `sites` scope a rule to one function or site, named by `resource_id`.
+
+## Conditions
+
+Each entry in `conditions` is one condition as a JSON object, most easily written with `jsonencode`. A condition has a `method`, the request `attribute` it tests, and the `values` to test against. A request matches a rule when it matches every condition; a rule without conditions matches every request.
+
+```hcl
+conditions = [
+  jsonencode({ method = "equal", attribute = "ip", values = ["203.0.113.0/24"] }),
+  jsonencode({ method = "startsWith", attribute = "path", values = ["/v1/functions"] }),
+]
+```
+
+Methods include `equal`, `notEqual`, `lessThan`, `lessThanEqual`, `greaterThan`, `greaterThanEqual`, `between`, `notBetween`, `contains`, `notContains`, `startsWith`, `notStartsWith`, `endsWith`, `notEndsWith`, `isNull` and `isNotNull`. `and` and `or` take no attribute and nest further conditions in `values`:
+
+```hcl
+jsonencode({
+  method = "or"
+  values = [
+    { method = "equal", attribute = "country", values = ["NL"] },
+    { method = "equal", attribute = "country", values = ["BE"] },
+  ]
+})
+```
+
+Attributes include `ip` (an address or a CIDR block), `method`, `path`, `host`, `country`, `continent`, `headers.<name>`, `query.<key>`, `queryKeys`, `userAgent`, `os`, `osVersion`, `browser` and `browserVersion`. Conditions on `city` and `state` require the premium Geo DB add-on.
+
+The provider checks the structure of each condition at plan time and leaves the method and attribute names to Appwrite, which rejects unknown ones when the rule is created or updated. A rule holds up to 100 conditions, counting nested ones.
+
+Appwrite stores conditions in its own form, keeping only `method`, `attribute` and `values`. The provider compares conditions in that form, so spacing and key order in the configuration are not shown as changes.
+
+## Arguments by rule type
+
+| `type` | Required | Optional |
+| --- | --- | --- |
+| `bypass`, `deny` | | |
+| `challenge` | | `challenge_type`, `difficulty`, `ttl` |
+| `rateLimit` | `limit`, `interval` | `key`, `strategy`, `max_bucket_size` (with `strategy = "tokenBucket"` only) |
+| `redirect` | `location`, `status_code` | |
+
+The arguments of one type are rejected for the others. An optional argument that is left out is planned with its default, and removing one from the configuration sets it back to its default.
+
+Changing `id`, `type`, `strategy` or `project_id` replaces the rule. Removing every condition from a rule that has some also replaces it, because Appwrite cannot clear a rule's conditions in place. Every other argument is updated in place, including `resource_type` and `resource_id`.
+
+Rule IDs are unique across Appwrite Cloud, not only within a project. Leave `id` unset to have one generated.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project and rule ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the rule ID alone can be used:
+
+```shell
+terraform import appwrite_waf_rule.example block-scrapers
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_waf_rule.example
+  id = "project-id/block-scrapers"
+}
+```
+
+An import stores each condition the way `jsonencode` writes it, so a configuration that uses `jsonencode` plans no change for them. A condition written as a literal JSON string in another key order or spacing shows as an in-place update on the first plan after import. Applying it sends the same conditions and changes nothing on the server.
+{{- end }}
+
+## See Also
+
+- [appwrite_proxy_rule](proxy_rule.md) - Serve a site or function on a custom domain
+- [appwrite_domain](domain.md) - Host a domain's DNS on Appwrite

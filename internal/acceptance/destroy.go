@@ -115,6 +115,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetPlatform(attrs["id"])
 		return err
 	},
+	"appwrite_waf_rule": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewWaf(projectScoped(t, attrs)).GetRule(attrs["id"])
+		return err
+	},
 	"appwrite_backup_policy": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewBackups(projectScoped(t, attrs)).GetPolicy(attrs["id"])
 		return err
