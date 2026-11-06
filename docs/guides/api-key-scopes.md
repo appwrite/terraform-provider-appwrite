@@ -51,6 +51,7 @@ what to add. For reference:
 | `appwrite_project_ephemeral_key` | organization | `keys.write` |
 | `appwrite_project_oauth_provider` | project | `project.oauth2.read`, `project.oauth2.write` |
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
+| `appwrite_waf_rule` | project | `wafRules.read`, `wafRules.write` |
 | `appwrite_domain`, `appwrite_domain_record`, `appwrite_domain_nameservers`, `appwrite_domain_nameservers_verification` | organization | `domains.read`, `domains.write` |
 | `appwrite_domain` data source | organization | `domains.read` |
 | `appwrite_auth_jwt` | project | `users.read`, `sessions.write` |
