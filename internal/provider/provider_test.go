@@ -52,6 +52,8 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_domain_record",
 		"appwrite_domain_nameservers",
 		"appwrite_domain_nameservers_verification",
+		"appwrite_project_services",
+		"appwrite_project_protocols",
 		"appwrite_waf_rule",
 	}
 	for _, name := range wantResources {
