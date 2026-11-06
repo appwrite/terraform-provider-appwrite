@@ -834,6 +834,11 @@
     "appwrite_messaging_provider": {
       "version": 0,
       "attributes": {
+        "access_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
         "account_sid": {
           "type": "tftypes.String",
           "optional": true
@@ -891,6 +896,10 @@
           "type": "tftypes.String",
           "optional": true
         },
+        "expiry": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
         "from": {
           "type": "tftypes.String",
           "optional": true
@@ -934,6 +943,14 @@
           "optional": true,
           "computed": true
         },
+        "qos": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true
+        },
         "reply_to_email": {
           "type": "tftypes.String",
           "optional": true
@@ -945,6 +962,11 @@
         "sandbox": {
           "type": "tftypes.Bool",
           "optional": true
+        },
+        "secret_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
         },
         "sender_id": {
           "type": "tftypes.String",
