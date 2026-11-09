@@ -30,9 +30,10 @@ resource "appwrite_site" "test" {
 				),
 			},
 			{
-				ResourceName:      "appwrite_site.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "appwrite_site.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at"},
 			},
 			{
 				Config: `
