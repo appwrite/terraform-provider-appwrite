@@ -50,13 +50,21 @@ var emailTemplateLocales = []string{
 // no value for "none": once one of these is stored, the API cannot clear it.
 var smtpSecureValues = []string{"tls", "ssl"}
 
+// Literals several of this package's resources share.
+const (
+	scopeProjectRead     = "project.read"
+	scopeProjectWrite    = "project.write"
+	projectIDDescription = "The project ID."
+	contentTypeJSON      = "application/json"
+)
+
 const (
 	smtpResourceName     = "appwrite_project_smtp"
 	templateResourceName = "appwrite_project_email_template"
 )
 
 var (
-	smtpScopes     = []string{"project.read", "project.write"}
+	smtpScopes     = []string{scopeProjectRead, scopeProjectWrite}
 	templateScopes = []string{"templates.read", "templates.write"}
 )
 

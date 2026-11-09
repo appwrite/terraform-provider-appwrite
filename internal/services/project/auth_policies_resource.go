@@ -156,7 +156,7 @@ func (r *authPoliciesResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			singletonDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description:   "The project ID.",
+				Description:   projectIDDescription,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},

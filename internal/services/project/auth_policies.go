@@ -152,8 +152,8 @@ func (c *authPoliciesClient) patch(policyID string, body map[string]any) error {
 	_, err := c.raw.Call("PATCH", "/project/policies/"+client.EncodePath(policyID), map[string]any{
 		// client.Call does not add the project header; see common.GetColumnRawJSON.
 		"X-Appwrite-Project": c.raw.Config["project"],
-		"content-type":       "application/json",
-		"accept":             "application/json",
+		"content-type":       contentTypeJSON,
+		"accept":             contentTypeJSON,
 	}, body)
 	return err
 }

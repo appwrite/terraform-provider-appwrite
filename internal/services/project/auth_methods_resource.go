@@ -23,7 +23,7 @@ const authMethodsResourceName = "appwrite_project_auth_methods"
 
 // Auth methods are read from GET /project and written with
 // PATCH /project/auth-methods/{methodId}, both under the project scopes.
-var authMethodsScopes = []string{"project.read", "project.write"}
+var authMethodsScopes = []string{scopeProjectRead, scopeProjectWrite}
 
 // authMethod pairs an attribute with the method ID Appwrite uses for it. Every
 // method is enabled on a new project.
@@ -90,7 +90,7 @@ func (r *authMethodsResource) Metadata(_ context.Context, req resource.MetadataR
 func (r *authMethodsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description:   "The project ID.",
+			Description:   projectIDDescription,
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},

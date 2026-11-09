@@ -331,16 +331,16 @@ func callOAuthProvider(c client.Client, method, id string, params map[string]any
 	headers := map[string]any{
 		// client.Call does not add the project header; see common.GetColumnRawJSON.
 		"X-Appwrite-Project": c.Config["project"],
-		"accept":             "application/json",
+		"accept":             contentTypeJSON,
 	}
 	if method != "GET" {
-		headers["content-type"] = "application/json"
+		headers["content-type"] = contentTypeJSON
 	}
 	resp, err := c.Call(method, oauthProviderPath(id), headers, params)
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(resp.Type, "application/json") {
+	if !strings.HasPrefix(resp.Type, contentTypeJSON) {
 		return nil, fmt.Errorf("unexpected response type: %s", resp.Type)
 	}
 	raw, err := client.ResponseBody(resp)

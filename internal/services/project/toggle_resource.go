@@ -76,7 +76,7 @@ func (r *toggleResource) Metadata(_ context.Context, req resource.MetadataReques
 func (r *toggleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	attributes := map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Description:   "The project ID.",
+			Description:   projectIDDescription,
 			Computed:      true,
 			PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 		},
@@ -279,14 +279,14 @@ func (r *toggleResource) ImportState(ctx context.Context, req resource.ImportSta
 }
 
 func (r *toggleResource) client(projectID string) (*sdkproject.Project, error) {
-	if err := common.ValidateProjectCredential(r.clients, r.typeName(), "project.read", "project.write"); err != nil {
+	if err := common.ValidateProjectCredential(r.clients, r.typeName(), scopeProjectRead, scopeProjectWrite); err != nil {
 		return nil, err
 	}
 	return appwrite.NewProject(r.clients.ClientForProject(projectID)), nil
 }
 
 func (r *toggleResource) formatError(err error) string {
-	return common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance(r.typeName(), "project.read", "project.write"))
+	return common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance(r.typeName(), scopeProjectRead, scopeProjectWrite))
 }
 
 type attributeGetter func(context.Context, path.Path, interface{}) diag.Diagnostics
