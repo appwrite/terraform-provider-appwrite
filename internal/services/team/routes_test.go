@@ -177,6 +177,26 @@ func TestCreateMembershipSetsConfiguredRoles(t *testing.T) {
 	}
 }
 
+// TestCreateMembershipKeepsInvitationWhenRolesFail covers a roles update that
+// fails after the server has confirmed a pending invitation: the membership
+// exists, so it comes back with the error for the caller to keep in state.
+func TestCreateMembershipKeepsInvitationWhenRolesFail(t *testing.T) {
+	t.Parallel()
+	client, _ := scriptedServer(t, map[string]scripted{
+		"POST /v1/teams/team-id/memberships":                {status: http.StatusCreated, body: membershipJSON},
+		"PATCH /v1/teams/team-id/memberships/membership-id": {status: http.StatusInternalServerError, body: `{"message":"Server Error","code":500,"type":"general_unknown"}`},
+	})
+	plan := membershipResourceModel{TeamID: types.StringValue("team-id"), UserID: types.StringValue("user-id")}
+
+	membership, err := createMembership(client, plan, []string{"lead"})
+	if err == nil {
+		t.Fatal("expected the roles update error")
+	}
+	if membership == nil || membership.Id != "membership-id" || !sameRoles(membership.Roles, []string{"dev"}) {
+		t.Errorf("membership = %+v, want the confirmed invitation with its own roles", membership)
+	}
+}
+
 // TestAlreadyMemberHint checks the guidance added to the server's refusal of a
 // membership that already exists.
 func TestAlreadyMemberHint(t *testing.T) {
