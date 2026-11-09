@@ -2523,6 +2523,52 @@
         }
       }
     },
+    "appwrite_project_email_template": {
+      "version": 0,
+      "attributes": {
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "locale": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "message": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reply_to_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "reply_to_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "subject": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
     "appwrite_project_key": {
       "version": 0,
       "attributes": {
@@ -2735,6 +2781,72 @@
         },
         "vcs": {
           "type": "tftypes.Bool",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_project_smtp": {
+      "version": 0,
+      "attributes": {
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "password_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "password_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reply_to_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "reply_to_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "secure": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_email": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "sender_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "username": {
+          "type": "tftypes.String",
           "optional": true
         }
       }

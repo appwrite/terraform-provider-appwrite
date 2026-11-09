@@ -14,12 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type capturedRequest struct {
-	method string
-	path   string
-	body   map[string]any
-}
-
 // variableServer answers every request with a variable and keeps the requests
 // it received.
 func variableServer(t *testing.T) (*httptest.Server, *[]capturedRequest) {

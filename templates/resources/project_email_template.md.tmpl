@@ -1,0 +1,51 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Every type of email has a default template in every locale, so this resource replaces the default rather than creating anything. Appwrite picks the template for the user's locale when it sends the email.
+
+A project API key with the `templates.read` and `templates.write` scopes is required.
+
+~> **Note:** Appwrite accepts a custom template only while the project's custom SMTP is enabled, and uses custom templates only while it stays enabled. Manage it with [appwrite_project_smtp](project_smtp.md) and add that resource to `depends_on`, so Terraform enables SMTP first.
+
+!> **Warning:** Destroying this resource does not restore the default template. Appwrite has no API a project key can use to remove a custom template, so it keeps its last applied content, Terraform warns and stops managing it. Reset it in the Appwrite Console to restore the default. Disabling custom SMTP also stops Appwrite from using it.
+
+`subject` and `message` can use the placeholders Appwrite fills in when it sends the email, such as `{{"{{"}}user{{"}}"}}`, `{{"{{"}}project{{"}}"}}` and `{{"{{"}}redirect{{"}}"}}`. The placeholders available depend on the type of email; see the [Appwrite documentation](https://appwrite.io/docs/advanced/platform/message-templates).
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Import uses the format `project_id/type/locale`:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, `type/locale` alone can be used. Only a customized template can be imported; one still on Appwrite's default has nothing to import.
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_email_template.verification
+  id = "project-id/verification/en"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_project_smtp](project_smtp.md) - Configure the SMTP server custom templates are sent through

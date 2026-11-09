@@ -1,0 +1,55 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Every project has exactly one SMTP configuration, so this resource takes it over rather than creating one. Only one `appwrite_project_smtp` should manage a given project.
+
+A project API key with the `project.read` and `project.write` scopes is required.
+
+~> **Note:** While `enabled` is true, Appwrite connects to the server and authenticates every time the configuration is saved, and rejects a configuration that fails with `project_smtp_config_invalid`. The server has to be reachable from Appwrite when you apply, not only when Appwrite sends email. With `enabled = false` the configuration is saved without connecting.
+
+~> **Note:** Appwrite never returns the password, so a password changed outside Terraform is not detected. Use `password_wo` with `password_wo_version` to keep it out of state; leaving out both `password` and `password_wo` clears it.
+
+~> **Note:** Once `secure` is set, Appwrite cannot remove it: the API accepts only `tls` and `ssl`. A plan that removes it fails, so it can be switched between the two but a project cannot go back to an unencrypted connection. The same applies when the project already had `secure` set before Terraform managed it.
+
+~> **Note:** Destroying this resource disables custom SMTP and clears the username, password, sender and reply-to details. The host, port and `secure` stay, because the API cannot clear them, but Appwrite ignores them while custom SMTP is disabled. Appwrite then sends the project's emails through its own server, and stops using custom email templates.
+
+To check that the configuration delivers mail, use **Send test email** in the Appwrite Console, or the `POST /v1/project/smtp/tests` endpoint.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Import uses the project ID:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_smtp.example
+  id = "project-id"
+}
+```
+
+A project that has never had custom SMTP configured has nothing to import. The password is not imported, since Appwrite never returns it.
+{{- end }}
+
+## See Also
+
+- [appwrite_project_email_template](project_email_template.md) - Customize the emails Appwrite sends through this server
