@@ -107,6 +107,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := common.GetColumnRaw(projectScoped(t, attrs), attrs["database_id"], attrs["table_id"], attrs["key"])
 		return err
 	},
+	"appwrite_project_variable": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetVariable(attrs["id"])
+		return err
+	},
 	"appwrite_proxy_rule": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewProxy(projectScoped(t, attrs)).GetRule(attrs["id"])
 		return err

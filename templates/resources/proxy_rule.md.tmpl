@@ -17,6 +17,25 @@ A standard project API key with `rules.read` and `rules.write` scopes is require
 {{ tffile .ExampleFile }}
 {{- end }}
 
+## Rule Types
+
+| `type` | What the domain does | Arguments |
+|---|---|---|
+| `site` | Serves a site. | `resource_id` (the site ID), optional `branch` |
+| `function` | Executes a function. | `resource_id` (the function ID), optional `branch` |
+| `api` | Serves the Appwrite API. | none |
+| `redirect` | Redirects every request to `redirect_url`. | `redirect_url`, `redirect_status_code`, `resource_id`, `redirect_resource_type` |
+
+Each type's arguments are checked at plan time: a missing one, or one the type does not use, fails the plan.
+
+A `redirect` rule belongs to a site or function, named by `resource_id` and `redirect_resource_type`. The rule is listed among that resource's domains in the Console, and Appwrite deletes it when the site or function is deleted. Terraform then plans to create the rule again.
+
+Appwrite cannot update a rule, so changing any argument replaces it.
+
+## Domain Verification
+
+Appwrite checks the domain's DNS records when the rule is created. If they do not point at Appwrite yet, the rule is still created, with `status` set to `unverified` and the reason in `logs`. Retry verification from the Console once DNS is in place; Terraform does not retry it.
+
 {{ .SchemaMarkdown | trimspace }}
 
 {{ if .HasImport -}}

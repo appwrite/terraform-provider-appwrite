@@ -42,6 +42,14 @@ func Sweepable(identifiers ...string) bool {
 	return false
 }
 
+// SweepableKey reports whether a variable may be deleted by a sweeper, given
+// its key. A variable key is an environment variable name, so it cannot carry
+// Prefix as written; a test variable is keyed TF_ACC_TEST_... instead, which is
+// Prefix in upper case with underscores for hyphens.
+func SweepableKey(key string) bool {
+	return Sweepable(strings.ReplaceAll(strings.ToLower(key), "_", "-"))
+}
+
 // Config is the environment a sweep run needs.
 type Config struct {
 	Endpoint  string

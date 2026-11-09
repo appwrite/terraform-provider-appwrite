@@ -2558,6 +2558,52 @@
         }
       }
     },
+    "appwrite_project_variable": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "value": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "value_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "value_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        }
+      }
+    },
     "appwrite_proxy_rule": {
       "version": 0,
       "attributes": {
@@ -2586,13 +2632,25 @@
           "optional": true,
           "computed": true
         },
+        "redirect_resource_type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "redirect_status_code": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "redirect_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
         "renew_at": {
           "type": "tftypes.String",
           "computed": true
         },
         "resource_id": {
           "type": "tftypes.String",
-          "required": true
+          "optional": true
         },
         "status": {
           "type": "tftypes.String",

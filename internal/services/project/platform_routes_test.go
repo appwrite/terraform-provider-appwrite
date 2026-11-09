@@ -13,12 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type capturedRequest struct {
-	method string
-	path   string
-	body   map[string]any
-}
-
 // platformServer answers every request with a platform of the given type,
 // echoing the name and identifier it was sent, and keeps the requests it
 // received.
