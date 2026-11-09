@@ -1,0 +1,65 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Appwrite only accepts client SDK requests from the platforms a project lists: a web app by the host name it is served from, a native app by its application ID, bundle identifier or package name.
+
+A standard project API key with `platforms.read` and `platforms.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+`type` picks the platform and the one argument it takes:
+
+| `type` | Argument |
+| --- | --- |
+| `web` | `hostname` |
+| `android` | `application_id` |
+| `apple` | `bundle_identifier` |
+| `linux` | `package_name` |
+| `windows` | `package_identifier_name` |
+
+The argument for the chosen type is required and the others are rejected. Changing `type`, `id` or `project_id` replaces the platform; `name` and the type's argument are updated in place. Appwrite stores both as written, without changing case or trimming spaces.
+
+Platform IDs are unique across the whole Appwrite instance, not only within the project. Leave `id` unset to have one generated; a custom ID that another project already uses is rejected, which on Appwrite Cloud includes projects of other organizations.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project and platform ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the platform ID alone can be used:
+
+```shell
+terraform import appwrite_project_platform.example 6a1f0c2e000b3d7e9f42
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_platform.example
+  id = "project-id/6a1f0c2e000b3d7e9f42"
+}
+```
+
+A platform created before Appwrite merged its platform types, under a type such as `flutter-ios` or `react-native-android`, imports under the merged type (`apple`, `android`). Appwrite cannot update an app platform like that in place, so changing its name or identifier fails with `platform_method_unsupported`; replace it instead, for example with `terraform apply -replace`. Former web types such as `flutter-web` update normally.
+{{- end }}
+
+## See Also
+
+- [appwrite_project](project.md) - Manage projects

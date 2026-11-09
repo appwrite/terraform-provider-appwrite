@@ -1,7 +1,10 @@
 package sweep
 
 import (
+	"errors"
+
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
+	"github.com/appwrite/sdk-for-go/v7/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -45,9 +48,23 @@ func Register() {
 		Name: "appwrite_site",
 		F:    sweepSites,
 	})
+	resource.AddTestSweepers("appwrite_project_variable", &resource.Sweeper{
+		Name: "appwrite_project_variable",
+		F:    sweepProjectVariables,
+	})
 	resource.AddTestSweepers("appwrite_proxy_rule", &resource.Sweeper{
 		Name: "appwrite_proxy_rule",
 		F:    sweepProxyRules,
+	})
+	resource.AddTestSweepers("appwrite_project_platform", &resource.Sweeper{
+		Name: "appwrite_project_platform",
+		F:    sweepPlatforms,
+	})
+	// WAF rules are Cloud-only, but a leftover one keeps filtering the test
+	// project's traffic and counts against the plan's limit on rules.
+	resource.AddTestSweepers("appwrite_waf_rule", &resource.Sweeper{
+		Name: "appwrite_waf_rule",
+		F:    sweepWAFRules,
 	})
 	resource.AddTestSweepers("appwrite_backup_policy", &resource.Sweeper{
 		Name: "appwrite_backup_policy",
@@ -259,6 +276,32 @@ func sweepSites(string) error {
 	return e.result("sites")
 }
 
+// Project variables have server-assigned IDs and keys that cannot contain
+// Prefix, so they are matched on a TF_ACC_TEST_ key prefix instead.
+func sweepProjectVariables(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListVariables()
+	if err != nil {
+		return err
+	}
+	var e errs
+	for _, v := range list.Variables {
+		if !Sweepable(v.Id) && !SweepableKey(v.Key) {
+			continue
+		}
+		if _, err := svc.DeleteVariable(v.Id); err != nil {
+			e.fail("project variable", v.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("project variables")
+}
+
 func sweepProxyRules(string) error {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -284,6 +327,35 @@ func sweepProxyRules(string) error {
 	return e.result("proxy rules")
 }
 
+func sweepPlatforms(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListPlatforms()
+	if err != nil {
+		return err
+	}
+	var e errs
+	// The list holds a different model per platform type, decoded only as far
+	// as a map. Every type has an ID and a name.
+	for _, item := range list.Platforms {
+		p, _ := item.(map[string]any)
+		platformID, _ := p["$id"].(string)
+		name, _ := p["name"].(string)
+		if platformID == "" || !Sweepable(platformID, name) {
+			continue
+		}
+		if _, err := svc.DeletePlatform(platformID); err != nil {
+			e.fail("platform", platformID, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("platforms")
+}
+
 func sweepBackupPolicies(string) error {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -306,6 +378,47 @@ func sweepBackupPolicies(string) error {
 		e.ok()
 	}
 	return e.result("backup policies")
+}
+
+func sweepWAFRules(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewWaf(cfg.Client())
+	list, err := svc.ListRules()
+	if err != nil {
+		// Self-hosted Appwrite has no WAF routes and answers 404, which
+		// means there is nothing to sweep rather than that the sweep failed.
+		var appErr *client.AppwriteError
+		if errors.As(err, &appErr) && appErr.GetStatusCode() == 404 {
+			return nil
+		}
+		return err
+	}
+	// The list holds a different model per rule type, so it comes back
+	// untyped; only the ID and name matter here.
+	var rules struct {
+		Rules []struct {
+			ID   string `json:"$id"`
+			Name string `json:"name"`
+		} `json:"rules"`
+	}
+	if err := list.Decode(&rules); err != nil {
+		return err
+	}
+	var e errs
+	for _, r := range rules.Rules {
+		if !Sweepable(r.ID, r.Name) {
+			continue
+		}
+		if _, err := svc.DeleteRule(r.ID); err != nil {
+			e.fail("WAF rule", r.ID, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("WAF rules")
 }
 
 func sweepDatabases(string) error {

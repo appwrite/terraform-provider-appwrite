@@ -37,6 +37,7 @@ import (
 	teamsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/team"
 	topicsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/topic"
 	usersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/user"
+	wafsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/waf"
 	webhooksvc "github.com/appwrite/terraform-provider-appwrite/internal/services/webhook"
 )
 
@@ -214,7 +215,12 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		projectsvc.NewProjectResource,
 		projectsvc.NewKeyResource,
+		projectsvc.NewPlatformResource,
+		projectsvc.NewVariableResource,
+		projectsvc.NewServicesResource,
+		projectsvc.NewProtocolsResource,
 		proxysvc.NewRuleResource,
+		wafsvc.NewRuleResource,
 		domainsvc.NewDomainResource,
 		domainsvc.NewRecordResource,
 		domainsvc.NewNameserversResource,

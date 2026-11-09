@@ -1,0 +1,54 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A standard project API key with `project.read` and `project.write` scopes is required. The `functions.*` and `sites.*` scopes do not cover project variables. Configure the key with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+~> **NOTE:** Appwrite makes a variable secret unless `secret = false` is set. A secret variable's value cannot be read back from the API, so a change made to it outside Terraform is not detected. A secret variable cannot be made non-secret again: changing `secret` from `true` to `false` deletes the variable and creates a new one.
+
+When a function or site has its own variable with the same key ([appwrite_function_variable](function_variable.md), [appwrite_site_variable](site_variable.md)), its own value wins. Creating, updating or deleting a project variable marks every function and site in the project as needing a new deployment, as changing their own variables does.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a variable ID, for a variable in the provider's default project:
+
+{{ codefile "shell" .ImportFile }}
+
+For a variable in another project, use the project and variable ID:
+
+```shell
+terraform import appwrite_project_variable.example project-id/69da24c7747e5c2cdfc4
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_variable.example
+  id = "project-id/variable-id"
+}
+```
+
+The value is not imported. Set `value` or `value_wo` in the configuration, and the first apply after the import writes it to the variable.
+{{- end }}
+
+## See Also
+
+- [appwrite_function_variable](function_variable.md) - Manage a function's own variables
+- [appwrite_site_variable](site_variable.md) - Manage a site's own variables
