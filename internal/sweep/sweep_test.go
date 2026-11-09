@@ -31,6 +31,22 @@ func TestSweepable(t *testing.T) {
 	}
 }
 
+func TestSweepableKey(t *testing.T) {
+	t.Parallel()
+
+	for key, want := range map[string]bool{
+		"TF_ACC_TEST_API_URL": true,
+		"tf_acc_test_lower":   true,
+		"API_URL":             false,
+		"TF_ACC":              false,
+		"":                    false,
+	} {
+		if got := sweep.SweepableKey(key); got != want {
+			t.Errorf("SweepableKey(%q) = %v, want %v", key, got, want)
+		}
+	}
+}
+
 // TestLoadConfigRefusesInheritedProject is the safety property that matters
 // most: a sweep must not silently target whichever project the environment
 // happens to name, because that is how a sweeper deletes production.

@@ -14,13 +14,6 @@ import (
 	"github.com/appwrite/sdk-for-go/v7/client"
 )
 
-type capturedRequest struct {
-	method  string
-	path    string
-	project string
-	body    map[string]any
-}
-
 // oauthServer answers every request with a provider and keeps the requests it
 // received.
 func oauthServer(t *testing.T) (*httptest.Server, func() []capturedRequest) {

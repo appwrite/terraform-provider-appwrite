@@ -29,15 +29,16 @@ func TestDestroyCheckCoverage(t *testing.T) {
 	var missing []string
 	for _, typeName := range registered {
 		_, checked := destroyChecks[typeName]
+		_, reset := resetChecks[typeName]
 		_, excused := destroyCheckGaps[typeName]
-		if !checked && !excused {
+		if !checked && !reset && !excused {
 			missing = append(missing, typeName)
 		}
 	}
 	if len(missing) > 0 {
 		sort.Strings(missing)
 		t.Errorf("no destroy check and no recorded reason for %v\n"+
-			"Add a check to destroyChecks in destroy.go, or record why it cannot have one in destroyCheckGaps.", missing)
+			"Add a check to destroyChecks (or resetChecks, for a settings resource) in destroy.go, or record why it cannot have one in destroyCheckGaps.", missing)
 	}
 
 	// The other direction matters just as much. A stale entry naming a resource
@@ -50,6 +51,14 @@ func TestDestroyCheckCoverage(t *testing.T) {
 	for typeName := range destroyChecks {
 		if !known[typeName] {
 			t.Errorf("destroyChecks has an entry for %q, which the provider does not register", typeName)
+		}
+	}
+	for typeName := range resetChecks {
+		if !known[typeName] {
+			t.Errorf("resetChecks has an entry for %q, which the provider does not register", typeName)
+		}
+		if _, both := destroyChecks[typeName]; both {
+			t.Errorf("%q has both a destroy check and a reset check; a resource is either deleted or reset", typeName)
 		}
 	}
 	for typeName := range destroyCheckGaps {

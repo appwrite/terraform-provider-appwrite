@@ -1,0 +1,1 @@
+terraform import appwrite_project_email_template.verification project-id/verification/en
