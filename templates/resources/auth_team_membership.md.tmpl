@@ -30,8 +30,11 @@ created that way as already accepted:
 - `email`, `phone` and `name` are what the membership was created from and are
   not read back. The member's current details are in `user_name`, `user_email`
   and `user_phone`.
-- A user can belong to a team only once. Creating a second membership for the
-  same user fails, and the error names the existing membership's import ID.
+- A user can belong to a team only once. Creating a membership for a user who
+  is already a confirmed member fails, and the error names the existing
+  membership's import ID. A pending invitation, such as one a client sent, is
+  confirmed instead and becomes this resource's membership, with its roles set
+  to `roles`.
 
 Only `roles` can change in place. Roles are matched as a set, so their order
 does not matter.

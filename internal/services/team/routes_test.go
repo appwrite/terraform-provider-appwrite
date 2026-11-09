@@ -93,8 +93,10 @@ func TestCreateMembershipBody(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+			// The response carries the roles sent, as for a new membership.
+			created, _ := json.Marshal(map[string]any{"$id": "membership-id", "teamId": "team-id", "userId": "user-id", "roles": append([]string{}, tc.roles...), "confirm": true})
 			client, requests := scriptedServer(t, map[string]scripted{
-				"POST /v1/teams/team-id/memberships": {status: http.StatusCreated, body: membershipJSON},
+				"POST /v1/teams/team-id/memberships": {status: http.StatusCreated, body: string(created)},
 			})
 			// Fields left out are the zero types.String, which is null.
 			tc.plan.TeamID = types.StringValue("team-id")
@@ -122,6 +124,54 @@ func TestCreateMembershipBody(t *testing.T) {
 			}
 			if _, sent := body["url"]; sent {
 				t.Error("url sent; the server only uses it for invitation emails, which an API key never triggers")
+			}
+		})
+	}
+}
+
+// TestCreateMembershipSetsConfiguredRoles covers a create that lands on a
+// pending invitation for the same user: the server confirms and returns it with
+// the roles it was sent with, so the configured roles are set afterwards. When
+// the roles already match, nothing more is sent.
+func TestCreateMembershipSetsConfiguredRoles(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name      string
+		roles     []string
+		wantPatch bool
+	}{
+		{name: "invitation roles differ", roles: []string{"lead"}, wantPatch: true},
+		{name: "invitation roles match, repeats ignored", roles: []string{"dev", "dev"}, wantPatch: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			client, requests := scriptedServer(t, map[string]scripted{
+				"POST /v1/teams/team-id/memberships":                {status: http.StatusCreated, body: membershipJSON},
+				"PATCH /v1/teams/team-id/memberships/membership-id": {body: `{"$id":"membership-id","teamId":"team-id","userId":"user-id","roles":["lead"],"confirm":true}`},
+			})
+			plan := membershipResourceModel{TeamID: types.StringValue("team-id"), UserID: types.StringValue("user-id")}
+
+			membership, err := createMembership(client, plan, tc.roles)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			patched := len(*requests) == 2 && (*requests)[1].method == http.MethodPatch
+			if patched != tc.wantPatch {
+				t.Fatalf("requests %+v, want a roles update: %v", *requests, tc.wantPatch)
+			}
+			if !sameRoles(membership.Roles, tc.roles) {
+				t.Errorf("roles = %v, want %v", membership.Roles, tc.roles)
+			}
+			if patched {
+				var body map[string]any
+				if err := json.Unmarshal([]byte((*requests)[1].body), &body); err != nil {
+					t.Fatal(err)
+				}
+				if got, _ := json.Marshal(body["roles"]); string(got) != `["lead"]` {
+					t.Errorf("update sent roles %s, want [\"lead\"]", got)
+				}
 			}
 		})
 	}

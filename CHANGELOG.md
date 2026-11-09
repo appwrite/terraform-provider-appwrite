@@ -47,8 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   address or phone number. Created with the provider's API key, the membership
   is confirmed at once and no invitation is sent. An email address or phone
   number that matches no user makes Appwrite create one, which destroying the
-  membership leaves in place. Roles change in place; anything else replaces
-  the membership. Imported as `<team_id>/<membership_id>`
+  membership leaves in place. A pending invitation for the same user is
+  confirmed and taken over, with its roles set to `roles`. Roles change in
+  place; anything else replaces the membership. Imported as
+  `<team_id>/<membership_id>`
 - `prefs` on `appwrite_auth_team` and the `appwrite_auth_team` data source, the
   team's shared preferences as a JSON object. A configuration without `prefs`
   leaves the team's preferences as they are. Appwrite rejects an empty object,
