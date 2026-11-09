@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   removing one, or destroying the resource, enables it again. Requests made
   with an API key, the provider's included, are not blocked by a disabled
   service or by disabled REST, but are blocked by disabled GraphQL
+- `appwrite_auth_user_target` manages a user's messaging targets: an email address,
+  phone number or push token that `appwrite_messaging_subscriber` can subscribe
+  to a topic. Until now the only targets a subscriber could use were the ones
+  Appwrite creates for a user's own email address and phone number, which this
+  resource refuses to import because Appwrite changes and deletes them along
+  with the user. Identifiers are checked against the provider type at plan
+  time. `identifier`, `name` and `provider_id` update in place; removing `name`
+  or `provider_id` replaces the target, since Appwrite cannot clear them
 - `appwrite_waf_rule` manages a web application firewall rule on an Appwrite
   Cloud project, authenticated with the project key's `wafRules.read` and
   `wafRules.write` scopes. One resource covers bypass, challenge, deny,

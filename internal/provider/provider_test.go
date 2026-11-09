@@ -56,6 +56,7 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_project_variable",
 		"appwrite_project_services",
 		"appwrite_project_protocols",
+		"appwrite_auth_user_target",
 		"appwrite_waf_rule",
 	}
 	for _, name := range wantResources {

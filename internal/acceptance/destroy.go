@@ -51,6 +51,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetSubscriber(attrs["topic_id"], attrs["id"])
 		return err
 	},
+	"appwrite_auth_user_target": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewUsers(projectScoped(t, attrs)).GetTarget(attrs["user_id"], attrs["id"])
+		return err
+	},
 	"appwrite_storage_bucket": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewStorage(projectScoped(t, attrs)).GetBucket(attrs["id"])
 		return err

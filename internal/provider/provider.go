@@ -233,6 +233,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		topicsvc.NewTopicResource,
 		providersvc.NewProviderResource,
 		usersvc.NewUserResource,
+		usersvc.NewTargetResource,
 		teamsvc.NewTeamResource,
 		backupsvc.NewPolicyResource,
 		rowsvc.NewRowResource,
