@@ -115,13 +115,15 @@ func TestOAuthProviderReset(t *testing.T) {
 	t.Parallel()
 
 	for body, wantReset := range map[string]bool{
-		`{"$id":"github","enabled":false,"clientId":"","clientSecret":""}`:                                    true,
-		`{"$id":"google","enabled":false,"clientId":"","prompt":["consent"],"nativeEnabled":false}`:           true,
-		`{"$id":"oidc","enabled":false,"clientId":"","wellKnownURL":"","prompt":[],"maxAge":600}`:             true,
-		`{"$id":"github","enabled":true,"clientId":"","clientSecret":""}`:                                     false,
-		`{"$id":"github","enabled":false,"clientId":"abc","clientSecret":""}`:                                 false,
-		`{"$id":"keycloak","enabled":false,"clientId":"","endpoint":"","realmName":"main"}`:                   false,
-		`{"$id":"apple","enabled":false,"serviceId":"","nativeEnabled":true,"nativeClientIds":["com.x.app"]}`: false,
+		`{"$id":"github","enabled":false,"clientId":"","clientSecret":""}`:                                     true,
+		`{"$id":"google","enabled":false,"clientId":"","prompt":["consent"],"nativeEnabled":false}`:            true,
+		`{"$id":"oidc","enabled":false,"clientId":"","wellKnownURL":"","prompt":[],"maxAge":600}`:              true,
+		`{"$id":"github","enabled":true,"clientId":"","clientSecret":""}`:                                      false,
+		`{"$id":"github","enabled":false,"clientId":"abc","clientSecret":""}`:                                  false,
+		`{"$id":"keycloak","enabled":false,"clientId":"","endpoint":"","realmName":"main"}`:                    false,
+		`{"$id":"apple","enabled":false,"serviceId":"","nativeEnabled":true,"nativeClientIds":["com.x.app"]}`:  false,
+		`{"$id":"apple","enabled":false,"serviceId":"","nativeEnabled":false,"nativeClientIds":["com.x.app"]}`: false,
+		`{"$id":"apple","enabled":false,"serviceId":"","nativeEnabled":false,"nativeClientIds":[]}`:            true,
 	} {
 		err := oauthProviderReset([]byte(body))
 		if got := errors.Is(err, errReset); got != wantReset {

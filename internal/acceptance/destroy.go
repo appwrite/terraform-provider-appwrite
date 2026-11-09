@@ -177,9 +177,9 @@ var destroyChecks = map[string]fetchFunc{
 }
 
 // oauthProviderReset returns errReset when an OAuth2 provider is disabled and
-// holds no settings: every flag false and every string other than its ID
-// empty. Lists are not judged, because some settings, such as Google's prompt,
-// fall back to a default rather than to empty.
+// holds no settings: every flag false, every string other than its ID empty and
+// every list empty. prompt is the exception: the reset leaves it to fall back
+// to the server's default, which need not be empty.
 func oauthProviderReset(body []byte) error {
 	var fields map[string]any
 	if err := json.Unmarshal(body, &fields); err != nil {
@@ -193,6 +193,10 @@ func oauthProviderReset(body []byte) error {
 			}
 		case string:
 			if key != "$id" && v != "" {
+				return nil
+			}
+		case []any:
+			if key != "prompt" && len(v) > 0 {
 				return nil
 			}
 		}
