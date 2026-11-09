@@ -1,0 +1,1 @@
+terraform import appwrite_project_platform.example project-id/6a1f0c2e000b3d7e9f42
