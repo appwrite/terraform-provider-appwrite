@@ -57,6 +57,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetSubscriber(attrs["topic_id"], attrs["id"])
 		return err
 	},
+	"appwrite_auth_user_target": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewUsers(projectScoped(t, attrs)).GetTarget(attrs["user_id"], attrs["id"])
+		return err
+	},
 	"appwrite_storage_bucket": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewStorage(projectScoped(t, attrs)).GetBucket(attrs["id"])
 		return err
@@ -113,8 +117,16 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := common.GetColumnRaw(projectScoped(t, attrs), attrs["database_id"], attrs["table_id"], attrs["key"])
 		return err
 	},
+	"appwrite_project_variable": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetVariable(attrs["id"])
+		return err
+	},
 	"appwrite_proxy_rule": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewProxy(projectScoped(t, attrs)).GetRule(attrs["id"])
+		return err
+	},
+	"appwrite_project_platform": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetPlatform(attrs["id"])
 		return err
 	},
 	"appwrite_waf_rule": func(t *testing.T, attrs map[string]string) error {
@@ -132,6 +144,40 @@ var destroyChecks = map[string]fetchFunc{
 	"appwrite_domain_record": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
 		return err
+	},
+}
+
+// resetChecks covers settings resources. Every project has exactly one of each,
+// so destroying one cannot delete it; it resets it instead, and the check is
+// that the reset took. Each returns nil when the setting is back at its reset
+// state, and otherwise an error saying what is still set or why it could not
+// be checked.
+var resetChecks = map[string]fetchFunc{
+	"appwrite_project_smtp": func(t *testing.T, attrs map[string]string) error {
+		p, err := appwrite.NewProject(projectScoped(t, attrs)).Get()
+		if err != nil {
+			return fmt.Errorf("reading the project: %s", common.FormatError(err))
+		}
+		var set []string
+		if p.SmtpEnabled {
+			set = append(set, "enabled")
+		}
+		for name, value := range map[string]string{
+			"username":       p.SmtpUsername,
+			"sender_email":   p.SmtpSenderEmail,
+			"sender_name":    p.SmtpSenderName,
+			"reply_to_email": p.SmtpReplyToEmail,
+			"reply_to_name":  p.SmtpReplyToName,
+		} {
+			if value != "" {
+				set = append(set, name)
+			}
+		}
+		if len(set) > 0 {
+			sort.Strings(set)
+			return fmt.Errorf("custom SMTP still has %s set", strings.Join(set, ", "))
+		}
+		return nil
 	},
 }
 
@@ -179,6 +225,16 @@ var destroyCheckGaps = map[string]string{
 	// no undo. Their ID is the domain's, which outlives them.
 	"appwrite_domain_nameservers":              "destroy deliberately leaves the server unchanged",
 	"appwrite_domain_nameservers_verification": "destroy deliberately leaves the server unchanged",
+	// These are settings of the project rather than objects in it, so there is
+	// nothing to find absent: destroy enables the switches the resource
+	// managed. Their test asserts that against the server instead.
+	"appwrite_project_services":  "destroy enables switches rather than deleting; its test asserts that directly",
+	"appwrite_project_protocols": "destroy enables switches rather than deleting; its test asserts that directly",
+	// Appwrite has no route a project key can use to remove a custom email
+	// template, so destroy warns and leaves it. Its own test asserts the
+	// template is still there afterwards, so the behavior is pinned rather
+	// than unchecked.
+	"appwrite_project_email_template": "destroy cannot remove the template; the API has no route for it",
 	// DocumentsDB and VectorsDB are Cloud-only and skipped unless
 	// APPWRITE_CLOUD_TESTS is set.
 	"appwrite_documentsdb":            reasonCloudOnly,
@@ -217,6 +273,13 @@ func CheckDestroy(t *testing.T) func(*terraform.State) error {
 				// state also leaves a resource behind, and it has no server
 				// side to ask about.
 				if !strings.HasPrefix(rs.Type, "appwrite_") {
+					continue
+				}
+
+				if reset, ok := resetChecks[rs.Type]; ok {
+					if err := reset(t, rs.Primary.Attributes); err != nil {
+						problems = append(problems, fmt.Sprintf("%s was not reset on destroy: %v", name, err))
+					}
 					continue
 				}
 

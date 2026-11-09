@@ -212,6 +212,53 @@
         }
       }
     },
+    "appwrite_auth_user_target": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "expired": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "identifier": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "provider_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "provider_type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
     "appwrite_backup_policy": {
       "version": 0,
       "attributes": {
@@ -906,6 +953,11 @@
     "appwrite_messaging_provider": {
       "version": 0,
       "attributes": {
+        "access_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
         "account_sid": {
           "type": "tftypes.String",
           "optional": true
@@ -963,6 +1015,10 @@
           "type": "tftypes.String",
           "optional": true
         },
+        "expiry": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
         "from": {
           "type": "tftypes.String",
           "optional": true
@@ -1006,6 +1062,14 @@
           "optional": true,
           "computed": true
         },
+        "qos": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "region": {
+          "type": "tftypes.String",
+          "optional": true
+        },
         "reply_to_email": {
           "type": "tftypes.String",
           "optional": true
@@ -1017,6 +1081,11 @@
         "sandbox": {
           "type": "tftypes.Bool",
           "optional": true
+        },
+        "secret_key": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
         },
         "sender_id": {
           "type": "tftypes.String",
@@ -2526,6 +2595,52 @@
         }
       }
     },
+    "appwrite_project_email_template": {
+      "version": 0,
+      "attributes": {
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "locale": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "message": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reply_to_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "reply_to_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "subject": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        }
+      }
+    },
     "appwrite_project_key": {
       "version": 0,
       "attributes": {
@@ -2579,6 +2694,281 @@
         }
       }
     },
+    "appwrite_project_platform": {
+      "version": 0,
+      "attributes": {
+        "application_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "bundle_identifier": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "hostname": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "package_identifier_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "package_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_project_protocols": {
+      "version": 0,
+      "attributes": {
+        "graphql": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "rest": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "websocket": {
+          "type": "tftypes.Bool",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_project_services": {
+      "version": 0,
+      "attributes": {
+        "account": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "advisor": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "avatars": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "databases": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "functions": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "graphql": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "health": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "locale": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "messaging": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "migrations": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "project": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "proxy": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "sites": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "storage": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "tablesdb": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "teams": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "users": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "vcs": {
+          "type": "tftypes.Bool",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_project_smtp": {
+      "version": 0,
+      "attributes": {
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "password": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "password_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "password_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "reply_to_email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "reply_to_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "secure": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "sender_email": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "sender_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "username": {
+          "type": "tftypes.String",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_project_variable": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "secret": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "value": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "value_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "value_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        }
+      }
+    },
     "appwrite_proxy_rule": {
       "version": 0,
       "attributes": {
@@ -2607,13 +2997,25 @@
           "optional": true,
           "computed": true
         },
+        "redirect_resource_type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "redirect_status_code": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "redirect_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
         "renew_at": {
           "type": "tftypes.String",
           "computed": true
         },
         "resource_id": {
           "type": "tftypes.String",
-          "required": true
+          "optional": true
         },
         "status": {
           "type": "tftypes.String",

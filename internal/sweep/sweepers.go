@@ -50,9 +50,17 @@ func Register() {
 		Name: "appwrite_site",
 		F:    sweepSites,
 	})
+	resource.AddTestSweepers("appwrite_project_variable", &resource.Sweeper{
+		Name: "appwrite_project_variable",
+		F:    sweepProjectVariables,
+	})
 	resource.AddTestSweepers("appwrite_proxy_rule", &resource.Sweeper{
 		Name: "appwrite_proxy_rule",
 		F:    sweepProxyRules,
+	})
+	resource.AddTestSweepers("appwrite_project_platform", &resource.Sweeper{
+		Name: "appwrite_project_platform",
+		F:    sweepPlatforms,
 	})
 	// WAF rules are Cloud-only, but a leftover one keeps filtering the test
 	// project's traffic and counts against the plan's limit on rules.
@@ -270,6 +278,32 @@ func sweepSites(string) error {
 	return e.result("sites")
 }
 
+// Project variables have server-assigned IDs and keys that cannot contain
+// Prefix, so they are matched on a TF_ACC_TEST_ key prefix instead.
+func sweepProjectVariables(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListVariables()
+	if err != nil {
+		return err
+	}
+	var e errs
+	for _, v := range list.Variables {
+		if !Sweepable(v.Id) && !SweepableKey(v.Key) {
+			continue
+		}
+		if _, err := svc.DeleteVariable(v.Id); err != nil {
+			e.fail("project variable", v.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("project variables")
+}
+
 func sweepProxyRules(string) error {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -293,6 +327,35 @@ func sweepProxyRules(string) error {
 		e.ok()
 	}
 	return e.result("proxy rules")
+}
+
+func sweepPlatforms(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListPlatforms()
+	if err != nil {
+		return err
+	}
+	var e errs
+	// The list holds a different model per platform type, decoded only as far
+	// as a map. Every type has an ID and a name.
+	for _, item := range list.Platforms {
+		p, _ := item.(map[string]any)
+		platformID, _ := p["$id"].(string)
+		name, _ := p["name"].(string)
+		if platformID == "" || !Sweepable(platformID, name) {
+			continue
+		}
+		if _, err := svc.DeletePlatform(platformID); err != nil {
+			e.fail("platform", platformID, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("platforms")
 }
 
 func sweepBackupPolicies(string) error {
