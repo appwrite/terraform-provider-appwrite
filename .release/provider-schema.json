@@ -2581,13 +2581,25 @@
           "optional": true,
           "computed": true
         },
+        "redirect_resource_type": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "redirect_status_code": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "redirect_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
         "renew_at": {
           "type": "tftypes.String",
           "computed": true
         },
         "resource_id": {
           "type": "tftypes.String",
-          "required": true
+          "optional": true
         },
         "status": {
           "type": "tftypes.String",
