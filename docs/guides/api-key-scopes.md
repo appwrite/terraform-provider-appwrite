@@ -52,6 +52,7 @@ what to add. For reference:
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
 | `appwrite_project_platform` | project | `platforms.read`, `platforms.write` |
 | `appwrite_project_variable` | project | `project.read`, `project.write` |
+| `appwrite_project_services`, `appwrite_project_protocols` | project | `project.read`, `project.write` |
 | `appwrite_waf_rule` | project | `wafRules.read`, `wafRules.write` |
 | `appwrite_domain`, `appwrite_domain_record`, `appwrite_domain_nameservers`, `appwrite_domain_nameservers_verification` | organization | `domains.read`, `domains.write` |
 | `appwrite_domain` data source | organization | `domains.read` |

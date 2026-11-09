@@ -181,6 +181,11 @@ var destroyCheckGaps = map[string]string{
 	// no undo. Their ID is the domain's, which outlives them.
 	"appwrite_domain_nameservers":              "destroy deliberately leaves the server unchanged",
 	"appwrite_domain_nameservers_verification": "destroy deliberately leaves the server unchanged",
+	// These are settings of the project rather than objects in it, so there is
+	// nothing to find absent: destroy enables the switches the resource
+	// managed. Their test asserts that against the server instead.
+	"appwrite_project_services":  "destroy enables switches rather than deleting; its test asserts that directly",
+	"appwrite_project_protocols": "destroy enables switches rather than deleting; its test asserts that directly",
 	// DocumentsDB and VectorsDB are Cloud-only and skipped unless
 	// APPWRITE_CLOUD_TESTS is set.
 	"appwrite_documentsdb":            reasonCloudOnly,

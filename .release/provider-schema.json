@@ -2558,6 +2558,118 @@
         }
       }
     },
+    "appwrite_project_protocols": {
+      "version": 0,
+      "attributes": {
+        "graphql": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "rest": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "websocket": {
+          "type": "tftypes.Bool",
+          "optional": true
+        }
+      }
+    },
+    "appwrite_project_services": {
+      "version": 0,
+      "attributes": {
+        "account": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "advisor": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "avatars": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "databases": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "functions": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "graphql": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "health": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "locale": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "messaging": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "migrations": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "project": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "proxy": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "sites": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "storage": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "tablesdb": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "teams": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "users": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "vcs": {
+          "type": "tftypes.Bool",
+          "optional": true
+        }
+      }
+    },
     "appwrite_project_variable": {
       "version": 0,
       "attributes": {

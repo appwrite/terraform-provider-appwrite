@@ -217,6 +217,8 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		projectsvc.NewKeyResource,
 		projectsvc.NewPlatformResource,
 		projectsvc.NewVariableResource,
+		projectsvc.NewServicesResource,
+		projectsvc.NewProtocolsResource,
 		proxysvc.NewRuleResource,
 		wafsvc.NewRuleResource,
 		domainsvc.NewDomainResource,
