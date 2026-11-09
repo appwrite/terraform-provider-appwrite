@@ -69,14 +69,14 @@ func projectSettingsClient(clients *common.AppwriteClients, resourceName, projec
 	return appwrite.NewProject(clients.ClientForProject(projectID)), nil
 }
 
-// hostnamePattern mirrors the API's Hostname validator, which rejects a scheme,
+// smtpHostPattern mirrors the API's Hostname validator, which rejects a scheme,
 // a path or a port.
-var hostnamePattern = regexp.MustCompile(`^[^/:]+$`)
+var smtpHostPattern = regexp.MustCompile(`^[^/:]+$`)
 
 func smtpHostValidators() []validator.String {
 	return []validator.String{
 		stringvalidator.LengthBetween(1, 253),
-		stringvalidator.RegexMatches(hostnamePattern, "must be a host name or IP address, without a scheme, path or port"),
+		stringvalidator.RegexMatches(smtpHostPattern, "must be a host name or IP address, without a scheme, path or port"),
 	}
 }
 

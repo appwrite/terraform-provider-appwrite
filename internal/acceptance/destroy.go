@@ -51,6 +51,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetSubscriber(attrs["topic_id"], attrs["id"])
 		return err
 	},
+	"appwrite_auth_user_target": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewUsers(projectScoped(t, attrs)).GetTarget(attrs["user_id"], attrs["id"])
+		return err
+	},
 	"appwrite_storage_bucket": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewStorage(projectScoped(t, attrs)).GetBucket(attrs["id"])
 		return err
@@ -107,8 +111,16 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := common.GetColumnRaw(projectScoped(t, attrs), attrs["database_id"], attrs["table_id"], attrs["key"])
 		return err
 	},
+	"appwrite_project_variable": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetVariable(attrs["id"])
+		return err
+	},
 	"appwrite_proxy_rule": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewProxy(projectScoped(t, attrs)).GetRule(attrs["id"])
+		return err
+	},
+	"appwrite_project_platform": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetPlatform(attrs["id"])
 		return err
 	},
 	"appwrite_waf_rule": func(t *testing.T, attrs map[string]string) error {
@@ -207,6 +219,11 @@ var destroyCheckGaps = map[string]string{
 	// no undo. Their ID is the domain's, which outlives them.
 	"appwrite_domain_nameservers":              "destroy deliberately leaves the server unchanged",
 	"appwrite_domain_nameservers_verification": "destroy deliberately leaves the server unchanged",
+	// These are settings of the project rather than objects in it, so there is
+	// nothing to find absent: destroy enables the switches the resource
+	// managed. Their test asserts that against the server instead.
+	"appwrite_project_services":  "destroy enables switches rather than deleting; its test asserts that directly",
+	"appwrite_project_protocols": "destroy enables switches rather than deleting; its test asserts that directly",
 	// Appwrite has no route a project key can use to remove a custom email
 	// template, so destroy warns and leaves it. Its own test asserts the
 	// template is still there afterwards, so the behavior is pinned rather

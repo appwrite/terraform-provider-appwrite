@@ -215,6 +215,10 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		projectsvc.NewProjectResource,
 		projectsvc.NewKeyResource,
+		projectsvc.NewPlatformResource,
+		projectsvc.NewVariableResource,
+		projectsvc.NewServicesResource,
+		projectsvc.NewProtocolsResource,
 		projectsvc.NewSMTPResource,
 		projectsvc.NewEmailTemplateResource,
 		proxysvc.NewRuleResource,
@@ -231,6 +235,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		topicsvc.NewTopicResource,
 		providersvc.NewProviderResource,
 		usersvc.NewUserResource,
+		usersvc.NewTargetResource,
 		teamsvc.NewTeamResource,
 		backupsvc.NewPolicyResource,
 		rowsvc.NewRowResource,
