@@ -1,0 +1,52 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Projects"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Each attribute is optional, and a service whose attribute is left out is not managed: it keeps whatever setting it has, and a change made to it in the Console is not reported. Setting an attribute manages that service. Removing the attribute later enables the service again, which is Appwrite's default for every service. Destroying the resource enables every service it manages and leaves the rest as they are.
+
+Declare at most one of these per project. Two would overwrite each other's settings on every apply.
+
+~> **Note:** A disabled service turns away requests from users and guests, such as the ones the client SDKs make. Requests made with an API key are let through, and so are Console users. That includes the provider's own requests, so disabling `project` or `tablesdb` does not stop Terraform from managing them. It also includes server-side code holding a key, so disabling a service is not a way to keep data away from it.
+
+~> **Note:** The `graphql` service is not the GraphQL endpoint. On Appwrite 2.2.0, disabling it does not stop requests to `/v1/graphql`. To switch off GraphQL, set `graphql = false` on [appwrite_project_protocols](project_protocols.md).
+
+A standard project API key with `project.read` and `project.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project ID:
+
+{{ codefile "shell" .ImportFile }}
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_project_services.example
+  id = "project-id"
+}
+```
+
+Importing records the setting of every service the project reports. If the configuration leaves a service out, the next plan removes it from state, and applying that plan enables the service.
+{{- end }}
+
+## See Also
+
+- [appwrite_project_protocols](project_protocols.md) - Enable and disable REST, GraphQL and WebSocket
+- [appwrite_project](project.md) - Manage projects

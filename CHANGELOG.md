@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_project_variable`, an environment variable shared by every function
+  and site in a project, authenticated with the project key's `project.read`
+  and `project.write` scopes. It takes `value` or the write-only `value_wo`,
+  like `appwrite_function_variable`. Appwrite makes a variable secret unless
+  `secret = false` is set, and cannot make a secret one non-secret, so changing
+  `secret` from `true` to `false` recreates the variable
+- `appwrite_project_services` and `appwrite_project_protocols` enable and
+  disable a project's API services (account, tablesdb, storage, functions and
+  the rest Appwrite lets a project switch off) and its REST, GraphQL and
+  WebSocket protocols, with the project key's `project.read` and
+  `project.write` scopes. Only the switches set in configuration are managed;
+  removing one, or destroying the resource, enables it again. Requests made
+  with an API key, the provider's included, are not blocked by a disabled
+  service or by disabled REST, but are blocked by disabled GraphQL
 - `appwrite_auth_user_target` manages a user's messaging targets: an email address,
   phone number or push token that `appwrite_messaging_subscriber` can subscribe
   to a topic. Until now the only targets a subscriber could use were the ones
@@ -45,6 +59,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     when the domain is added
   - The `appwrite_domain` data source reads a domain by ID or name, for
     managing the records of one Terraform does not own
+- `appwrite_project_platform` registers a web, Android, Apple, Linux or Windows
+  app as a platform of a project, chosen by `type`, so its client SDK requests
+  are accepted. Authenticated with the project key's `platforms.read` and
+  `platforms.write` scopes. The type's identifying argument (`hostname`,
+  `application_id`, `bundle_identifier`, `package_name` or
+  `package_identifier_name`) is checked at plan time, and changing it or the
+  name updates the platform in place; changing `type` replaces it
 - `interval` on `appwrite_function` and the `appwrite_function` data source,
   running the function every N minutes as an alternative to a cron `schedule`.
   The two conflict. Removing `interval` from the configuration stops it. Free
@@ -71,6 +92,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   had no effect
 - Guides for [API key scopes](docs/guides/api-key-scopes.md) and
   [debugging](docs/guides/debugging.md)
+- `appwrite_proxy_rule` supports `type = "api"`, serving the Appwrite API on a
+  custom domain, and `type = "redirect"`, redirecting a domain to
+  `redirect_url` with `redirect_status_code` (301, 302, 307 or 308). A redirect
+  rule is attached to a site or function through `resource_id` and the new
+  `redirect_resource_type`, and Appwrite deletes it along with that resource.
+  `resource_id` is now optional, since API rules take none; it is still
+  required for site, function and redirect rules, and each type's arguments are
+  checked at plan time. Existing site and function rules plan no changes
+- Two `appwrite_messaging_provider` types:
+  - `ses`, for Amazon SES email, with `access_key`, `secret_key` and `region`
+    alongside the existing email arguments
+  - `appwrite`, for push messages delivered over Appwrite's own MQTT broker,
+    with `qos` and `expiry`. Needs Appwrite 2.3.0 or later. Both are read back
+    on refresh, and removing one from the configuration clears it
+
+  The new arguments are rejected on any other type
 
 ### Changed
 
@@ -113,6 +150,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Example configuration for `appwrite_storage_bucket` was not `terraform fmt`
   clean
+- Updating an `appwrite_messaging_provider` whose `type` the provider does not
+  support, such as one imported from a type added to Appwrite later, crashed
+  the provider. It now fails with an error naming the type
 - Errors reporting that a column is still being built are now recognised from
   Appwrite's structured error `type` rather than by matching the prose of the
   message, which silently turned a poll into a hard failure whenever the message

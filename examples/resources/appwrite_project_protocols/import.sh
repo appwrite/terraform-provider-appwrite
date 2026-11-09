@@ -1,0 +1,1 @@
+terraform import appwrite_project_protocols.example project-id

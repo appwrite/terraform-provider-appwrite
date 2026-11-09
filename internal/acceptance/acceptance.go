@@ -1,8 +1,13 @@
 package acceptance
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -93,6 +98,90 @@ func BuildPreCheck(t *testing.T) {
 	if os.Getenv("APPWRITE_BUILD_TESTS") == "" {
 		t.Skip("APPWRITE_BUILD_TESTS must be set to run deployment build tests; they require the build stack and take minutes")
 	}
+}
+
+// ServerVersionPreCheck skips a test when the Appwrite server is older than
+// minimum, for features a later release added. CI pins an Appwrite version,
+// so a test for something newer would otherwise fail there on a 404 for a
+// route the server does not have.
+func ServerVersionPreCheck(t *testing.T, minimum string) {
+	t.Helper()
+	PreCheck(t)
+	if version, ok := ServerVersionAtLeast(t, minimum); !ok {
+		t.Skipf("Appwrite %s is older than %s, which this test needs", version, minimum)
+	}
+}
+
+// ServerVersionAtLeast reports the Appwrite server's version and whether it is
+// minimum or later, for a test of how an older server is handled.
+func ServerVersionAtLeast(t *testing.T, minimum string) (string, bool) {
+	t.Helper()
+	version, err := serverVersion(os.Getenv("APPWRITE_ENDPOINT"))
+	if err != nil {
+		t.Fatalf("reading the Appwrite server version: %v", err)
+	}
+	return version, compareVersions(version, minimum) >= 0
+}
+
+// serverVersion reads the version /health/version reports. The route takes
+// no credentials.
+func serverVersion(endpoint string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimSuffix(endpoint, "/")+"/health/version", nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("GET /health/version returned %s", resp.Status)
+	}
+	var body struct {
+		Version string `json:"version"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return "", fmt.Errorf("decoding /health/version: %w", err)
+	}
+	if body.Version == "" {
+		return "", fmt.Errorf("/health/version reported no version")
+	}
+	return body.Version, nil
+}
+
+// compareVersions compares two dotted numeric versions, such as 2.3.0, and
+// returns -1, 0 or 1. A pre-release suffix (2.3.0-rc.1) is ignored, and a
+// missing component counts as 0.
+func compareVersions(a, b string) int {
+	parse := func(v string) []int {
+		v, _, _ = strings.Cut(v, "-")
+		parts := strings.Split(v, ".")
+		out := make([]int, 0, len(parts))
+		for _, part := range parts {
+			n, _ := strconv.Atoi(part)
+			out = append(out, n)
+		}
+		return out
+	}
+	pa, pb := parse(a), parse(b)
+	for len(pa) < len(pb) {
+		pa = append(pa, 0)
+	}
+	for len(pb) < len(pa) {
+		pb = append(pb, 0)
+	}
+	for i := range pa {
+		switch {
+		case pa[i] < pb[i]:
+			return -1
+		case pa[i] > pb[i]:
+			return 1
+		}
+	}
+	return 0
 }
 
 func preCheckBase(t *testing.T) {
