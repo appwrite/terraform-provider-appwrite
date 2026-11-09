@@ -53,12 +53,17 @@ Dedicated database resources require a server that exposes the `/postgresql`, `/
 
 ### Projects
 
-| Resource                     | Description     |
-|------------------------------|-----------------|
-| `appwrite_project`           | Project         |
-| `appwrite_project_key`       | Project API key |
+| Resource                         | Description                                      |
+|----------------------------------|--------------------------------------------------|
+| `appwrite_project`               | Project                                          |
+| `appwrite_project_key`           | Project API key                                  |
+| `appwrite_project_auth_methods`  | Sign-in methods a project allows                 |
+| `appwrite_project_auth_policies` | Password, session, MFA and sign-up policies      |
+| `appwrite_project_mock_phone`    | Phone number that signs in with a fixed code     |
 
 Appwrite removed the endpoint for creating project API keys, so `appwrite_project_key` cannot create one — a key able to mint further keys would let a compromise outlive the revocation of the leaked key. Create the key in the Console and `terraform import` it; read, update and delete work as before.
+
+Auth methods and policies are settings every project already has, so their resources take them over rather than creating anything, set whatever the configuration leaves out to Appwrite's default, and reset everything to the defaults when destroyed.
 
 ### Proxy
 

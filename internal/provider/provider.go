@@ -215,6 +215,9 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		projectsvc.NewProjectResource,
 		projectsvc.NewKeyResource,
+		projectsvc.NewAuthMethodsResource,
+		projectsvc.NewAuthPoliciesResource,
+		projectsvc.NewMockPhoneResource,
 		projectsvc.NewPlatformResource,
 		projectsvc.NewVariableResource,
 		projectsvc.NewServicesResource,

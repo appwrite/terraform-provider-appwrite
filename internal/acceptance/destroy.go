@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -153,6 +154,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
 		return err
 	},
+	"appwrite_project_mock_phone": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetMockPhone(attrs["number"])
+		return err
+	},
 	"appwrite_project_oauth_provider": func(t *testing.T, attrs map[string]string) error {
 		// Read raw, as the resource does: the SDK's GetOAuth2Provider cannot
 		// decode every provider's response.
@@ -227,6 +232,76 @@ var resetChecks = map[string]fetchFunc{
 		}
 		return nil
 	},
+	"appwrite_project_auth_methods": func(t *testing.T, attrs map[string]string) error {
+		project, err := appwrite.NewProject(projectScoped(t, attrs)).Get()
+		if err != nil {
+			return err
+		}
+		var disabled []string
+		for _, method := range project.AuthMethods {
+			if !method.Enabled {
+				disabled = append(disabled, method.Id)
+			}
+		}
+		if len(disabled) > 0 {
+			return fmt.Errorf("auth methods still disabled: %s", strings.Join(disabled, ", "))
+		}
+		return nil
+	},
+	"appwrite_project_auth_policies": func(t *testing.T, attrs map[string]string) error {
+		list, err := appwrite.NewProject(projectScoped(t, attrs)).ListPolicies()
+		if err != nil {
+			return err
+		}
+		var decoded struct {
+			Policies []map[string]any `json:"policies"`
+		}
+		if err := list.Decode(&decoded); err != nil {
+			return err
+		}
+		var drift []string
+		for _, policy := range decoded.Policies {
+			id, _ := policy["$id"].(string)
+			want, known := newProjectPolicies[id]
+			if !known {
+				continue
+			}
+			delete(policy, "$id")
+			if !reflect.DeepEqual(policy, want) {
+				drift = append(drift, fmt.Sprintf("%s is %v, want %v", id, policy, want))
+			}
+		}
+		if len(drift) > 0 {
+			sort.Strings(drift)
+			return fmt.Errorf("policies not at their defaults: %s", strings.Join(drift, "; "))
+		}
+		return nil
+	},
+}
+
+// newProjectPolicies is GET /project/policies on a project Appwrite 2.2.0 has
+// just created, plus password-pwned, which 2.3.0 added. Numbers are float64
+// because that is what they decode to.
+var newProjectPolicies = map[string]map[string]any{
+	"password-dictionary":    {"enabled": false},
+	"password-history":       {"total": float64(0)},
+	"password-strength":      {"min": float64(8), "uppercase": false, "lowercase": false, "number": false, "symbols": false},
+	"password-personal-data": {"enabled": false},
+	"password-pwned":         {"enabled": true, "sessions": false, "users": false},
+	"session-alert":          {"enabled": false},
+	"session-duration":       {"duration": float64(31536000)},
+	"session-invalidation":   {"enabled": true},
+	"session-limit":          {"total": float64(10)},
+	"user-limit":             {"total": float64(0)},
+	"membership-privacy": {
+		"userId": false, "userEmail": false, "userPhone": false,
+		"userName": false, "userMFA": false, "userAccessedAt": false,
+	},
+	"mfa-factors":           {"totp": true, "email": true, "phone": true, "custom": false},
+	"deny-aliased-email":    {"enabled": false},
+	"deny-disposable-email": {"enabled": false},
+	"deny-free-email":       {"enabled": false},
+	"deny-corporate-email":  {"enabled": false},
 }
 
 const (
@@ -326,7 +401,7 @@ func CheckDestroy(t *testing.T) func(*terraform.State) error {
 
 				if reset, ok := resetChecks[rs.Type]; ok {
 					if err := reset(t, rs.Primary.Attributes); err != nil {
-						problems = append(problems, fmt.Sprintf("%s was not reset on destroy: %v", name, err))
+						problems = append(problems, fmt.Sprintf("%s was not reset on destroy: %s", name, common.FormatError(err)))
 					}
 					continue
 				}

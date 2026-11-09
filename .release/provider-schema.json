@@ -2595,6 +2595,243 @@
         }
       }
     },
+    "appwrite_project_auth_methods": {
+      "version": 0,
+      "attributes": {
+        "anonymous": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "email_otp": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "email_password": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "invites": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "jwt": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "magic_url": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "phone": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_project_auth_policies": {
+      "version": 0,
+      "attributes": {
+        "deny_aliased_email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "deny_corporate_email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "deny_disposable_email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "deny_free_email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "membership_privacy": {
+          "type": "object",
+          "nesting": "single",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_accessed_at": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_id": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_mfa": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_name": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "membership_privacy.user_phone": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "mfa_factors": {
+          "type": "object",
+          "nesting": "single",
+          "optional": true,
+          "computed": true
+        },
+        "mfa_factors.custom": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "mfa_factors.email": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "mfa_factors.phone": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "mfa_factors.totp": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_dictionary": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_history": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "password_personal_data": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_pwned": {
+          "type": "object",
+          "nesting": "single",
+          "optional": true,
+          "computed": true
+        },
+        "password_pwned.enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_pwned.sessions": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_pwned.users": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength": {
+          "type": "object",
+          "nesting": "single",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength.lowercase": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength.min": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength.number": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength.symbols": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "password_strength.uppercase": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "session_alert": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "session_duration": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "session_invalidation": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "session_limit": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "user_limit": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
     "appwrite_project_email_template": {
       "version": 0,
       "attributes": {
@@ -2687,6 +2924,37 @@
           "type": "tftypes.String",
           "computed": true,
           "sensitive": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_project_mock_phone": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "number": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "otp": {
+          "type": "tftypes.String",
+          "required": true,
+          "sensitive": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
         },
         "updated_at": {
           "type": "tftypes.String",

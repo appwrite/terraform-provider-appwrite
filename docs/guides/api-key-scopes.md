@@ -49,6 +49,9 @@ what to add. For reference:
 | `appwrite_project` | organization | `projects.read`, `projects.write` |
 | `appwrite_project_key` | organization | `keys.read`, `keys.write` |
 | `appwrite_project_ephemeral_key` | organization | `keys.write` |
+| `appwrite_project_auth_methods` | project | `project.read`, `project.write` |
+| `appwrite_project_auth_policies` | project | `project.policies.read`, `project.policies.write` (or the older `policies.read`, `policies.write`) |
+| `appwrite_project_mock_phone` | project | `mocks.read`, `mocks.write` |
 | `appwrite_project_smtp` | project | `project.read`, `project.write` |
 | `appwrite_project_email_template` | project | `templates.read`, `templates.write` |
 | `appwrite_project_oauth_provider` | project | `project.oauth2.read`, `project.oauth2.write` |

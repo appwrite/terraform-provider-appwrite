@@ -1,0 +1,1 @@
+terraform import appwrite_project_auth_methods.example project-id

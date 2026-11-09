@@ -87,6 +87,20 @@ func CloudPreCheck(t *testing.T) {
 	}
 }
 
+// ExclusiveProjectPreCheck gates tests that change a setting the rest of the
+// suite depends on. The acceptance packages run in parallel against one
+// project, so turning on a password or sign-up email policy there rejects
+// the users other tests are creating at the same moment: example.com counts
+// as a disposable domain, and "testpassword123" contains its user's email
+// address. These tests stay off unless the project is theirs alone.
+func ExclusiveProjectPreCheck(t *testing.T) {
+	t.Helper()
+	PreCheck(t)
+	if os.Getenv("APPWRITE_EXCLUSIVE_PROJECT_TESTS") == "" {
+		t.Skip("APPWRITE_EXCLUSIVE_PROJECT_TESTS must be set to run tests that change project-wide settings other tests depend on; point APPWRITE_PROJECT_ID at a project no other test is using")
+	}
+}
+
 // BuildPreCheck gates tests that make Appwrite build a deployment. Those need
 // the orchestrator and runtime executor running alongside the API, and they
 // fetch a template repository over the network and build it, which takes

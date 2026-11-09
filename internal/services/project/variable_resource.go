@@ -33,7 +33,7 @@ const variableResourceName = "appwrite_project_variable"
 
 // Project variables sit behind the project scopes, not the functions or sites
 // ones, even though only functions and sites read them.
-var variableScopes = []string{"project.read", "project.write"}
+var variableScopes = []string{scopeProjectRead, scopeProjectWrite}
 
 type variableResource struct {
 	clients *common.AppwriteClients
