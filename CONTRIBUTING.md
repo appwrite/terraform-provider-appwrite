@@ -51,6 +51,26 @@ export APPWRITE_TEST_DOMAIN="example.com"
 make acceptance-test
 ```
 
+#### SMTP and email template tests
+
+Appwrite connects to the SMTP server whenever custom SMTP is saved enabled, and
+accepts custom email templates only while it is. The tests that need this run a
+stub SMTP server inside the test process, and Appwrite has to be able to reach
+it. Set the address Appwrite reaches your machine at:
+
+```bash
+# Docker Desktop. On Linux, use the gateway of the Appwrite container's network
+# instead, e.g. from `docker exec appwrite ip route`:
+export APPWRITE_TEST_SMTP_HOST="host.docker.internal"
+
+make acceptance-test TESTARGS='-run TestAccProjectSMTP'
+```
+
+Without it the test that enables SMTP skips; the one that saves it disabled runs
+either way. CI's bootstrap script sets it. The stub does not offer STARTTLS, so
+these tests never set `secure`: once a project has it, Appwrite cannot remove it
+again.
+
 #### Dedicated database tests
 
 Dedicated database tests provision real, billable infrastructure and take

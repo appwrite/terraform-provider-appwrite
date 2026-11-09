@@ -6,13 +6,14 @@ import (
 	"strings"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
-	"github.com/appwrite/sdk-for-go/v7/models"
 	"github.com/appwrite/sdk-for-go/v7/proxy"
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -20,9 +21,10 @@ import (
 )
 
 var (
-	_ resource.Resource                = &ruleResource{}
-	_ resource.ResourceWithConfigure   = &ruleResource{}
-	_ resource.ResourceWithImportState = &ruleResource{}
+	_ resource.Resource                   = &ruleResource{}
+	_ resource.ResourceWithConfigure      = &ruleResource{}
+	_ resource.ResourceWithImportState    = &ruleResource{}
+	_ resource.ResourceWithValidateConfig = &ruleResource{}
 )
 
 type ruleResource struct {
@@ -30,17 +32,20 @@ type ruleResource struct {
 }
 
 type ruleResourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	Domain     types.String `tfsdk:"domain"`
-	Type       types.String `tfsdk:"type"`
-	ResourceID types.String `tfsdk:"resource_id"`
-	Branch     types.String `tfsdk:"branch"`
-	Status     types.String `tfsdk:"status"`
-	Logs       types.String `tfsdk:"logs"`
-	RenewAt    types.String `tfsdk:"renew_at"`
-	CreatedAt  types.String `tfsdk:"created_at"`
-	UpdatedAt  types.String `tfsdk:"updated_at"`
-	ProjectID  types.String `tfsdk:"project_id"`
+	ID                   types.String `tfsdk:"id"`
+	Domain               types.String `tfsdk:"domain"`
+	Type                 types.String `tfsdk:"type"`
+	ResourceID           types.String `tfsdk:"resource_id"`
+	Branch               types.String `tfsdk:"branch"`
+	RedirectURL          types.String `tfsdk:"redirect_url"`
+	RedirectStatusCode   types.Int64  `tfsdk:"redirect_status_code"`
+	RedirectResourceType types.String `tfsdk:"redirect_resource_type"`
+	Status               types.String `tfsdk:"status"`
+	Logs                 types.String `tfsdk:"logs"`
+	RenewAt              types.String `tfsdk:"renew_at"`
+	CreatedAt            types.String `tfsdk:"created_at"`
+	UpdatedAt            types.String `tfsdk:"updated_at"`
+	ProjectID            types.String `tfsdk:"project_id"`
 }
 
 func NewRuleResource() resource.Resource {
@@ -54,7 +59,7 @@ func (r *ruleResource) Metadata(_ context.Context, req resource.MetadataRequest,
 func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	resp.Schema = schema.Schema{
-		Description: "Manages a custom domain proxy rule for an Appwrite site or function.",
+		Description: "Manages a custom domain proxy rule: serving an Appwrite site, function or the Appwrite API on a domain, or redirecting a domain to a URL.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The proxy rule ID.",
@@ -62,27 +67,51 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"domain": schema.StringAttribute{
-				Description:   "The custom domain name Changing this forces a new resource to be created.",
+				Description:   "The custom domain name. " + common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: replace,
 				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"type": schema.StringAttribute{
-				Description:   "The target resource type: site or function Changing this forces a new resource to be created.",
+				Description: "What the rule does: `site` or `function` serves that resource on the domain, `api` serves the Appwrite API, and `redirect` redirects to `redirect_url`. " +
+					common.ForcesReplacementNote,
 				Required:      true,
 				PlanModifiers: replace,
-				Validators:    []validator.String{stringvalidator.OneOf("site", "function")},
+				Validators:    []validator.String{stringvalidator.OneOf(ruleTypes...)},
 			},
 			"resource_id": schema.StringAttribute{
-				Description:   "The ID of the site or function served by this rule Changing this forces a new resource to be created.",
-				Required:      true,
+				Description: "The ID of the site or function served by this rule. For a `redirect` rule, the site or function the rule is listed under, whose deletion also deletes the rule. " +
+					"Required for every type except `api`, which does not take it. " + common.ForcesReplacementNote,
+				Optional:      true,
 				PlanModifiers: replace,
 				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"branch": schema.StringAttribute{
-				Description:   "The VCS branch that updates the rule automatically Changing this forces a new resource to be created.",
+				Description: "The VCS branch that updates the rule automatically. Only for `site` and `function` rules. " +
+					common.ForcesReplacementNote,
 				Optional:      true,
 				PlanModifiers: replace,
+			},
+			"redirect_url": schema.StringAttribute{
+				Description: "The absolute URL a `redirect` rule redirects to. Required for `redirect` rules and not used by any other type. " +
+					common.ForcesReplacementNote,
+				Optional:      true,
+				PlanModifiers: replace,
+				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
+			},
+			"redirect_status_code": schema.Int64Attribute{
+				Description: "The HTTP status code a `redirect` rule responds with: 301, 302, 307 or 308. Required for `redirect` rules and not used by any other type. " +
+					common.ForcesReplacementNote,
+				Optional:      true,
+				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
+				Validators:    []validator.Int64{int64validator.OneOf(redirectStatusCodes...)},
+			},
+			"redirect_resource_type": schema.StringAttribute{
+				Description: "The type of the resource named by `resource_id` on a `redirect` rule: `site` or `function`. Required for `redirect` rules and not used by any other type. " +
+					common.ForcesReplacementNote,
+				Optional:      true,
+				PlanModifiers: replace,
+				Validators:    []validator.String{stringvalidator.OneOf(redirectResourceTypes...)},
 			},
 			"status": schema.StringAttribute{
 				Description: "The domain verification status.",
@@ -107,6 +136,17 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"project_id": common.ProjectIDAttribute(),
 		},
 	}
+}
+
+// ValidateConfig checks at plan time that each rule type has the arguments it
+// needs and none it does not, which the API would otherwise reject mid-apply.
+func (r *ruleResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config ruleResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() || config.Type.IsUnknown() || config.Type.IsNull() {
+		return
+	}
+	resp.Diagnostics.Append(validateRuleConfig(config)...)
 }
 
 func (r *ruleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -139,24 +179,7 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	var rule *models.ProxyRule
-	switch plan.Type.ValueString() {
-	case "site":
-		var opts []proxy.CreateSiteRuleOption
-		if !plan.Branch.IsNull() && !plan.Branch.IsUnknown() {
-			opts = append(opts, proxyClient.WithCreateSiteRuleBranch(plan.Branch.ValueString()))
-		}
-		rule, err = proxyClient.CreateSiteRule(plan.Domain.ValueString(), plan.ResourceID.ValueString(), opts...)
-	case "function":
-		var opts []proxy.CreateFunctionRuleOption
-		if !plan.Branch.IsNull() && !plan.Branch.IsUnknown() {
-			opts = append(opts, proxyClient.WithCreateFunctionRuleBranch(plan.Branch.ValueString()))
-		}
-		rule, err = proxyClient.CreateFunctionRule(plan.Domain.ValueString(), plan.ResourceID.ValueString(), opts...)
-	default:
-		resp.Diagnostics.AddError("Invalid proxy rule type", fmt.Sprintf("Unsupported proxy rule type %q.", plan.Type.ValueString()))
-		return
-	}
+	rule, err := createRule(proxyClient, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating proxy rule", common.FormatErrorWithAuthGuidance(err, common.ProjectCredentialGuidance("appwrite_proxy_rule", "rules.read", "rules.write")))
 		return
@@ -172,7 +195,7 @@ func (r *ruleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	plan.ProjectID = types.StringValue(projectID)
-	r.mapToState(rule, &plan)
+	mapRuleToState(rule, &plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -205,7 +228,7 @@ func (r *ruleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	state.ProjectID = types.StringValue(projectID)
-	r.mapToState(rule, &state)
+	mapRuleToState(rule, &state)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -263,21 +286,4 @@ func (r *ruleResource) client(projectID string) (*proxy.Proxy, error) {
 		return nil, err
 	}
 	return appwrite.NewProxy(r.clients.ClientForProject(projectID)), nil
-}
-
-func (r *ruleResource) mapToState(rule *models.ProxyRule, model *ruleResourceModel) {
-	model.ID = types.StringValue(rule.Id)
-	model.Domain = types.StringValue(rule.Domain)
-	model.Type = types.StringValue(common.Deref(rule.DeploymentResourceType))
-	model.ResourceID = types.StringValue(rule.DeploymentResourceId)
-	model.Status = types.StringValue(rule.Status)
-	model.Logs = types.StringValue(rule.Logs)
-	model.RenewAt = types.StringValue(rule.RenewAt)
-	model.CreatedAt = types.StringValue(rule.CreatedAt)
-	model.UpdatedAt = types.StringValue(rule.UpdatedAt)
-	if rule.DeploymentVcsProviderBranch != "" {
-		model.Branch = types.StringValue(rule.DeploymentVcsProviderBranch)
-	} else if !model.Branch.IsNull() {
-		model.Branch = types.StringValue("")
-	}
 }

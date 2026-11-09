@@ -1,6 +1,8 @@
 package acceptance
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -21,6 +23,12 @@ import (
 // means the check could not be performed and must not be reported as a pass.
 type fetchFunc func(t *testing.T, attrs map[string]string) error
 
+// errReset is what a fetchFunc returns for a resource that configures
+// something every project always has, such as an OAuth2 provider. Such a
+// thing cannot be absent, so destroying the resource resets it instead, and
+// the check proves the reset rather than a 404.
+var errReset = errors.New("reset to its unconfigured state")
+
 // destroyChecks maps a resource type to the call that proves it is gone.
 //
 // Deliberately central rather than per-service: a registry each service package
@@ -40,6 +48,12 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewTeams(projectScoped(t, attrs)).Get(attrs["id"])
 		return err
 	},
+	// A membership of a deleted team reads as team_not_found, a 404 like
+	// membership_not_found, so this holds whichever went first.
+	"appwrite_auth_team_membership": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewTeams(projectScoped(t, attrs)).GetMembership(attrs["team_id"], attrs["id"])
+		return err
+	},
 	"appwrite_messaging_topic": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetTopic(attrs["id"])
 		return err
@@ -50,6 +64,10 @@ var destroyChecks = map[string]fetchFunc{
 	},
 	"appwrite_messaging_subscriber": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewMessaging(projectScoped(t, attrs)).GetSubscriber(attrs["topic_id"], attrs["id"])
+		return err
+	},
+	"appwrite_auth_user_target": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewUsers(projectScoped(t, attrs)).GetTarget(attrs["user_id"], attrs["id"])
 		return err
 	},
 	"appwrite_storage_bucket": func(t *testing.T, attrs map[string]string) error {
@@ -108,8 +126,16 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := common.GetColumnRaw(projectScoped(t, attrs), attrs["database_id"], attrs["table_id"], attrs["key"])
 		return err
 	},
+	"appwrite_project_variable": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetVariable(attrs["id"])
+		return err
+	},
 	"appwrite_proxy_rule": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewProxy(projectScoped(t, attrs)).GetRule(attrs["id"])
+		return err
+	},
+	"appwrite_project_platform": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetPlatform(attrs["id"])
 		return err
 	},
 	"appwrite_waf_rule": func(t *testing.T, attrs map[string]string) error {
@@ -132,20 +158,80 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewProject(projectScoped(t, attrs)).GetMockPhone(attrs["number"])
 		return err
 	},
+	"appwrite_project_oauth_provider": func(t *testing.T, attrs map[string]string) error {
+		// Read raw, as the resource does: the SDK's GetOAuth2Provider cannot
+		// decode every provider's response.
+		c := projectScoped(t, attrs)
+		resp, err := c.Call("GET", "/project/oauth2/"+sdkclient.EncodePath(attrs["provider_id"]), map[string]interface{}{
+			"X-Appwrite-Project": c.Config["project"],
+		}, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		body, err := sdkclient.ResponseBody(resp)
+		if err != nil {
+			return err
+		}
+		return oauthProviderReset(body)
+	},
 }
 
-// resetFunc checks that a settings resource left its settings at the values a
-// new project has. It returns an error naming each one that is not.
-type resetFunc func(t *testing.T, attrs map[string]string) error
+// oauthProviderReset returns errReset when an OAuth2 provider is disabled and
+// holds no settings: every flag false and every string other than its ID
+// empty. Lists are not judged, because some settings, such as Google's prompt,
+// fall back to a default rather than to empty.
+func oauthProviderReset(body []byte) error {
+	var fields map[string]any
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return err
+	}
+	for key, value := range fields {
+		switch v := value.(type) {
+		case bool:
+			if v {
+				return nil
+			}
+		case string:
+			if key != "$id" && v != "" {
+				return nil
+			}
+		}
+	}
+	return errReset
+}
 
-// resetChecks covers resources that manage settings every project has. There
-// is nothing to delete, so destroying one resets the settings instead, and
-// the check is that they are back at their defaults rather than that a
-// request now returns 404.
-//
-// The defaults are written out here instead of taken from the provider, so a
-// wrong default in the provider fails the check instead of being shared by it.
-var resetChecks = map[string]resetFunc{
+// resetChecks covers settings resources. Every project has exactly one of each,
+// so destroying one cannot delete it; it resets it instead, and the check is
+// that the reset took. Each returns nil when the setting is back at its reset
+// state, and otherwise an error saying what is still set or why it could not
+// be checked.
+var resetChecks = map[string]fetchFunc{
+	"appwrite_project_smtp": func(t *testing.T, attrs map[string]string) error {
+		p, err := appwrite.NewProject(projectScoped(t, attrs)).Get()
+		if err != nil {
+			return fmt.Errorf("reading the project: %s", common.FormatError(err))
+		}
+		var set []string
+		if p.SmtpEnabled {
+			set = append(set, "enabled")
+		}
+		for name, value := range map[string]string{
+			"username":       p.SmtpUsername,
+			"sender_email":   p.SmtpSenderEmail,
+			"sender_name":    p.SmtpSenderName,
+			"reply_to_email": p.SmtpReplyToEmail,
+			"reply_to_name":  p.SmtpReplyToName,
+		} {
+			if value != "" {
+				set = append(set, name)
+			}
+		}
+		if len(set) > 0 {
+			sort.Strings(set)
+			return fmt.Errorf("custom SMTP still has %s set", strings.Join(set, ", "))
+		}
+		return nil
+	},
 	"appwrite_project_auth_methods": func(t *testing.T, attrs map[string]string) error {
 		project, err := appwrite.NewProject(projectScoped(t, attrs)).Get()
 		if err != nil {
@@ -262,6 +348,16 @@ var destroyCheckGaps = map[string]string{
 	// no undo. Their ID is the domain's, which outlives them.
 	"appwrite_domain_nameservers":              "destroy deliberately leaves the server unchanged",
 	"appwrite_domain_nameservers_verification": "destroy deliberately leaves the server unchanged",
+	// These are settings of the project rather than objects in it, so there is
+	// nothing to find absent: destroy enables the switches the resource
+	// managed. Their test asserts that against the server instead.
+	"appwrite_project_services":  "destroy enables switches rather than deleting; its test asserts that directly",
+	"appwrite_project_protocols": "destroy enables switches rather than deleting; its test asserts that directly",
+	// Appwrite has no route a project key can use to remove a custom email
+	// template, so destroy warns and leaves it. Its own test asserts the
+	// template is still there afterwards, so the behavior is pinned rather
+	// than unchecked.
+	"appwrite_project_email_template": "destroy cannot remove the template; the API has no route for it",
 	// DocumentsDB and VectorsDB are Cloud-only and skipped unless
 	// APPWRITE_CLOUD_TESTS is set.
 	"appwrite_documentsdb":            reasonCloudOnly,
@@ -322,8 +418,8 @@ func CheckDestroy(t *testing.T) func(*terraform.State) error {
 				switch {
 				case err == nil:
 					problems = append(problems, fmt.Sprintf("%s still exists on the server after destroy", name))
-				case common.IsNotFoundError(err):
-					// Gone, as intended.
+				case common.IsNotFoundError(err), errors.Is(err, errReset):
+					// Gone, or reset, as intended.
 				default:
 					// Neither present nor provably absent. Reported as a
 					// failure: an inconclusive destroy check has to be loud,

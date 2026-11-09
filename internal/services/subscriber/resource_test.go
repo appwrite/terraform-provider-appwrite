@@ -10,12 +10,12 @@ import (
 )
 
 func TestAccMessagingSubscriberResource_basic(t *testing.T) {
-	// A subscriber subscribes a messaging target to a topic, and no provider
-	// resource creates a target: they come into being alongside a user and are
-	// surfaced neither on appwrite_auth_user nor on its data source. The
-	// fixture provisions one through the Appwrite client so this resource keeps
-	// real coverage. The hardcoded "target-123" this replaces resolved against
-	// nothing and failed from the day it was written.
+	// This subscribes the target Appwrite creates alongside a user for their
+	// email address, which no resource manages and appwrite_auth_user_target
+	// refuses to import; the fixture provisions one through the Appwrite
+	// client. Subscribing an appwrite_auth_user_target is covered by
+	// TestAccAuthUserTarget_basic. The hardcoded "target-123" this replaces
+	// resolved against nothing and failed from the day it was written.
 	targetID, cleanup := acceptance.MessagingTarget(t)
 	defer cleanup()
 

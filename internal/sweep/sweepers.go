@@ -1,6 +1,7 @@
 package sweep
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/appwrite/sdk-for-go/v7/appwrite"
@@ -24,6 +25,8 @@ func Register() {
 		Name: "appwrite_auth_user",
 		F:    sweepUsers,
 	})
+	// Memberships go with their team. A user Appwrite created for a
+	// membership given by email or phone outlives it, and is swept as a user.
 	resource.AddTestSweepers("appwrite_auth_team", &resource.Sweeper{
 		Name: "appwrite_auth_team",
 		F:    sweepTeams,
@@ -48,9 +51,17 @@ func Register() {
 		Name: "appwrite_site",
 		F:    sweepSites,
 	})
+	resource.AddTestSweepers("appwrite_project_variable", &resource.Sweeper{
+		Name: "appwrite_project_variable",
+		F:    sweepProjectVariables,
+	})
 	resource.AddTestSweepers("appwrite_proxy_rule", &resource.Sweeper{
 		Name: "appwrite_proxy_rule",
 		F:    sweepProxyRules,
+	})
+	resource.AddTestSweepers("appwrite_project_platform", &resource.Sweeper{
+		Name: "appwrite_project_platform",
+		F:    sweepPlatforms,
 	})
 	// WAF rules are Cloud-only, but a leftover one keeps filtering the test
 	// project's traffic and counts against the plan's limit on rules.
@@ -61,6 +72,10 @@ func Register() {
 	resource.AddTestSweepers("appwrite_backup_policy", &resource.Sweeper{
 		Name: "appwrite_backup_policy",
 		F:    sweepBackupPolicies,
+	})
+	resource.AddTestSweepers("appwrite_project_oauth_provider", &resource.Sweeper{
+		Name: "appwrite_project_oauth_provider",
+		F:    sweepOAuthProviders,
 	})
 	// Tables, columns, indexes and rows live inside a database, and deleting the
 	// database takes them with it. One sweeper at the database level is both
@@ -268,6 +283,32 @@ func sweepSites(string) error {
 	return e.result("sites")
 }
 
+// Project variables have server-assigned IDs and keys that cannot contain
+// Prefix, so they are matched on a TF_ACC_TEST_ key prefix instead.
+func sweepProjectVariables(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListVariables()
+	if err != nil {
+		return err
+	}
+	var e errs
+	for _, v := range list.Variables {
+		if !Sweepable(v.Id) && !SweepableKey(v.Key) {
+			continue
+		}
+		if _, err := svc.DeleteVariable(v.Id); err != nil {
+			e.fail("project variable", v.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("project variables")
+}
+
 func sweepProxyRules(string) error {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -291,6 +332,35 @@ func sweepProxyRules(string) error {
 		e.ok()
 	}
 	return e.result("proxy rules")
+}
+
+func sweepPlatforms(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewProject(cfg.Client())
+	list, err := svc.ListPlatforms()
+	if err != nil {
+		return err
+	}
+	var e errs
+	// The list holds a different model per platform type, decoded only as far
+	// as a map. Every type has an ID and a name.
+	for _, item := range list.Platforms {
+		p, _ := item.(map[string]any)
+		platformID, _ := p["$id"].(string)
+		name, _ := p["name"].(string)
+		if platformID == "" || !Sweepable(platformID, name) {
+			continue
+		}
+		if _, err := svc.DeletePlatform(platformID); err != nil {
+			e.fail("platform", platformID, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("platforms")
 }
 
 func sweepBackupPolicies(string) error {
@@ -380,4 +450,73 @@ func sweepDatabases(string) error {
 		e.ok()
 	}
 	return e.result("databases")
+}
+
+// sweepOAuthProviders resets OAuth2 providers a test configured. A provider
+// cannot be deleted, so sweeping one means disabling it and clearing what it
+// holds, as destroying the resource does. A provider is the test's when one of
+// its settings carries the prefix; the tests put it in every client ID.
+func sweepOAuthProviders(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	c := cfg.Client()
+	headers := map[string]interface{}{"X-Appwrite-Project": c.Config["project"], "content-type": "application/json"}
+
+	// Read raw: the SDK's GetOAuth2Provider cannot decode every provider.
+	resp, err := c.Call("GET", "/project/oauth2", headers, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	raw, err := client.ResponseBody(resp)
+	if err != nil {
+		return err
+	}
+	var list struct {
+		Providers []map[string]interface{} `json:"providers"`
+	}
+	if err := json.Unmarshal(raw, &list); err != nil {
+		return err
+	}
+
+	var e errs
+	for _, provider := range list.Providers {
+		id, _ := provider["$id"].(string)
+		var identifiers []string
+		reset := map[string]interface{}{}
+		// The response uses the same keys as the update route, so the reset
+		// is built from it: strings emptied, flags off, ID lists emptied.
+		// prompt falls back to a default rather than to empty, and maxAge
+		// cannot be cleared, so both are left alone.
+		for key, value := range provider {
+			switch v := value.(type) {
+			case string:
+				if key != "$id" {
+					identifiers = append(identifiers, v)
+					reset[key] = ""
+				}
+			case bool:
+				reset[key] = false
+			case []interface{}:
+				if key != "prompt" {
+					for _, item := range v {
+						if s, ok := item.(string); ok {
+							identifiers = append(identifiers, s)
+						}
+					}
+					reset[key] = []string{}
+				}
+			}
+		}
+		if !Sweepable(identifiers...) {
+			continue
+		}
+		if _, err := c.Call("PATCH", "/project/oauth2/"+client.EncodePath(id), headers, reset); err != nil {
+			e.fail("OAuth2 provider", id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("OAuth2 providers")
 }

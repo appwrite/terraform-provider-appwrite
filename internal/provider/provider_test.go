@@ -55,6 +55,15 @@ func TestProviderSchema(t *testing.T) {
 		"appwrite_project_auth_methods",
 		"appwrite_project_auth_policies",
 		"appwrite_project_mock_phone",
+		"appwrite_project_platform",
+		"appwrite_project_variable",
+		"appwrite_project_services",
+		"appwrite_project_protocols",
+		"appwrite_auth_user_target",
+		"appwrite_project_smtp",
+		"appwrite_project_email_template",
+		"appwrite_auth_team_membership",
+		"appwrite_project_oauth_provider",
 		"appwrite_waf_rule",
 	}
 	for _, name := range wantResources {
