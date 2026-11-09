@@ -55,6 +55,11 @@
           "type": "tftypes.String",
           "required": true
         },
+        "prefs": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
         "project_id": {
           "type": "tftypes.String",
           "optional": true,
@@ -65,6 +70,73 @@
           "optional": true
         },
         "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
+    "appwrite_auth_team_membership": {
+      "version": 0,
+      "attributes": {
+        "confirm": {
+          "type": "tftypes.Bool",
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "email": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "joined_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "phone": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "roles": {
+          "type": "tftypes.Set[tftypes.String]",
+          "required": true
+        },
+        "team_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_email": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "user_name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "user_phone": {
           "type": "tftypes.String",
           "computed": true
         }
@@ -4117,6 +4189,10 @@
           "required": true
         },
         "name": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "prefs": {
           "type": "tftypes.String",
           "computed": true
         },

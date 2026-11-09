@@ -43,6 +43,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     only while custom SMTP is enabled. Appwrite has no API to restore the
     default, so destroying it leaves the template as last applied, with a
     warning
+- `appwrite_auth_team_membership` adds a user to a team by user ID, email
+  address or phone number. Created with the provider's API key, the membership
+  is confirmed at once and no invitation is sent. An email address or phone
+  number that matches no user makes Appwrite create one, which destroying the
+  membership leaves in place. Roles change in place; anything else replaces
+  the membership. Imported as `<team_id>/<membership_id>`
+- `prefs` on `appwrite_auth_team` and the `appwrite_auth_team` data source, the
+  team's shared preferences as a JSON object. A configuration without `prefs`
+  leaves the team's preferences as they are. Appwrite rejects an empty object,
+  so preferences cannot be cleared once set, and asking to is refused at plan
+  time
 - `appwrite_project_oauth_provider` configures one of a project's OAuth2
   sign-in providers, chosen by `provider_id`: its client ID and secret, whether
   it is enabled, and the settings particular to it, such as an OIDC discovery

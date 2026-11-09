@@ -238,6 +238,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		usersvc.NewUserResource,
 		usersvc.NewTargetResource,
 		teamsvc.NewTeamResource,
+		teamsvc.NewMembershipResource,
 		backupsvc.NewPolicyResource,
 		rowsvc.NewRowResource,
 		webhooksvc.NewWebhookResource,
