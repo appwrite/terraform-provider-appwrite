@@ -171,6 +171,24 @@ func TestUniqueRoles(t *testing.T) {
 	}
 }
 
+func TestSameRoles(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		a, b []string
+		want bool
+	}{
+		{[]string{"dev", "lead"}, []string{"lead", "dev"}, true},
+		{[]string{"dev", "dev"}, []string{"dev"}, true},
+		{nil, []string{}, true},
+		{[]string{"dev"}, []string{"lead"}, false},
+		{[]string{"dev"}, []string{"dev", "lead"}, false},
+	} {
+		if got := sameRoles(tc.a, tc.b); got != tc.want {
+			t.Errorf("sameRoles(%v, %v) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
+
 // TestRequiresReplaceUnlessAdopting covers a membership that was not
 // imported: changing or adding email replaces it. The framework's private
 // state cannot be constructed outside it, so the imported case is covered by

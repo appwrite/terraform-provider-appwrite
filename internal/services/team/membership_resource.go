@@ -380,7 +380,17 @@ func createMembership(client *teams.Teams, plan membershipResourceModel, roles [
 		// encoded as null, which the server rejects.
 		roles = []string{}
 	}
-	return client.CreateMembership(plan.TeamID.ValueString(), roles, opts...)
+	membership, err := client.CreateMembership(plan.TeamID.ValueString(), roles, opts...)
+	if err != nil {
+		return nil, err
+	}
+	// A pending invitation for the same user is confirmed and returned rather
+	// than refused, with the roles it was sent with. Set the configured ones,
+	// or state would disagree with the plan.
+	if !sameRoles(membership.Roles, roles) {
+		return client.UpdateMembership(membership.TeamId, membership.Id, roles)
+	}
+	return membership, nil
 }
 
 // alreadyMemberHint explains a create refused because the user already belongs
@@ -441,6 +451,25 @@ func mapMembershipToState(ctx context.Context, membership *models.Membership, mo
 	roles, diags := types.SetValueFrom(ctx, types.StringType, uniqueRoles(membership.Roles))
 	model.Roles = roles
 	return diags
+}
+
+// sameRoles reports whether two role lists hold the same roles, ignoring order
+// and repeats.
+func sameRoles(a, b []string) bool {
+	a, b = uniqueRoles(a), uniqueRoles(b)
+	if len(a) != len(b) {
+		return false
+	}
+	held := make(map[string]bool, len(a))
+	for _, role := range a {
+		held[role] = true
+	}
+	for _, role := range b {
+		if !held[role] {
+			return false
+		}
+	}
+	return true
 }
 
 // uniqueRoles drops repeated roles. Appwrite stores roles as an array and
