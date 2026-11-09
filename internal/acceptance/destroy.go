@@ -1,6 +1,8 @@
 package acceptance
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -19,6 +21,12 @@ import (
 // apart from a transport failure: the first means the delete worked, the second
 // means the check could not be performed and must not be reported as a pass.
 type fetchFunc func(t *testing.T, attrs map[string]string) error
+
+// errReset is what a fetchFunc returns for a resource that configures
+// something every project always has, such as an OAuth2 provider. Such a
+// thing cannot be absent, so destroying the resource resets it instead, and
+// the check proves the reset rather than a 404.
+var errReset = errors.New("reset to its unconfigured state")
 
 // destroyChecks maps a resource type to the call that proves it is gone.
 //
@@ -145,6 +153,46 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
 		return err
 	},
+	"appwrite_project_oauth_provider": func(t *testing.T, attrs map[string]string) error {
+		// Read raw, as the resource does: the SDK's GetOAuth2Provider cannot
+		// decode every provider's response.
+		c := projectScoped(t, attrs)
+		resp, err := c.Call("GET", "/project/oauth2/"+sdkclient.EncodePath(attrs["provider_id"]), map[string]interface{}{
+			"X-Appwrite-Project": c.Config["project"],
+		}, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		body, err := sdkclient.ResponseBody(resp)
+		if err != nil {
+			return err
+		}
+		return oauthProviderReset(body)
+	},
+}
+
+// oauthProviderReset returns errReset when an OAuth2 provider is disabled and
+// holds no settings: every flag false and every string other than its ID
+// empty. Lists are not judged, because some settings, such as Google's prompt,
+// fall back to a default rather than to empty.
+func oauthProviderReset(body []byte) error {
+	var fields map[string]any
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return err
+	}
+	for key, value := range fields {
+		switch v := value.(type) {
+		case bool:
+			if v {
+				return nil
+			}
+		case string:
+			if key != "$id" && v != "" {
+				return nil
+			}
+		}
+	}
+	return errReset
 }
 
 // resetChecks covers settings resources. Every project has exactly one of each,
@@ -295,8 +343,8 @@ func CheckDestroy(t *testing.T) func(*terraform.State) error {
 				switch {
 				case err == nil:
 					problems = append(problems, fmt.Sprintf("%s still exists on the server after destroy", name))
-				case common.IsNotFoundError(err):
-					// Gone, as intended.
+				case common.IsNotFoundError(err), errors.Is(err, errReset):
+					// Gone, or reset, as intended.
 				default:
 					// Neither present nor provably absent. Reported as a
 					// failure: an inconclusive destroy check has to be loud,

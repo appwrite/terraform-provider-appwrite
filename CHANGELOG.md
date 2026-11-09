@@ -54,6 +54,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   leaves the team's preferences as they are. Appwrite rejects an empty object,
   so preferences cannot be cleared once set, and asking to is refused at plan
   time
+- `appwrite_project_oauth_provider` configures one of a project's OAuth2
+  sign-in providers, chosen by `provider_id`: its client ID and secret, whether
+  it is enabled, and the settings particular to it, such as an OIDC discovery
+  URL, an Okta domain or Apple's key and team IDs. It needs a project key with
+  the `project.oauth2.read` and `project.oauth2.write` scopes. The secret is
+  write-only on Appwrite and can be given as `client_secret_wo`. Providers
+  always exist, so destroying the resource disables the provider and clears its
+  credentials. Updates to providers of the same project are applied one at a
+  time, because Appwrite loses all but one of several concurrent updates
 - `appwrite_waf_rule` manages a web application firewall rule on an Appwrite
   Cloud project, authenticated with the project key's `wafRules.read` and
   `wafRules.write` scopes. One resource covers bypass, challenge, deny,

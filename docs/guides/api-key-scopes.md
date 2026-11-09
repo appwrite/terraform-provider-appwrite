@@ -51,6 +51,7 @@ what to add. For reference:
 | `appwrite_project_ephemeral_key` | organization | `keys.write` |
 | `appwrite_project_smtp` | project | `project.read`, `project.write` |
 | `appwrite_project_email_template` | project | `templates.read`, `templates.write` |
+| `appwrite_project_oauth_provider` | project | `project.oauth2.read`, `project.oauth2.write` |
 | `appwrite_proxy_rule` | project | `rules.read`, `rules.write` |
 | `appwrite_project_platform` | project | `platforms.read`, `platforms.write` |
 | `appwrite_project_variable` | project | `project.read`, `project.write` |

@@ -19,10 +19,11 @@ import (
 )
 
 type capturedRequest struct {
-	method string
-	path   string
-	query  string
-	body   map[string]any
+	method  string
+	path    string
+	query   string
+	project string
+	body    map[string]any
 }
 
 // settingsServer answers every request with the given JSON and keeps the
