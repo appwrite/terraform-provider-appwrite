@@ -215,7 +215,7 @@ func (r *membershipResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	membership, err := createMembership(client, plan, roles)
-	if err != nil {
+	if err != nil && membership == nil {
 		resp.Diagnostics.AddError("Error creating team membership", common.FormatError(err)+alreadyMemberHint(client, plan, err))
 		return
 	}
@@ -223,6 +223,16 @@ func (r *membershipResource) Create(ctx context.Context, req resource.CreateRequ
 	plan.ProjectID = types.StringValue(projectID)
 	resp.Diagnostics.Append(mapMembershipToState(ctx, membership, &plan)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if err != nil {
+		// The membership exists but holds the invitation's roles. Keep it in
+		// state so that it is not left unmanaged; Terraform marks it tainted
+		// and replaces it on the next apply.
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		resp.Diagnostics.AddError("Error setting team membership roles",
+			"Appwrite confirmed a pending invitation for this user, but setting its roles failed: "+common.FormatError(err)+
+				"\n\nThe membership is saved with the invitation's roles and will be replaced on the next apply.")
 		return
 	}
 
@@ -386,9 +396,14 @@ func createMembership(client *teams.Teams, plan membershipResourceModel, roles [
 	}
 	// A pending invitation for the same user is confirmed and returned rather
 	// than refused, with the roles it was sent with. Set the configured ones,
-	// or state would disagree with the plan.
+	// or state would disagree with the plan. If that fails the membership
+	// still exists, so it is returned along with the error.
 	if !sameRoles(membership.Roles, roles) {
-		return client.UpdateMembership(membership.TeamId, membership.Id, roles)
+		updated, err := client.UpdateMembership(membership.TeamId, membership.Id, roles)
+		if err != nil {
+			return membership, err
+		}
+		return updated, nil
 	}
 	return membership, nil
 }
