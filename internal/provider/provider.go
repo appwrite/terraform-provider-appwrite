@@ -221,6 +221,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		projectsvc.NewProtocolsResource,
 		projectsvc.NewSMTPResource,
 		projectsvc.NewEmailTemplateResource,
+		projectsvc.NewOAuthProviderResource,
 		proxysvc.NewRuleResource,
 		wafsvc.NewRuleResource,
 		domainsvc.NewDomainResource,

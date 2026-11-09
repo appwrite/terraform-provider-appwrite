@@ -1,0 +1,1 @@
+terraform import appwrite_project_oauth_provider.github project-id/github

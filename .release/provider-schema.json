@@ -2622,6 +2622,110 @@
         }
       }
     },
+    "appwrite_project_oauth_provider": {
+      "version": 0,
+      "attributes": {
+        "authorization_server_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "authorization_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "client_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "client_secret": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true
+        },
+        "client_secret_wo": {
+          "type": "tftypes.String",
+          "optional": true,
+          "sensitive": true,
+          "write_only": true
+        },
+        "client_secret_wo_version": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "endpoint": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "key_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "max_age": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "native_client_ids": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true
+        },
+        "native_enabled": {
+          "type": "tftypes.Bool",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "prompt": {
+          "type": "tftypes.Set[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "provider_id": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "realm_name": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "team_id": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "tenant": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "token_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "user_info_url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "well_known_url": {
+          "type": "tftypes.String",
+          "optional": true
+        }
+      }
+    },
     "appwrite_project_platform": {
       "version": 0,
       "attributes": {
