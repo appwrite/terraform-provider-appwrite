@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `type` is `web`, `mobile` or `agent`, and the project key needs the
   `analytics.read` and `analytics.write` scopes. Self-hosted Appwrite does not
   serve the analytics API
+- `appwrite_project_oauth_provider` accepts the `vipps` and `vippsSandbox`
+  providers, which need an Appwrite that has them
 - A project's authentication settings, authenticated with a project key:
   - `appwrite_project_auth_methods` enables or disables email and password,
     magic URL, email OTP, anonymous, invite, JWT and phone sign-in

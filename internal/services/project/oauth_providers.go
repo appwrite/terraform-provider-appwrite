@@ -119,6 +119,8 @@ var oauthProviders = []oauthProvider{
 	// tradeshiftBox.
 	{id: "tradeshiftBox", label: "TradeshiftSandbox", clientIDKey: "oauth2ClientId", secretKey: "oauth2ClientSecret"},
 	{id: "twitch", label: "Twitch"},
+	{id: "vipps", label: "Vipps"},
+	{id: "vippsSandbox", label: "VippsSandbox"},
 	{id: "webflow", label: "Webflow"},
 	{id: "wordpress", label: "WordPress"},
 	{id: "x", label: "X", clientIDKey: "customerKey", secretKey: keySecretKey},

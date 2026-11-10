@@ -39,6 +39,58 @@
     }
   },
   "resources": {
+    "appwrite_analytics_property": {
+      "version": 0,
+      "attributes": {
+        "allowed_origins": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "identify_users": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
     "appwrite_auth_team": {
       "version": 0,
       "attributes": {

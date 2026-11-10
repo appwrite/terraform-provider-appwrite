@@ -71,6 +71,8 @@ Each provider takes `client_id`, `client_secret` and `enabled`. The table lists 
 | `tradeshift` | `oauth2ClientId` | `oauth2ClientSecret` | |
 | `tradeshiftBox` | `oauth2ClientId` | `oauth2ClientSecret` | |
 | `twitch` | `clientId` | `clientSecret` | |
+| `vipps` | `clientId` | `clientSecret` | |
+| `vippsSandbox` | `clientId` | `clientSecret` | |
 | `webflow` | `clientId` | `clientSecret` | |
 | `wordpress` | `clientId` | `clientSecret` | |
 | `x` | `customerKey` | `secretKey` | |
