@@ -142,6 +142,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewWaf(projectScoped(t, attrs)).GetRule(attrs["id"])
 		return err
 	},
+	"appwrite_analytics_property": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewAnalytics(projectScoped(t, attrs)).GetProperty(attrs["id"])
+		return err
+	},
 	"appwrite_backup_policy": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewBackups(projectScoped(t, attrs)).GetPolicy(attrs["id"])
 		return err

@@ -1,0 +1,1 @@
+terraform import appwrite_analytics_property.website project-id/website
