@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_analytics_property` manages an analytics property on an Appwrite
+  Cloud project: one website, app or agent whose events the project collects.
+  `type` is `web`, `mobile` or `agent`, and the project key needs the
+  `analytics.read` and `analytics.write` scopes. Self-hosted Appwrite does not
+  serve the analytics API
 - A project's authentication settings, authenticated with a project key:
   - `appwrite_project_auth_methods` enables or disables email and password,
     magic URL, email OTP, anonymous, invite, JWT and phone sign-in

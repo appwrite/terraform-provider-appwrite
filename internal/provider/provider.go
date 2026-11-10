@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/common"
+	analyticssvc "github.com/appwrite/terraform-provider-appwrite/internal/services/analytics"
 	backupsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/backup"
 	bucketsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/bucket"
 	columnsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/column"
@@ -227,6 +228,7 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		projectsvc.NewOAuthProviderResource,
 		proxysvc.NewRuleResource,
 		wafsvc.NewRuleResource,
+		analyticssvc.NewPropertyResource,
 		domainsvc.NewDomainResource,
 		domainsvc.NewRecordResource,
 		domainsvc.NewNameserversResource,

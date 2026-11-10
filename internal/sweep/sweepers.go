@@ -69,6 +69,12 @@ func Register() {
 		Name: "appwrite_waf_rule",
 		F:    sweepWAFRules,
 	})
+	// Analytics is Cloud-only too, and a plan caps how many properties a
+	// project can hold, so a leftover one can fail the next run's create.
+	resource.AddTestSweepers("appwrite_analytics_property", &resource.Sweeper{
+		Name: "appwrite_analytics_property",
+		F:    sweepAnalyticsProperties,
+	})
 	resource.AddTestSweepers("appwrite_backup_policy", &resource.Sweeper{
 		Name: "appwrite_backup_policy",
 		F:    sweepBackupPolicies,
@@ -385,6 +391,36 @@ func sweepBackupPolicies(string) error {
 		e.ok()
 	}
 	return e.result("backup policies")
+}
+
+func sweepAnalyticsProperties(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewAnalytics(cfg.Client())
+	list, err := svc.ListProperties()
+	if err != nil {
+		// Self-hosted Appwrite has no analytics routes and answers 404, which
+		// means there is nothing to sweep rather than that the sweep failed.
+		var appErr *client.AppwriteError
+		if errors.As(err, &appErr) && appErr.GetStatusCode() == 404 {
+			return nil
+		}
+		return err
+	}
+	var e errs
+	for _, p := range list.Properties {
+		if !Sweepable(p.Id, p.Name) {
+			continue
+		}
+		if _, err := svc.DeleteProperty(p.Id); err != nil {
+			e.fail("analytics property", p.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("analytics properties")
 }
 
 func sweepWAFRules(string) error {

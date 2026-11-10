@@ -1,0 +1,52 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Analytics"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+Analytics is available on Appwrite Cloud only; self-hosted Appwrite does not serve its API. A standard project API key with `analytics.read` and `analytics.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`. Appwrite Cloud limits how many properties a project can hold, depending on its plan.
+
+Sending an event needs no key: a client names the project and the property's `id`. `allowed_origins` limits which browser origins may send events, and anything other than `["*"]` also rejects requests that carry no `Origin` header unless they use a key with the `analytics.write` scope.
+
+Changing `id` or `project_id` replaces the property, and with it every event collected for it. Every other argument is updated in place, and an optional argument removed from the configuration goes back to its default.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project and property ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the property ID alone can be used:
+
+```shell
+terraform import appwrite_analytics_property.website website
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_analytics_property.website
+  id = "project-id/website"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_project](project.md) - Manage the project a property belongs to
+- [appwrite_project_platform](project_platform.md) - Register the apps and sites that call a project
