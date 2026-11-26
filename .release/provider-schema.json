@@ -733,6 +733,58 @@
         }
       }
     },
+    "appwrite_escalation": {
+      "version": 0,
+      "attributes": {
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "organization_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "repeat": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "steps": {
+          "type": "object",
+          "nesting": "list",
+          "required": true
+        },
+        "steps.delay": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "steps.roles": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "steps.user_ids": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        }
+      }
+    },
     "appwrite_function": {
       "version": 0,
       "attributes": {
@@ -1635,6 +1687,129 @@
         },
         "version": {
           "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        }
+      }
+    },
+    "appwrite_monitor": {
+      "version": 0,
+      "attributes": {
+        "body": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "cooldown": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "created_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "domain": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "enabled": {
+          "type": "tftypes.Bool",
+          "optional": true,
+          "computed": true
+        },
+        "escalation_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "headers": {
+          "type": "tftypes.Map[tftypes.String]",
+          "optional": true,
+          "sensitive": true
+        },
+        "host": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "interval": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "method": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "name": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "notify": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true,
+          "computed": true
+        },
+        "port": {
+          "type": "tftypes.Number",
+          "optional": true
+        },
+        "project_id": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "record": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "resolver": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "rules": {
+          "type": "tftypes.List[tftypes.String]",
+          "optional": true
+        },
+        "severity": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "status": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "timeout": {
+          "type": "tftypes.Number",
+          "optional": true,
+          "computed": true
+        },
+        "tls_mode": {
+          "type": "tftypes.String",
+          "optional": true,
+          "computed": true
+        },
+        "type": {
+          "type": "tftypes.String",
+          "required": true
+        },
+        "updated_at": {
+          "type": "tftypes.String",
+          "computed": true
+        },
+        "url": {
+          "type": "tftypes.String",
+          "optional": true
+        },
+        "window": {
+          "type": "tftypes.Number",
           "optional": true,
           "computed": true
         }

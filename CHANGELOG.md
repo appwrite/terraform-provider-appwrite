@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_monitor` manages a monitor on a project: an `http`, `dns`, `tcp`
+  or `smtp` probe of a target, or a `usage` check of a metric against a
+  threshold, with `rules` written as JSON query strings. One resource covers
+  every type, picked by `type`. The project key needs the `monitors.read` and
+  `monitors.write` scopes; probe monitors are served by Appwrite Cloud
+- `appwrite_escalation` manages who an organization's monitors notify, step by
+  step, until an alert is acknowledged. Monitors name one with
+  `escalation_id`. It needs an organization key with the `escalations.read`
+  and `escalations.write` scopes
+- `appwrite_project_oauth_provider` accepts the `atlassian`, `bird`,
+  `instagram`, `line`, `linear`, `naver`, `netlify`, `patreon`, `railway`,
+  `reddit`, `roblox`, `strava`, `supabase`, `vercel`, `vk` and `workos`
+  providers, which need an Appwrite that has them
 - `appwrite_analytics_property` manages an analytics property on an Appwrite
   Cloud project: one website, app or agent whose events the project collects.
   `type` is `web`, `mobile` or `agent`, and the project key needs the

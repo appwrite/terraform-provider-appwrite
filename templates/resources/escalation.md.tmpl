@@ -1,0 +1,51 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Monitors"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+A monitor uses an escalation when its `escalation_id` names it. While the monitor's alert fires, each step waits its `delay` and then notifies the members holding its `roles` and those named in `user_ids`, by email, push and in the console, until a member acknowledges the alert or it resolves. With `repeat`, the steps run again from the first, a monitor's cooldown after the last step.
+
+An organization API key with `escalations.read` and `escalations.write` scopes is required. Configure it with the provider's `organization_api_key` attribute or `APPWRITE_ORGANIZATION_API_KEY`. Set `organization_id` on the provider or on this resource.
+
+An escalation that a monitor uses cannot be deleted. Terraform destroys a monitor before the escalation it references, so destroying both together works; to destroy only the escalation, point its monitors elsewhere first. Alerts already escalating keep the steps they started with when the escalation changes.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with an organization and escalation ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `organization_id` is configured on the provider, the escalation ID alone can be used:
+
+```shell
+terraform import appwrite_escalation.on_call on-call
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_escalation.on_call
+  id = "organization-id/on-call"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_monitor](monitor.md) - Monitors whose alerts the escalation notifies

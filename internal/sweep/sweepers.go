@@ -75,6 +75,13 @@ func Register() {
 		Name: "appwrite_analytics_property",
 		F:    sweepAnalyticsProperties,
 	})
+	// Probe monitors are Cloud-only, and self-hosted Appwrite serves monitors
+	// only from the release that added them. A plan caps how many monitors a
+	// project can hold, so a leftover one can fail the next run's create.
+	resource.AddTestSweepers("appwrite_monitor", &resource.Sweeper{
+		Name: "appwrite_monitor",
+		F:    sweepMonitors,
+	})
 	resource.AddTestSweepers("appwrite_backup_policy", &resource.Sweeper{
 		Name: "appwrite_backup_policy",
 		F:    sweepBackupPolicies,
@@ -421,6 +428,36 @@ func sweepAnalyticsProperties(string) error {
 		e.ok()
 	}
 	return e.result("analytics properties")
+}
+
+func sweepMonitors(string) error {
+	cfg, err := LoadConfig()
+	if err != nil {
+		return err
+	}
+	svc := appwrite.NewMonitors(cfg.Client())
+	list, err := svc.List()
+	if err != nil {
+		// An Appwrite without the monitors API answers 404, which means there is
+		// nothing to sweep rather than that the sweep failed.
+		var appErr *client.AppwriteError
+		if errors.As(err, &appErr) && appErr.GetStatusCode() == 404 {
+			return nil
+		}
+		return err
+	}
+	var e errs
+	for _, m := range list.Monitors {
+		if !Sweepable(m.Id, m.Name) {
+			continue
+		}
+		if _, err := svc.Delete(m.Id); err != nil {
+			e.fail("monitor", m.Id, err)
+			continue
+		}
+		e.ok()
+	}
+	return e.result("monitors")
 }
 
 func sweepWAFRules(string) error {

@@ -1,6 +1,6 @@
 module github.com/appwrite/terraform-provider-appwrite
 
-go 1.26.10
+go 1.26.11
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
@@ -21,7 +21,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/appwrite/sdk-for-go/v7 v7.17.0
+	github.com/appwrite/sdk-for-go/v7 v7.24.0
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.10.0 // indirect
