@@ -1,0 +1,72 @@
+---
+page_title: "{{.Type}}: {{.Name}}"
+subcategory: "Monitors"
+description: |-
+  {{.Description}}
+---
+
+# {{.Type}}: {{.Name}}
+
+{{.Description}}
+
+One resource covers every monitor type, as `appwrite_waf_rule` and `appwrite_messaging_provider` do: `type` picks the type, and each type takes its own arguments. `http`, `dns`, `tcp` and `smtp` monitors probe a target on their own interval and are available on Appwrite Cloud. `usage` monitors compare a usage metric of the project, or of one of its databases, buckets, functions or sites, with a threshold, and need an Appwrite that serves the monitors API.
+
+A standard project API key with `monitors.read` and `monitors.write` scopes is required. Configure it with the provider's `api_key` attribute or `APPWRITE_API_KEY`.
+
+When a monitor fires it opens an alert, fires the `monitors.[monitorId].alerts.[alertId].create` event for webhooks, functions and realtime, and notifies the `notify` roles, or the steps of the [appwrite_escalation](escalation.md) named by `escalation_id`. Alerts are records of what happened rather than configuration, so the provider does not manage them.
+
+## Rules
+
+`rules` are query strings that must all hold for the monitor to fire. Write each with `jsonencode`, in the shape the Appwrite SDKs' `Query` class produces:
+
+```terraform
+rules = [
+  jsonencode({ method = "greaterThan", attribute = "network.outbound", values = [5000000000] }),
+  jsonencode({ method = "equal", attribute = "resourceType", values = ["buckets"] }),
+  jsonencode({ method = "equal", attribute = "resourceId", values = ["avatars"] }),
+]
+```
+
+Appwrite stores each rule re-encoded. The provider keeps the rules as written when the stored ones mean the same, so key order, number formatting and the order of the rules do not show as a diff.
+
+A `usage` monitor needs one rule comparing a metric, named as the usage endpoints name it, with a threshold in the metric's unit. A probe monitor without `rules` uses its type's defaults: an `http` monitor fires on a status code outside 200 to 299 or a certificate close to expiry, a `dns` monitor when there is no answer, and `tcp` and `smtp` monitors on connection failures. The defaults are not recorded in state, and removing `rules` from a probe monitor puts them back.
+
+`interval` reads back raised to the shortest interval the organization's plan allows, so set it no lower than that.
+
+Changing `type`, `id` or `project_id` replaces the monitor and with it its alert history. Every other argument is updated in place, and only the arguments that changed are sent.
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile .ExampleFile }}
+{{- end }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+
+Using `terraform import` with a project and monitor ID:
+
+{{ codefile "shell" .ImportFile }}
+
+When `project_id` is configured on the provider, the monitor ID alone can be used:
+
+```shell
+terraform import appwrite_monitor.api api-health
+```
+
+Using an import block (Terraform v1.5.0+):
+
+```hcl
+import {
+  to = appwrite_monitor.api
+  id = "project-id/api-health"
+}
+```
+{{- end }}
+
+## See Also
+
+- [appwrite_escalation](escalation.md) - Notify the team step by step until an alert is acknowledged
+- [appwrite_webhook](webhook.md) - Receive the alert events a monitor fires

@@ -25,9 +25,11 @@ import (
 	dedicatedsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/dedicated"
 	docdbsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/docdb"
 	domainsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/domain"
+	escalationsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/escalation"
 	filesvc "github.com/appwrite/terraform-provider-appwrite/internal/services/file"
 	functionsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/function"
 	indexsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/index"
+	monitorsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/monitor"
 	projectsvc "github.com/appwrite/terraform-provider-appwrite/internal/services/project"
 	providersvc "github.com/appwrite/terraform-provider-appwrite/internal/services/provider"
 	proxysvc "github.com/appwrite/terraform-provider-appwrite/internal/services/proxy"
@@ -229,10 +231,12 @@ func (p *appwriteProvider) Resources(_ context.Context) []func() resource.Resour
 		proxysvc.NewRuleResource,
 		wafsvc.NewRuleResource,
 		analyticssvc.NewPropertyResource,
+		monitorsvc.NewMonitorResource,
 		domainsvc.NewDomainResource,
 		domainsvc.NewRecordResource,
 		domainsvc.NewNameserversResource,
 		domainsvc.NewVerificationResource,
+		escalationsvc.NewEscalationResource,
 		databasesvc.NewDatabaseResource,
 		tablesvc.NewTableResource,
 		columnsvc.NewColumnResource,

@@ -146,6 +146,10 @@ var destroyChecks = map[string]fetchFunc{
 		_, err := appwrite.NewAnalytics(projectScoped(t, attrs)).GetProperty(attrs["id"])
 		return err
 	},
+	"appwrite_monitor": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewMonitors(projectScoped(t, attrs)).Get(attrs["id"])
+		return err
+	},
 	"appwrite_backup_policy": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewBackups(projectScoped(t, attrs)).GetPolicy(attrs["id"])
 		return err
@@ -156,6 +160,10 @@ var destroyChecks = map[string]fetchFunc{
 	},
 	"appwrite_domain_record": func(t *testing.T, attrs map[string]string) error {
 		_, err := appwrite.NewDomains(organizationScoped(t, attrs)).GetRecord(attrs["domain_id"], attrs["id"])
+		return err
+	},
+	"appwrite_escalation": func(t *testing.T, attrs map[string]string) error {
+		_, err := appwrite.NewOrganization(organizationScoped(t, attrs)).GetEscalation(attrs["id"])
 		return err
 	},
 	"appwrite_project_mock_phone": func(t *testing.T, attrs map[string]string) error {
