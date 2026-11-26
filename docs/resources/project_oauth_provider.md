@@ -32,9 +32,11 @@ Each provider takes `client_id`, `client_secret` and `enabled`. The table lists 
 | `amazon` | `clientId` | `clientSecret` | |
 | `apple` | `serviceId` | `p8File` | `key_id`, `team_id`, `native_client_ids`, `native_enabled` |
 | `appwrite` | `clientId` | `clientSecret` | |
+| `atlassian` | `clientId` | `clientSecret` | |
 | `auth0` | `clientId` | `clientSecret` | `endpoint`, `prompt` |
 | `authentik` | `clientId` | `clientSecret` | `endpoint` |
 | `autodesk` | `clientId` | `clientSecret` | |
+| `bird` | `clientId` | `clientSecret` | |
 | `bitbucket` | `key` | `secret` | |
 | `bitly` | `clientId` | `clientSecret` | |
 | `box` | `clientId` | `clientSecret` | |
@@ -51,30 +53,44 @@ Each provider takes `client_id`, `client_secret` and `enabled`. The table lists 
 | `gitlab` | `applicationId` | `secret` | `endpoint` |
 | `google` | `clientId` | `clientSecret` | `prompt`, `native_client_ids`, `native_enabled` |
 | `huggingface` | `clientId` | `clientSecret` | |
+| `instagram` | `clientId` | `clientSecret` | |
 | `kakao` | `clientId` | `clientSecret` | `prompt` |
 | `keycloak` | `clientId` | `clientSecret` | `endpoint`, `realm_name` |
 | `kick` | `clientId` | `clientSecret` | |
+| `line` | `clientId` | `clientSecret` | |
+| `linear` | `clientId` | `clientSecret` | |
 | `linkedin` | `clientId` | `primaryClientSecret` | |
 | `microsoft` | `applicationId` | `applicationSecret` | `tenant`, `prompt` |
+| `naver` | `clientId` | `clientSecret` | |
+| `netlify` | `clientId` | `clientSecret` | |
 | `notion` | `oauthClientId` | `oauthClientSecret` | |
 | `oidc` | `clientId` | `clientSecret` | `well_known_url`, `authorization_url`, `token_url`, `user_info_url`, `prompt`, `max_age` |
 | `okta` | `clientId` | `clientSecret` | `domain`, `authorization_server_id`, `prompt` |
+| `patreon` | `clientId` | `clientSecret` | |
 | `paypal` | `clientId` | `secretKey` | |
 | `paypalSandbox` | `clientId` | `secretKey` | |
 | `podio` | `clientId` | `clientSecret` | |
+| `railway` | `clientId` | `clientSecret` | |
+| `reddit` | `clientId` | `clientSecret` | |
 | `resend` | `clientId` | `clientSecret` | |
+| `roblox` | `clientId` | `clientSecret` | |
 | `salesforce` | `customerKey` | `customerSecret` | `prompt` |
 | `slack` | `clientId` | `clientSecret` | |
 | `spotify` | `clientId` | `clientSecret` | |
+| `strava` | `clientId` | `clientSecret` | |
 | `stripe` | `clientId` | `apiSecretKey` | |
+| `supabase` | `clientId` | `clientSecret` | |
 | `tiktok` | `clientId` | `clientSecret` | |
 | `tradeshift` | `oauth2ClientId` | `oauth2ClientSecret` | |
 | `tradeshiftBox` | `oauth2ClientId` | `oauth2ClientSecret` | |
 | `twitch` | `clientId` | `clientSecret` | |
+| `vercel` | `clientId` | `clientSecret` | |
 | `vipps` | `clientId` | `clientSecret` | |
 | `vippsSandbox` | `clientId` | `clientSecret` | |
+| `vk` | `clientId` | `clientSecret` | |
 | `webflow` | `clientId` | `clientSecret` | |
 | `wordpress` | `clientId` | `clientSecret` | |
+| `workos` | `clientId` | `clientSecret` | |
 | `x` | `customerKey` | `secretKey` | |
 | `yahoo` | `clientId` | `clientSecret` | |
 | `yandex` | `clientId` | `clientSecret` | |

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `appwrite_project_oauth_provider` accepts the `atlassian`, `bird`,
+  `instagram`, `line`, `linear`, `naver`, `netlify`, `patreon`, `railway`,
+  `reddit`, `roblox`, `strava`, `supabase`, `vercel`, `vk` and `workos`
+  providers, which need an Appwrite that has them
 - `appwrite_analytics_property` manages an analytics property on an Appwrite
   Cloud project: one website, app or agent whose events the project collects.
   `type` is `web`, `mobile` or `agent`, and the project key needs the
