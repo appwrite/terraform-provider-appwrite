@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `appwrite_monitor` clears an `http` monitor's `headers` in place when every
+  entry is removed, instead of replacing the monitor. It needs an Appwrite
+  that accepts an empty `headers` object on update
+
 ### Added
 
 - `appwrite_monitor` manages a monitor on a project: an `http`, `dns`, `tcp`

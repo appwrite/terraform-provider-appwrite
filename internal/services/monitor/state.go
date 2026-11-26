@@ -75,11 +75,12 @@ func changedFields(ctx context.Context, plan monitorResourceModel, state *monito
 	if changed(plan.Method, prior.Method) && !plan.Method.IsNull() {
 		f.Method = plan.Method.ValueStringPointer()
 	}
-	// Removing every header replaces the monitor, so headers are only ever
-	// sent with at least one.
-	if changed(plan.Headers, prior.Headers) && !plan.Headers.IsNull() {
+	// Removed headers are sent as an empty object, which clears them.
+	if changed(plan.Headers, prior.Headers) {
 		headers := map[string]string{}
-		diags.Append(plan.Headers.ElementsAs(ctx, &headers, false)...)
+		if !plan.Headers.IsNull() {
+			diags.Append(plan.Headers.ElementsAs(ctx, &headers, false)...)
+		}
 		f.Headers = &headers
 	}
 	if changed(plan.Body, prior.Body) {

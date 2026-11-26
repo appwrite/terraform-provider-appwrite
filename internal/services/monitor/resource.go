@@ -225,13 +225,11 @@ func (r *monitorResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"headers": schema.MapAttribute{
 				Description: "HTTP headers an http monitor sends, as a map of header names and values. " +
-					"Removing every header replaces the monitor, because Appwrite cannot clear a monitor's " +
-					"headers in place. Not accepted for other types.",
-				Optional:      true,
-				Sensitive:     true,
-				ElementType:   types.StringType,
-				PlanModifiers: []planmodifier.Map{replaceWhenHeadersCleared()},
-				Validators:    []validator.Map{mapvalidator.SizeAtLeast(1)},
+					"Not accepted for other types.",
+				Optional:    true,
+				Sensitive:   true,
+				ElementType: types.StringType,
+				Validators:  []validator.Map{mapvalidator.SizeAtLeast(1)},
 			},
 			"body": schema.StringAttribute{
 				Description: fmt.Sprintf("The request body an http monitor sends, up to %d characters. Not "+
