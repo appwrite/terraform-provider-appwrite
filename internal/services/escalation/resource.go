@@ -50,9 +50,10 @@ var (
 )
 
 var (
-	_ resource.Resource                = &escalationResource{}
-	_ resource.ResourceWithConfigure   = &escalationResource{}
-	_ resource.ResourceWithImportState = &escalationResource{}
+	_ resource.Resource                   = &escalationResource{}
+	_ resource.ResourceWithConfigure      = &escalationResource{}
+	_ resource.ResourceWithImportState    = &escalationResource{}
+	_ resource.ResourceWithValidateConfig = &escalationResource{}
 )
 
 type escalationResource struct {
@@ -163,6 +164,30 @@ func (r *escalationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"organization_id": common.OrganizationIDAttribute(),
 		},
+	}
+}
+
+// ValidateConfig refuses a step with no recipient at plan time; the API would
+// otherwise reject it mid-apply.
+func (r *escalationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var steps types.List
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("steps"), &steps)...)
+	if resp.Diagnostics.HasError() || steps.IsNull() || steps.IsUnknown() {
+		return
+	}
+	var models []stepModel
+	resp.Diagnostics.Append(steps.ElementsAs(ctx, &models, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	empty := func(list types.List) bool {
+		return !list.IsUnknown() && len(list.Elements()) == 0
+	}
+	for index, step := range models {
+		if empty(step.Roles) && empty(step.UserIDs) {
+			resp.Diagnostics.AddAttributeError(path.Root("steps").AtListIndex(index), "Missing recipients",
+				"Each step needs at least one of roles or user_ids.")
+		}
 	}
 }
 

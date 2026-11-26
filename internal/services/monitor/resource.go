@@ -334,6 +334,19 @@ func (r *monitorResource) ValidateConfig(ctx context.Context, req resource.Valid
 			"usage monitors require rules: one comparing a usage metric with a threshold.")
 	}
 
+	// A check that outlasts its interval would still be running when the next
+	// one starts, so the API refuses it. Left out, timeout is 10.
+	if slices.Contains(probeTypes, monitorType) && !config.Interval.IsNull() && !config.Interval.IsUnknown() && !config.Timeout.IsUnknown() {
+		timeout := int64(10)
+		if !config.Timeout.IsNull() {
+			timeout = config.Timeout.ValueInt64()
+		}
+		if timeout > config.Interval.ValueInt64() {
+			resp.Diagnostics.AddAttributeError(path.Root("timeout"), "Invalid argument combination",
+				fmt.Sprintf("timeout (%d) must not be longer than interval (%d).", timeout, config.Interval.ValueInt64()))
+		}
+	}
+
 	fields := []typedField{
 		{"interval", probeTypes, config.Interval, false},
 		{"timeout", probeTypes, config.Timeout, false},
