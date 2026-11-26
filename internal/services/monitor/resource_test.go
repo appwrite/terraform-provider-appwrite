@@ -32,6 +32,17 @@ resource "appwrite_monitor" "test" {
 			{
 				Config: `
 resource "appwrite_monitor" "test" {
+  type     = "http"
+  name     = "tf-acc-test-monitor"
+  url      = "https://example.com"
+  interval = 5
+}
+`,
+				ExpectError: regexp.MustCompile(`timeout \(10\) must not be longer than interval \(5\)`),
+			},
+			{
+				Config: `
+resource "appwrite_monitor" "test" {
   type = "http"
   name = "tf-acc-test-monitor"
   url  = "https://example.com"

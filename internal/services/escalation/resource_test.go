@@ -1,6 +1,7 @@
 package escalation_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/appwrite/terraform-provider-appwrite/internal/acceptance"
@@ -20,6 +21,15 @@ func TestAccEscalationResource_basic(t *testing.T) {
 		},
 		ProtoV6ProviderFactories: acceptance.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "appwrite_escalation" "test" {
+  name  = "tf-acc-test-escalation"
+  steps = [{ roles = ["owner"] }, { delay = 60, roles = [], user_ids = [] }]
+}
+`,
+				ExpectError: regexp.MustCompile(`Each step needs at least one of roles or user_ids`),
+			},
 			{
 				Config: `
 resource "appwrite_escalation" "test" {
