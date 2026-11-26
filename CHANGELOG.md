@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `appwrite_monitor` clears an `http` monitor's `headers` in place when every
+  entry is removed, instead of replacing the monitor. It needs an Appwrite
+  that accepts an empty `headers` object on update
+
 ### Added
 
 - `appwrite_monitor` manages a monitor on a project: an `http`, `dns`, `tcp`
   or `smtp` probe of a target, or a `usage` check of a metric against a
   threshold, with `rules` written as JSON query strings. One resource covers
   every type, picked by `type`. The project key needs the `monitors.read` and
-  `monitors.write` scopes; probe monitors are served by Appwrite Cloud.
-  Removing every `headers` entry from an `http` monitor clears them in place
+  `monitors.write` scopes; probe monitors are served by Appwrite Cloud
 - `appwrite_escalation` manages who an organization's monitors notify, step by
   step, until an alert is acknowledged. Monitors name one with
   `escalation_id`. It needs an organization key with the `escalations.read`
