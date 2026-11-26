@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -122,4 +123,19 @@ func (intervalDefault) PlanModifyInt64(ctx context.Context, req planmodifier.Int
 	default:
 		resp.PlanValue = types.Int64Unknown()
 	}
+}
+
+// replaceWhenHeadersCleared replaces an http monitor whose headers are removed
+// from the configuration. The API rejects an empty headers object, so an update
+// can change a monitor's headers but never take all of them away.
+func replaceWhenHeadersCleared() planmodifier.Map {
+	return mapplanmodifier.RequiresReplaceIf(
+		func(_ context.Context, req planmodifier.MapRequest, resp *mapplanmodifier.RequiresReplaceIfFuncResponse) {
+			hadHeaders := !req.StateValue.IsNull() && !req.StateValue.IsUnknown() && len(req.StateValue.Elements()) > 0
+			hasHeaders := !req.PlanValue.IsNull() && (req.PlanValue.IsUnknown() || len(req.PlanValue.Elements()) > 0)
+			resp.RequiresReplace = hadHeaders && !hasHeaders
+		},
+		"Removing every header from a monitor that has some replaces the monitor.",
+		"Removing every header from a monitor that has some replaces the monitor.",
+	)
 }

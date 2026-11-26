@@ -16,9 +16,9 @@ import (
 
 // changedFields returns the arguments to send. On create (state nil) that is
 // every known argument; on update only those that differ from state, because
-// the update routes change only what they are sent. Removing rules, headers,
-// body or resolver from the configuration sends their empty value, which puts
-// the server's default back.
+// the update routes change only what they are sent. Removing rules, body or
+// resolver from the configuration sends their empty value, which puts the
+// server's default back.
 func changedFields(ctx context.Context, plan monitorResourceModel, state *monitorResourceModel, diags *diag.Diagnostics) fields {
 	changed := func(planned, prior attr.Value) bool {
 		if planned.IsUnknown() {
@@ -75,11 +75,11 @@ func changedFields(ctx context.Context, plan monitorResourceModel, state *monito
 	if changed(plan.Method, prior.Method) && !plan.Method.IsNull() {
 		f.Method = plan.Method.ValueStringPointer()
 	}
-	if changed(plan.Headers, prior.Headers) {
+	// Removing every header replaces the monitor, so headers are only ever
+	// sent with at least one.
+	if changed(plan.Headers, prior.Headers) && !plan.Headers.IsNull() {
 		headers := map[string]string{}
-		if !plan.Headers.IsNull() {
-			diags.Append(plan.Headers.ElementsAs(ctx, &headers, false)...)
-		}
+		diags.Append(plan.Headers.ElementsAs(ctx, &headers, false)...)
 		f.Headers = &headers
 	}
 	if changed(plan.Body, prior.Body) {
@@ -121,8 +121,9 @@ func mapToState(ctx context.Context, monitor *models.Monitor, model *monitorReso
 	var diags diag.Diagnostics
 	monitorType := monitor.Type
 	// An import starts from the ID alone, so nothing records whether the
-	// configuration sets rules; read them back then rather than leaving them out.
-	importing := model.Name.IsNull()
+	// configuration sets rules; read back any the monitor has. tcp and smtp
+	// monitors have none by default, which reads as rules left out.
+	importing := model.Name.IsNull() && len(monitor.Rules) > 0
 
 	model.ID = types.StringValue(monitor.Id)
 	model.Type = types.StringValue(monitorType)
