@@ -29,7 +29,7 @@ rules = [
 
 Appwrite stores each rule re-encoded. The provider keeps the rules as written when the stored ones mean the same, so key order, number formatting and the order of the rules do not show as a diff.
 
-A `usage` monitor needs one rule comparing a metric, named as the usage endpoints name it, with a threshold in the metric's unit. A probe monitor without `rules` uses its type's defaults: an `http` monitor fires on a status code outside 200 to 299 or a certificate close to expiry, a `dns` monitor when there is no answer, and `tcp` and `smtp` monitors on connection failures. The defaults are not recorded in state, and removing `rules` from a probe monitor puts them back. Appwrite cannot clear a monitor's `headers` in place, so removing all of them replaces the monitor.
+A `usage` monitor needs one rule comparing a metric, named as the usage endpoints name it, with a threshold in the metric's unit. A probe monitor without `rules` uses its type's defaults: an `http` monitor fires on a status code outside 200 to 299 or a certificate close to expiry, a `dns` monitor when there is no answer, and `tcp` and `smtp` monitors on connection failures. The defaults are not recorded in state, and removing `rules` from a probe monitor puts them back.
 
 `interval` reads back raised to the shortest interval the organization's plan allows, so set it no lower than that.
 
@@ -97,7 +97,7 @@ variable "health_token" {
 - `domain` (String) The domain a dns monitor queries, such as example.com. Required for dns monitors; not accepted for other types.
 - `enabled` (Boolean) Whether the monitor is evaluated. Defaults to true.
 - `escalation_id` (String) The ID of an escalation of the organization, such as an appwrite_escalation, that notifies the team step by step until a member acknowledges the alert. When set, notify is not used. Defaults to empty, which notifies the notify roles once.
-- `headers` (Map of String, Sensitive) HTTP headers an http monitor sends, as a map of header names and values. Removing every header replaces the monitor, because Appwrite cannot clear a monitor's headers in place. Not accepted for other types.
+- `headers` (Map of String, Sensitive) HTTP headers an http monitor sends, as a map of header names and values. Not accepted for other types.
 - `host` (String) The hostname or IP address a tcp or smtp monitor connects to. Required for tcp and smtp monitors; not accepted for other types.
 - `id` (String) The monitor ID. Generated when not set. Changing this forces a new resource to be created.
 - `interval` (Number) Seconds between two checks of a probe monitor, from 1 to 2592000. Defaults to 60, or to the shortest interval the organization's plan allows when that is longer; left out, an existing monitor keeps its interval. Not accepted for usage monitors.

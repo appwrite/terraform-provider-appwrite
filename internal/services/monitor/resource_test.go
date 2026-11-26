@@ -111,18 +111,13 @@ resource "appwrite_monitor" "test" {
 			},
 			{
 				// Leaving the optional arguments out puts each back to its
-				// default, which is what clears the body and rules. Headers
-				// stay: removing all of them replaces the monitor.
+				// default, which is what clears the body, rules and headers.
 				Config: `
 resource "appwrite_monitor" "test" {
   type     = "http"
   name     = "tf-acc-test-monitor"
   url      = "https://example.com"
   interval = 300
-
-  headers = {
-    "X-Check" = "terraform"
-  }
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -130,7 +125,7 @@ resource "appwrite_monitor" "test" {
 					resource.TestCheckResourceAttr(name, "timeout", "10"),
 					resource.TestCheckResourceAttr(name, "enabled", "true"),
 					resource.TestCheckResourceAttr(name, "notify.0", "owner"),
-					resource.TestCheckResourceAttr(name, "headers.X-Check", "terraform"),
+					resource.TestCheckNoResourceAttr(name, "headers"),
 					resource.TestCheckNoResourceAttr(name, "body"),
 					resource.TestCheckNoResourceAttr(name, "rules"),
 				),
