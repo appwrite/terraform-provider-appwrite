@@ -21,7 +21,7 @@ jobs:
       # Cache deliberately off. This job builds and signs what users install, and
       # a build cache is writable by workflows running on pull requests, so
       # restoring one here would let untrusted input reach a release artifact.
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
           cache: false
